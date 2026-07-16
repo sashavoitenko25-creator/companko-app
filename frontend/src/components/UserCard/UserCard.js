@@ -57,6 +57,7 @@ export function UserCard(user){
 
         <button 
         class="user-card__route"
+        data-user-id="${user.id}"
         >
 
             Маршрут

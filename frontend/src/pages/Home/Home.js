@@ -7,7 +7,9 @@ import { FAB } from '../../components/FAB';
 import { BottomSheet } from '../../components/BottomSheet';
 
 import { LiveUsers } from '../../features/live/LiveUsers';
+
 import '../../features/live/live.css';
+
 
 import {
     SelectedUser,
@@ -16,9 +18,23 @@ import {
 
 
 import {
+    RoutePanel,
+    showRoute
+} from '../../features/route/RoutePanel';
+
+
+import '../../features/route/route.css';
+
+
+
+import {
     setActivity,
     setDuration
 } from '../../store/liveStore';
+
+
+
+let selectedUser = null;
 
 
 
@@ -30,6 +46,7 @@ export function Home(){
 
 
     return `
+
 
         <main class="home">
 
@@ -55,9 +72,14 @@ export function Home(){
             ${SelectedUser()}
 
 
+            ${RoutePanel()}
+
+
         </main>
 
+
     `;
+
 
 }
 
@@ -65,7 +87,10 @@ export function Home(){
 
 
 
+
+
 function initHomeEvents(){
+
 
 
     const button =
@@ -75,6 +100,7 @@ function initHomeEvents(){
 
     const sheet =
     document.querySelector('.bottom-sheet');
+
 
 
 
@@ -93,6 +119,8 @@ function initHomeEvents(){
         }
 
     );
+
+
 
 
 
@@ -197,6 +225,7 @@ function initHomeEvents(){
 
 
 
+
     window.addEventListener(
 
         'user:selected',
@@ -204,14 +233,57 @@ function initHomeEvents(){
         (event)=>{
 
 
+            selectedUser =
+            event.detail;
+
+
+
             showUserCard(
-                event.detail
+                selectedUser
             );
 
 
         }
 
     );
+
+
+
+
+
+
+
+
+    document.addEventListener(
+
+        'click',
+
+        (event)=>{
+
+
+            if(
+                event.target.classList.contains(
+                    'user-card__route'
+                )
+            ){
+
+
+                if(selectedUser){
+
+                    showRoute(
+                        selectedUser
+                    );
+
+                }
+
+
+            }
+
+
+        }
+
+    );
+
 
 
 }
