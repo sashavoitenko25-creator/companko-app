@@ -1,0 +1,94 @@
+.live-user{
+
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+
+    padding:12px 16px;
+
+
+    background:
+
+    rgba(17,20,37,.9);
+
+
+    backdrop-filter:blur(18px);
+
+
+    border-radius:20px;
+
+
+    color:white;
+
+
+}
+
+
+
+.live-user__avatar{
+
+    width:52px;
+
+    height:52px;
+
+
+    border-radius:50%;
+
+
+    overflow:hidden;
+
+
+    border:
+
+    2px solid var(--primary);
+
+}
+
+
+.live-user__avatar img{
+
+    width:100%;
+
+    height:100%;
+
+    object-fit:cover;
+
+}
+
+
+
+.live-user__name{
+
+    font-weight:700;
+
+    font-size:15px;
+
+}
+
+
+
+.live-user__activity{
+
+    margin-top:4px;
+
+    color:var(--text-secondary);
+
+    font-size:14px;
+
+}
+
+
+
+.live-user__distance{
+
+    margin-top:4px;
+
+    color:var(--primary);
+
+    font-size:13px;
+
+}

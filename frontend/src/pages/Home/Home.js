@@ -6,8 +6,19 @@ import { ActivityBar } from '../../components/ActivityBar';
 import { FAB } from '../../components/FAB';
 import { BottomSheet } from '../../components/BottomSheet';
 
+import { LiveUsers } from '../../features/live/LiveUsers';
+
+import '../../features/live/live.css';
+
+import {
+    setActivity,
+    setDuration
+} from '../../store/liveStore';
+
+
 
 export function Home(){
+
 
     setTimeout(initHomeEvents);
 
@@ -26,6 +37,9 @@ export function Home(){
             ${ActivityBar()}
 
 
+            ${LiveUsers()}
+
+
             ${FAB()}
 
 
@@ -38,41 +52,6 @@ export function Home(){
 
 }
 
-
-
-function initLiveButton(){
-
-
-    const button =
-    document.querySelector('#live-button');
-
-
-    const sheet =
-    document.querySelector('.bottom-sheet');
-
-
-    if(!button || !sheet) return;
-
-
-
-    button.addEventListener(
-        'click',
-        ()=>{
-
-            sheet.classList.add(
-                'bottom-sheet--open'
-            );
-
-        }
-    );
-
-
-}
-
-import { 
-    setActivity,
-    setDuration
-} from '../../store/liveStore';
 
 
 
@@ -113,16 +92,20 @@ function initHomeEvents(){
 
                 document
                 .querySelectorAll('.activity-option')
-                .forEach(item=>
+                .forEach(item=>{
+
                     item.classList.remove(
                         'selected'
-                    )
-                );
+                    );
+
+                });
+
 
 
                 button.classList.add(
                     'selected'
                 );
+
 
 
                 setActivity(
@@ -138,6 +121,7 @@ function initHomeEvents(){
 
 
 
+
     document
     .querySelectorAll('.time-options button')
     .forEach(button=>{
@@ -150,16 +134,20 @@ function initHomeEvents(){
 
                 document
                 .querySelectorAll('.time-options button')
-                .forEach(item=>
+                .forEach(item=>{
+
                     item.classList.remove(
                         'selected'
-                    )
-                );
+                    );
+
+                });
+
 
 
                 button.classList.add(
                     'selected'
                 );
+
 
 
                 setDuration(
