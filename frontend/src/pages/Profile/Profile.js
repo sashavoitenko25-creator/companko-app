@@ -2,7 +2,8 @@ import './Profile.css';
 
 
 import {
-    saveProfile
+    saveProfile,
+    getProfile
 } from '../../features/profile/profileStore';
 
 
@@ -34,6 +35,25 @@ export function Profile(){
 
 
 
+    const oldProfile =
+    getProfile();
+
+
+
+    selectedGender =
+    oldProfile?.gender || null;
+
+
+    selectedInterests =
+    oldProfile?.interests || [];
+
+
+    selectedActivity =
+    oldProfile?.activity || null;
+
+
+
+
 
     return `
 
@@ -59,8 +79,17 @@ tgUser?.photo_url ||
 
 
 <h1>
-Твой профиль
+
+${
+oldProfile
+?
+'Редактирование профиля'
+:
+'Создай профиль'
+}
+
 </h1>
+
 
 
 
@@ -72,7 +101,9 @@ id="profile-name"
 placeholder="Имя"
 
 value="${
-tgUser?.first_name || ''
+oldProfile?.name ||
+tgUser?.first_name ||
+''
 }"
 
 >
@@ -88,6 +119,11 @@ id="profile-age"
 type="number"
 
 placeholder="Возраст"
+
+value="${
+oldProfile?.age ||
+''
+}"
 
 >
 
@@ -128,7 +164,6 @@ data-gender="female"
 <h3>
 Интересы
 </h3>
-
 
 
 <div class="choice-group">
@@ -172,11 +207,9 @@ data-interest="games"
 
 
 
-
 <h3>
-Любимая активность
+Активность
 </h3>
-
 
 
 <div class="choice-group">
@@ -190,14 +223,12 @@ data-activity="coffee"
 </button>
 
 
-
 <button
 class="choice activity"
 data-activity="walk"
 >
 🚶 Гулять
 </button>
-
 
 
 <button
@@ -221,6 +252,11 @@ id="profile-city"
 
 placeholder="Город"
 
+value="${
+oldProfile?.city ||
+''
+}"
+
 >
 
 
@@ -233,7 +269,12 @@ id="profile-about"
 
 placeholder="О себе"
 
-></textarea>
+>${
+
+oldProfile?.about ||
+''
+
+}</textarea>
 
 
 
@@ -246,7 +287,15 @@ id="profile-save"
 class="save-button"
 
 >
-Продолжить
+
+${
+oldProfile
+?
+'Сохранить'
+:
+'Продолжить'
+}
+
 </button>
 
 
@@ -267,7 +316,11 @@ class="save-button"
 
 
 
+
+
 function initProfile(){
+
+
 
 
 
@@ -301,6 +354,8 @@ button.dataset.gender;
 
 
 });
+
+
 
 
 
@@ -395,12 +450,12 @@ button.dataset.activity;
 
 
 
-
-
 document
 .querySelector('#profile-save')
 ?.addEventListener(
+
 'click',
+
 ()=>{
 
 
@@ -440,20 +495,22 @@ selectedActivity
 
 
 
-
 saveProfile(data);
 
 
 
+
 window.dispatchEvent(
+
 new Event(
 'profile:created'
 )
+
 );
 
 
-
 }
+
 );
 
 

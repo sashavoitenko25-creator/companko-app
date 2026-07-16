@@ -16,12 +16,16 @@ import {
 
 
 
-export function renderApp(){
-
+function renderApp(){
 
 
     const app =
     document.querySelector('#app');
+
+
+
+    if(!app)
+        return;
 
 
 
@@ -48,11 +52,14 @@ export function renderApp(){
 
 
 
+
+
 export function initRouter(){
 
 
 
     renderApp();
+
 
 
 
@@ -70,6 +77,37 @@ export function initRouter(){
         }
 
     );
+
+
+
+
+
+
+    window.addEventListener(
+
+        'profile:open',
+
+        ()=>{
+
+
+            const app =
+            document.querySelector('#app');
+
+
+
+            if(!app)
+                return;
+
+
+
+            app.innerHTML =
+            Profile();
+
+
+        }
+
+    );
+
 
 
 }
