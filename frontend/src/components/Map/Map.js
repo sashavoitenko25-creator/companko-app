@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { UserMarker } from '../UserMarker';
 
+
 import { getLiveUsers } from '../../services/live/liveService';
 
 
@@ -17,12 +18,24 @@ import {
 
 
 
+import {
+    watchLocation,
+    getCurrentPosition
+} from '../../services/location/locationService';
+
+
+
+
 let map;
 
-let userLocation = [
-    50.4501,
-    30.5234
-];
+
+let myMarker = null;
+
+
+let userLocation = null;
+
+
+
 
 
 
@@ -48,11 +61,17 @@ export function Map(){
 
 
 
+
+
+
 function initMap(){
+
 
 
     if(map)
         return;
+
+
 
 
 
@@ -71,11 +90,15 @@ function initMap(){
     )
     .setView(
 
-        userLocation,
+        [
+            50.4501,
+            30.5234
+        ],
 
         14
 
     );
+
 
 
 
@@ -97,9 +120,11 @@ function initMap(){
 
 
 
-    createMyLocation();
-
     createUsers();
+
+
+    initLocation();
+
 
     initRouteEvents();
 
@@ -112,7 +137,69 @@ function initMap(){
 
 
 
-function createMyLocation(){
+
+
+function initLocation(){
+
+
+
+    watchLocation();
+
+
+
+
+    window.addEventListener(
+
+        'location:updated',
+
+        (event)=>{
+
+
+
+            const position =
+            event.detail;
+
+
+
+
+            userLocation = [
+
+                position.lat,
+
+                position.lng
+
+            ];
+
+
+
+
+
+            updateMyMarker(
+
+                userLocation
+
+            );
+
+
+
+
+        }
+
+    );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+function updateMyMarker(position){
 
 
 
@@ -124,24 +211,35 @@ function createMyLocation(){
 
         html:`
 
+
             <div class="my-location">
+
 
                 <div class="my-location__pulse">
                 </div>
 
+
             </div>
+
 
         `,
 
 
         iconSize:[
+
             30,
+
             30
+
         ],
 
+
         iconAnchor:[
+
             15,
+
             15
+
         ]
 
     });
@@ -149,9 +247,31 @@ function createMyLocation(){
 
 
 
-    L.marker(
 
-        userLocation,
+
+    if(myMarker){
+
+
+        myMarker.setLatLng(
+
+            position
+
+        );
+
+
+        return;
+
+
+    }
+
+
+
+
+
+
+    myMarker = L.marker(
+
+        position,
 
         {
 
@@ -164,7 +284,20 @@ function createMyLocation(){
 
 
 
+
+
+    map.setView(
+
+        position,
+
+        15
+
+    );
+
+
 }
+
+
 
 
 
@@ -248,6 +381,7 @@ function createUsers(){
 
 
 
+
         marker.on(
 
             'click',
@@ -290,6 +424,8 @@ function createUsers(){
 
 
 
+
+
 function initRouteEvents(){
 
 
@@ -301,8 +437,24 @@ function initRouteEvents(){
         (event)=>{
 
 
+
             const user =
             event.detail;
+
+
+
+
+            const start =
+
+            getCurrentPosition();
+
+
+
+
+            if(!start)
+                return;
+
+
 
 
 
@@ -310,7 +462,15 @@ function initRouteEvents(){
 
                 map,
 
-                userLocation,
+
+                [
+
+                    start.lat,
+
+                    start.lng
+
+                ],
+
 
                 [
 
@@ -323,9 +483,11 @@ function initRouteEvents(){
             );
 
 
+
         }
 
     );
+
 
 
 
@@ -340,7 +502,9 @@ function initRouteEvents(){
 
 
             clearRoute(
+
                 map
+
             );
 
 
