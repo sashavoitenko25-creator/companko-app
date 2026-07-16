@@ -40,6 +40,7 @@ export function Profile(){
 
 
 
+
     selectedGender =
     oldProfile?.gender || null;
 
@@ -71,6 +72,7 @@ class="profile-avatar"
 
 src="${
 tgUser?.photo_url ||
+oldProfile?.photo_url ||
 'https://i.pravatar.cc/150'
 }"
 
@@ -139,17 +141,37 @@ oldProfile?.age ||
 <div class="choice-group">
 
 
-<button 
-class="choice"
+<button
+
+class="choice ${
+selectedGender === 'male'
+?
+'active'
+:
+''
+}"
+
 data-gender="male"
+
 >
 👨 Мужчина
 </button>
 
 
-<button 
-class="choice"
+
+
+<button
+
+class="choice ${
+selectedGender === 'female'
+?
+'active'
+:
+''
+}"
+
 data-gender="female"
+
 >
 👩 Женщина
 </button>
@@ -161,41 +183,88 @@ data-gender="female"
 
 
 
+
+
 <h3>
 Интересы
 </h3>
 
 
+
 <div class="choice-group">
 
 
-<button 
-class="choice interest"
+<button
+
+class="choice interest ${
+selectedInterests.includes('coffee')
+?
+'active'
+:
+''
+}"
+
 data-interest="coffee"
+
 >
 ☕ Кофе
 </button>
 
 
-<button 
-class="choice interest"
+
+
+<button
+
+class="choice interest ${
+selectedInterests.includes('walk')
+?
+'active'
+:
+''
+}"
+
 data-interest="walk"
+
 >
 🚶 Прогулки
 </button>
 
 
-<button 
-class="choice interest"
+
+
+
+<button
+
+class="choice interest ${
+selectedInterests.includes('sport')
+?
+'active'
+:
+''
+}"
+
 data-interest="sport"
+
 >
 🏃 Спорт
 </button>
 
 
-<button 
-class="choice interest"
+
+
+
+<button
+
+class="choice interest ${
+selectedInterests.includes('games')
+?
+'active'
+:
+''
+}"
+
 data-interest="games"
+
 >
 🎮 Игры
 </button>
@@ -207,39 +276,78 @@ data-interest="games"
 
 
 
+
+
 <h3>
-Активность
+Любимая активность
 </h3>
+
+
 
 
 <div class="choice-group">
 
 
+
 <button
-class="choice activity"
+
+class="choice activity ${
+selectedActivity === 'coffee'
+?
+'active'
+:
+''
+}"
+
 data-activity="coffee"
+
 >
 ☕ Кофе
 </button>
 
 
+
+
+
 <button
-class="choice activity"
+
+class="choice activity ${
+selectedActivity === 'walk'
+?
+'active'
+:
+''
+}"
+
 data-activity="walk"
+
 >
 🚶 Гулять
 </button>
 
 
+
+
+
 <button
-class="choice activity"
+
+class="choice activity ${
+selectedActivity === 'talk'
+?
+'active'
+:
+''
+}"
+
 data-activity="talk"
+
 >
 💬 Общаться
 </button>
 
 
 </div>
+
 
 
 
@@ -263,6 +371,7 @@ oldProfile?.city ||
 
 
 
+
 <textarea
 
 id="profile-about"
@@ -280,6 +389,8 @@ oldProfile?.about ||
 
 
 
+
+
 <button
 
 id="profile-save"
@@ -291,7 +402,7 @@ class="save-button"
 ${
 oldProfile
 ?
-'Сохранить'
+'Сохранить изменения'
 :
 'Продолжить'
 }
@@ -334,9 +445,15 @@ button.onclick=()=>{
 
 document
 .querySelectorAll('[data-gender]')
-.forEach(
-b=>b.classList.remove('active')
+.forEach(item=>{
+
+
+item.classList.remove(
+'active'
 );
+
+
+});
 
 
 
@@ -386,9 +503,10 @@ if(
 selectedInterests.includes(value)
 ){
 
+
 selectedInterests =
 selectedInterests.filter(
-item=>item!==value
+item=>item !== value
 );
 
 
@@ -413,6 +531,7 @@ selectedInterests.push(value);
 
 
 
+
 document
 .querySelectorAll('.activity')
 .forEach(button=>{
@@ -423,9 +542,15 @@ button.onclick=()=>{
 
 document
 .querySelectorAll('.activity')
-.forEach(
-b=>b.classList.remove('active')
+.forEach(item=>{
+
+
+item.classList.remove(
+'active'
 );
+
+
+});
 
 
 
@@ -450,6 +575,8 @@ button.dataset.activity;
 
 
 
+
+
 document
 .querySelector('#profile-save')
 ?.addEventListener(
@@ -459,35 +586,88 @@ document
 ()=>{
 
 
-const data={
+
+const telegramUser =
+getTelegramUser();
+
+
+
+
+
+const data = {
+
+
+telegram_id:
+
+telegramUser?.id || null,
+
+
+first_name:
+
+telegramUser?.first_name || null,
+
+
+photo_url:
+
+telegramUser?.photo_url || null,
+
+
+language_code:
+
+telegramUser?.language_code || 'ru',
+
+
+
 
 
 name:
-document.querySelector('#profile-name').value,
+
+document
+.querySelector('#profile-name')
+.value,
+
 
 
 age:
-document.querySelector('#profile-age').value,
+
+document
+.querySelector('#profile-age')
+.value,
+
 
 
 gender:
+
 selectedGender,
 
 
+
 city:
-document.querySelector('#profile-city').value,
+
+document
+.querySelector('#profile-city')
+.value,
+
 
 
 about:
-document.querySelector('#profile-about').value,
+
+document
+.querySelector('#profile-about')
+.value,
+
 
 
 interests:
+
 selectedInterests,
 
 
+
 activity:
+
 selectedActivity
+
 
 
 };
@@ -495,7 +675,9 @@ selectedActivity
 
 
 
+
 saveProfile(data);
+
 
 
 
@@ -507,6 +689,7 @@ new Event(
 )
 
 );
+
 
 
 }
