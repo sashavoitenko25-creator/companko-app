@@ -1,7 +1,8 @@
 import './route.css';
 
 import {
-    stopRoute
+    stopRoute,
+    startRoute
 } from './routeService';
 
 
@@ -79,21 +80,21 @@ export function showRoute(user){
 
         <div>
 
-        ${user.name}
+            ${user.name}
 
         </div>
 
 
         <div>
 
-        📍 ${user.distance} м
+            📍 ${user.distance} м
 
         </div>
 
 
         <div>
 
-        🚶 ~5 минут
+            🚶 ~5 минут
 
         </div>
 
@@ -108,6 +109,10 @@ export function showRoute(user){
 
 
 
+    // запускаем маршрут на карте
+    startRoute(user);
+
+
 
     document
     .querySelector('#route-cancel')
@@ -118,13 +123,17 @@ export function showRoute(user){
         ()=>{
 
 
+            panel.classList.remove(
+                'route-panel--open'
+            );
+
+
             stopRoute();
 
 
         }
 
     );
-
 
 
 }
