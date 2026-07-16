@@ -11,10 +11,9 @@ import {
 } from './store/userStore';
 
 
-
 import {
-    Home
-} from './pages/Home/Home';
+    initRouter
+} from './router/router';
 
 
 
@@ -57,6 +56,5 @@ if(telegramUser){
 
 
 
-document.querySelector('#app')
-.innerHTML =
-Home();
+
+initRouter();
