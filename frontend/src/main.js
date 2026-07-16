@@ -1,3 +1,5 @@
 import './styles/index.css';
 
-document.querySelector('#app').innerHTML = '';
+import { Home } from './pages/Home';
+
+document.querySelector('#app').innerHTML = Home();
