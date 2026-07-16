@@ -6,10 +6,17 @@ import {
 } from '../../features/profile/profileStore';
 
 
-
 import {
     getTelegramUser
 } from '../../services/telegram/telegramService';
+
+
+
+let selectedGender = null;
+
+let selectedInterests = [];
+
+let selectedActivity = null;
 
 
 
@@ -27,162 +34,232 @@ export function Profile(){
 
 
 
+
     return `
 
 
-    <main class="profile-page">
+<main class="profile-page">
 
 
+<div class="profile-card">
 
-        <div class="profile-card">
 
 
+<img
 
-            <img
+class="profile-avatar"
 
-            class="profile-avatar"
+src="${
+tgUser?.photo_url ||
+'https://i.pravatar.cc/150'
+}"
 
-            src="${
-                tgUser?.photo_url ||
-                'https://i.pravatar.cc/150'
-            }"
+>
 
-            >
 
 
+<h1>
+Твой профиль
+</h1>
 
 
-            <h1>
 
-                Создай профиль
 
-            </h1>
+<input
 
+id="profile-name"
 
+placeholder="Имя"
 
+value="${
+tgUser?.first_name || ''
+}"
 
-            <input
+>
 
-            id="profile-name"
 
-            placeholder="Имя"
 
-            value="${
-                tgUser?.first_name || ''
-            }"
 
-            >
 
+<input
 
+id="profile-age"
 
+type="number"
 
-            <input
+placeholder="Возраст"
 
-            id="profile-age"
+>
 
-            type="number"
 
-            placeholder="Возраст"
 
-            >
 
 
+<h3>
+Пол
+</h3>
 
 
+<div class="choice-group">
 
-            <select id="profile-gender">
 
+<button 
+class="choice"
+data-gender="male"
+>
+👨 Мужчина
+</button>
 
-                <option value="">
 
-                    Пол
+<button 
+class="choice"
+data-gender="female"
+>
+👩 Женщина
+</button>
 
-                </option>
 
+</div>
 
-                <option value="male">
 
-                    Мужчина
 
-                </option>
 
 
-                <option value="female">
+<h3>
+Интересы
+</h3>
 
-                    Женщина
 
-                </option>
 
+<div class="choice-group">
 
-            </select>
 
+<button 
+class="choice interest"
+data-interest="coffee"
+>
+☕ Кофе
+</button>
 
 
+<button 
+class="choice interest"
+data-interest="walk"
+>
+🚶 Прогулки
+</button>
 
 
+<button 
+class="choice interest"
+data-interest="sport"
+>
+🏃 Спорт
+</button>
 
-            <input
 
-            id="profile-city"
+<button 
+class="choice interest"
+data-interest="games"
+>
+🎮 Игры
+</button>
 
-            placeholder="Город"
 
-            >
+</div>
 
 
 
 
 
-            <textarea
 
-            id="profile-about"
+<h3>
+Любимая активность
+</h3>
 
-            placeholder="О себе"
 
-            ></textarea>
 
+<div class="choice-group">
 
 
+<button
+class="choice activity"
+data-activity="coffee"
+>
+☕ Кофе
+</button>
 
 
 
-            <input
+<button
+class="choice activity"
+data-activity="walk"
+>
+🚶 Гулять
+</button>
 
-            id="profile-interest"
 
-            placeholder="Интересы"
 
-            >
+<button
+class="choice activity"
+data-activity="talk"
+>
+💬 Общаться
+</button>
 
 
+</div>
 
 
 
 
-            <button
 
-            id="profile-save"
 
-            >
+<input
 
-                Продолжить
+id="profile-city"
 
-            </button>
+placeholder="Город"
 
+>
 
 
 
-        </div>
 
 
-    </main>
+<textarea
 
+id="profile-about"
 
-    `;
+placeholder="О себе"
 
+></textarea>
+
+
+
+
+
+<button
+
+id="profile-save"
+
+class="save-button"
+
+>
+Продолжить
+</button>
+
+
+
+</div>
+
+
+</main>
+
+
+`;
 
 }
-
 
 
 
@@ -194,97 +271,190 @@ function initProfile(){
 
 
 
-    const button =
-
-    document.querySelector(
-        '#profile-save'
-    );
+document
+.querySelectorAll('[data-gender]')
+.forEach(button=>{
 
 
-
-    button?.addEventListener(
-
-        'click',
-
-        ()=>{
+button.onclick=()=>{
 
 
-
-            const profile = {
-
-
-                name:
-
-                document.querySelector(
-                    '#profile-name'
-                ).value,
+document
+.querySelectorAll('[data-gender]')
+.forEach(
+b=>b.classList.remove('active')
+);
 
 
 
-                age:
-
-                document.querySelector(
-                    '#profile-age'
-                ).value,
+button.classList.add(
+'active'
+);
 
 
 
-                gender:
-
-                document.querySelector(
-                    '#profile-gender'
-                ).value,
+selectedGender =
+button.dataset.gender;
 
 
-
-                city:
-
-                document.querySelector(
-                    '#profile-city'
-                ).value,
+};
 
 
-
-                about:
-
-                document.querySelector(
-                    '#profile-about'
-                ).value,
-
-
-
-                interests:
-
-                document.querySelector(
-                    '#profile-interest'
-                ).value
-
-
-            };
+});
 
 
 
 
 
-            saveProfile(
-                profile
-            );
+
+
+document
+.querySelectorAll('.interest')
+.forEach(button=>{
+
+
+button.onclick=()=>{
+
+
+button.classList.toggle(
+'active'
+);
+
+
+
+const value =
+button.dataset.interest;
+
+
+
+if(
+selectedInterests.includes(value)
+){
+
+selectedInterests =
+selectedInterests.filter(
+item=>item!==value
+);
+
+
+}else{
+
+
+selectedInterests.push(value);
+
+
+}
+
+
+};
+
+
+});
 
 
 
 
-            window.dispatchEvent(
-
-                new Event(
-                    'profile:created'
-                )
-
-            );
 
 
-        }
 
-    );
+
+document
+.querySelectorAll('.activity')
+.forEach(button=>{
+
+
+button.onclick=()=>{
+
+
+document
+.querySelectorAll('.activity')
+.forEach(
+b=>b.classList.remove('active')
+);
+
+
+
+button.classList.add(
+'active'
+);
+
+
+
+selectedActivity =
+button.dataset.activity;
+
+
+};
+
+
+});
+
+
+
+
+
+
+
+
+
+document
+.querySelector('#profile-save')
+?.addEventListener(
+'click',
+()=>{
+
+
+const data={
+
+
+name:
+document.querySelector('#profile-name').value,
+
+
+age:
+document.querySelector('#profile-age').value,
+
+
+gender:
+selectedGender,
+
+
+city:
+document.querySelector('#profile-city').value,
+
+
+about:
+document.querySelector('#profile-about').value,
+
+
+interests:
+selectedInterests,
+
+
+activity:
+selectedActivity
+
+
+};
+
+
+
+
+
+saveProfile(data);
+
+
+
+window.dispatchEvent(
+new Event(
+'profile:created'
+)
+);
+
+
+
+}
+);
 
 
 }

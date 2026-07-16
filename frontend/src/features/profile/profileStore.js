@@ -60,7 +60,26 @@ export function getProfile(){
 export function hasProfile(){
 
 
-    return !!getProfile();
+    return Boolean(
+        getProfile()
+    );
+
+
+}
+
+
+
+
+
+export function clearProfile(){
+
+
+    profile = null;
+
+
+    localStorage.removeItem(
+        'companko_profile'
+    );
 
 
 }

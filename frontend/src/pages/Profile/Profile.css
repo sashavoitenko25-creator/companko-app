@@ -1,25 +1,19 @@
 .profile-page{
 
 
-    width:100%;
+height:100%;
 
-    height:100%;
+display:flex;
 
+align-items:center;
 
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
+justify-content:center;
 
 
-    background:
+background:#080812;
 
-    radial-gradient(
-        circle at top,
-        #3a146e,
-        #080812
-    );
+
+overflow:auto;
 
 
 }
@@ -29,36 +23,18 @@
 .profile-card{
 
 
-    width:90%;
+width:90%;
 
-    max-width:400px;
-
-
-    padding:30px;
+max-width:420px;
 
 
-    border-radius:30px;
+padding:25px;
 
 
-    background:
-
-    rgba(20,20,40,.9);
+border-radius:30px;
 
 
-    backdrop-filter:blur(20px);
-
-
-}
-
-
-
-.profile-card h1{
-
-
-    text-align:center;
-
-
-    margin-bottom:25px;
+background:#111425;
 
 
 }
@@ -68,18 +44,30 @@
 .profile-avatar{
 
 
-    display:block;
+display:block;
 
 
-    width:90px;
+width:90px;
 
-    height:90px;
-
-
-    border-radius:50%;
+height:90px;
 
 
-    margin:0 auto 20px;
+border-radius:50%;
+
+
+margin:auto;
+
+
+}
+
+
+
+.profile-card h1{
+
+
+text-align:center;
+
+margin:20px 0;
 
 
 }
@@ -88,30 +76,28 @@
 
 .profile-card input,
 
-.profile-card textarea,
-
-.profile-card select{
+.profile-card textarea{
 
 
-    width:100%;
+width:100%;
 
 
-    margin-bottom:15px;
+padding:15px;
 
 
-    padding:15px;
+margin-bottom:15px;
 
 
-    border-radius:16px;
+border-radius:16px;
 
 
-    border:1px solid #333;
+background:#080812;
 
 
-    background:#111425;
+border:1px solid #333;
 
 
-    color:white;
+color:white;
 
 
 }
@@ -121,34 +107,91 @@
 .profile-card textarea{
 
 
-    height:90px;
-
-    resize:none;
+height:90px;
 
 
 }
 
 
 
-.profile-card button{
 
 
-    width:100%;
+.choice-group{
 
 
-    padding:16px;
+display:flex;
 
 
-    border-radius:18px;
+flex-wrap:wrap;
 
 
-    background:#7c3cff;
+gap:10px;
 
 
-    color:white;
+margin-bottom:20px;
 
 
-    font-size:17px;
+}
+
+
+
+
+
+.choice{
+
+
+padding:12px 16px;
+
+
+border-radius:18px;
+
+
+background:#20243a;
+
+
+color:white;
+
+
+}
+
+
+
+
+
+.choice.active{
+
+
+background:#7c3cff;
+
+
+}
+
+
+
+
+
+.save-button{
+
+
+width:100%;
+
+
+padding:16px;
+
+
+border-radius:20px;
+
+
+background:#7c3cff;
+
+
+color:white;
+
+
+font-size:17px;
+
+
+margin-top:10px;
 
 
 }
