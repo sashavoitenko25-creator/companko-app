@@ -93,7 +93,7 @@ function initMap(){
 
 
 
-        L.marker(
+        const marker = L.marker(
 
             [
                 user.lat,
@@ -106,6 +106,24 @@ function initMap(){
 
         )
         .addTo(map);
+
+
+
+        marker.on(
+            'click',
+            ()=>{
+
+                window.dispatchEvent(
+                    new CustomEvent(
+                        'user:selected',
+                        {
+                            detail:user
+                        }
+                    )
+                );
+
+            }
+        );
 
 
     });

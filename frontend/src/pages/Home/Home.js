@@ -7,8 +7,13 @@ import { FAB } from '../../components/FAB';
 import { BottomSheet } from '../../components/BottomSheet';
 
 import { LiveUsers } from '../../features/live/LiveUsers';
-
 import '../../features/live/live.css';
+
+import {
+    SelectedUser,
+    showUserCard
+} from '../../features/profile/SelectedUser';
+
 
 import {
     setActivity,
@@ -21,6 +26,7 @@ export function Home(){
 
 
     setTimeout(initHomeEvents);
+
 
 
     return `
@@ -46,11 +52,15 @@ export function Home(){
             ${BottomSheet()}
 
 
+            ${SelectedUser()}
+
+
         </main>
 
     `;
 
 }
+
 
 
 
@@ -62,21 +72,29 @@ function initHomeEvents(){
     document.querySelector('#live-button');
 
 
+
     const sheet =
     document.querySelector('.bottom-sheet');
 
 
 
     button?.addEventListener(
+
         'click',
+
         ()=>{
+
 
             sheet.classList.add(
                 'bottom-sheet--open'
             );
 
+
         }
+
     );
+
+
 
 
 
@@ -86,7 +104,9 @@ function initHomeEvents(){
 
 
         button.addEventListener(
+
             'click',
+
             ()=>{
 
 
@@ -94,9 +114,11 @@ function initHomeEvents(){
                 .querySelectorAll('.activity-option')
                 .forEach(item=>{
 
+
                     item.classList.remove(
                         'selected'
                     );
+
 
                 });
 
@@ -114,10 +136,14 @@ function initHomeEvents(){
 
 
             }
+
         );
 
 
     });
+
+
+
 
 
 
@@ -128,7 +154,9 @@ function initHomeEvents(){
 
 
         button.addEventListener(
+
             'click',
+
             ()=>{
 
 
@@ -136,9 +164,11 @@ function initHomeEvents(){
                 .querySelectorAll('.time-options button')
                 .forEach(item=>{
 
+
                     item.classList.remove(
                         'selected'
                     );
+
 
                 });
 
@@ -156,10 +186,32 @@ function initHomeEvents(){
 
 
             }
+
         );
 
 
     });
+
+
+
+
+
+
+    window.addEventListener(
+
+        'user:selected',
+
+        (event)=>{
+
+
+            showUserCard(
+                event.detail
+            );
+
+
+        }
+
+    );
 
 
 }
