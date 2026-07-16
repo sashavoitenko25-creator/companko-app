@@ -1,0 +1,29 @@
+.activity-bar{
+
+    position:absolute;
+
+    top:80px;
+    left:0;
+
+    width:100%;
+
+    display:flex;
+
+    gap:10px;
+
+    padding:0 20px;
+
+    overflow-x:auto;
+
+    z-index:50;
+
+    scrollbar-width:none;
+
+}
+
+
+.activity-bar::-webkit-scrollbar{
+
+    display:none;
+
+}
