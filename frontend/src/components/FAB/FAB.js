@@ -5,7 +5,7 @@ export function FAB(){
 
     return `
 
-        <button class="fab">
+        <button class="fab" id="live-button">
 
             <span class="fab__icon">
                 🔥
