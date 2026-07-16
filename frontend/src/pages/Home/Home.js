@@ -3,6 +3,7 @@ import './Home.css';
 import { Header } from '../../components/Header';
 import { Map } from '../../components/Map';
 import { ActivityBar } from '../../components/ActivityBar';
+import { FAB } from '../../components/FAB';
 
 
 export function Home(){
@@ -16,6 +17,8 @@ export function Home(){
             ${Header()}
 
             ${ActivityBar()}
+
+            ${FAB()}
 
         </main>
 
