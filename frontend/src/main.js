@@ -16,6 +16,10 @@ import {
 } from './router/router';
 
 
+import {
+    testSupabaseConnection
+} from './services/supabase/supabaseTest.js'
+
 
 
 
@@ -58,3 +62,8 @@ if(telegramUser){
 
 
 initRouter();
+
+
+
+
+testSupabaseConnection()
