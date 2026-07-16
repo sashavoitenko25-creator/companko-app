@@ -1,15 +1,24 @@
-let selectedUser = null;
+let currentUser = null;
 
 
-export function setSelectedUser(user){
 
-    selectedUser = user;
+
+export function setUser(user){
+
+
+    currentUser = user;
+
 
 }
 
 
-export function getSelectedUser(){
 
-    return selectedUser;
+
+
+export function getUser(){
+
+
+    return currentUser;
+
 
 }
