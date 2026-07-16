@@ -4,10 +4,14 @@ import L from 'leaflet';
 
 import 'leaflet/dist/leaflet.css';
 
-import { MapMarker } from '../MapMarker';
+import { UserMarker } from '../UserMarker';
+
+import { getLiveUsers } from '../../services/live/liveService';
+
 
 
 let map;
+
 
 
 export function Map(){
@@ -17,10 +21,14 @@ export function Map(){
 
 
     return `
+
         <div id="map" class="map"></div>
+
     `;
 
+
 }
+
 
 
 
@@ -55,27 +63,52 @@ function initMap(){
 
 
 
-    const icon = L.divIcon({
+    const users =
+    getLiveUsers();
 
-        className:'custom-marker',
 
-        html:MapMarker(),
 
-        iconSize:[60,60],
+    users.forEach(user=>{
 
-        iconAnchor:[30,30]
+
+        const icon =
+        L.divIcon({
+
+            className:'',
+
+            html:
+            UserMarker(user),
+
+            iconSize:[
+                58,
+                58
+            ],
+
+            iconAnchor:[
+                29,
+                29
+            ]
+
+        });
+
+
+
+        L.marker(
+
+            [
+                user.lat,
+                user.lng
+            ],
+
+            {
+                icon
+            }
+
+        )
+        .addTo(map);
+
 
     });
-
-
-
-    L.marker(
-        [50.4501,30.5234],
-        {
-            icon
-        }
-    )
-    .addTo(map);
 
 
 }

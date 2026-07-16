@@ -1,60 +1,68 @@
 export const mockUsers = [
 
+    {
+        id: 1,
 
-{
-    id:1,
+        name: "Анна",
 
-    name:"Анна",
+        age: 24,
 
-    age:24,
+        photo:
+        "https://i.pravatar.cc/150?img=47",
 
-    photo:
-    "https://i.pravatar.cc/150?img=47",
+        activity: "Кофе",
 
-    activity:"Кофе",
+        icon: "☕",
 
-    icon:"☕",
+        distance: 120,
 
-    distance:120
-},
+        lat: 50.4510,
 
-
-
-{
-    id:2,
-
-    name:"Максим",
-
-    age:29,
-
-    photo:
-    "https://i.pravatar.cc/150?img=12",
-
-    activity:"Гулять",
-
-    icon:"🚶",
-
-    distance:340
-},
+        lng: 30.5238
+    },
 
 
+    {
+        id: 2,
 
-{
-    id:3,
+        name: "Максим",
 
-    name:"Олег",
+        age: 29,
 
-    age:31,
+        photo:
+        "https://i.pravatar.cc/150?img=12",
 
-    photo:
-    "https://i.pravatar.cc/150?img=33",
+        activity: "Гулять",
 
-    activity:"Выпить",
+        icon: "🚶",
 
-    icon:"🍻",
+        distance: 340,
 
-    distance:560
-}
+        lat: 50.4540,
 
+        lng: 30.5200
+    },
+
+
+    {
+        id: 3,
+
+        name: "Олег",
+
+        age: 31,
+
+        photo:
+        "https://i.pravatar.cc/150?img=33",
+
+        activity: "Выпить",
+
+        icon: "🍻",
+
+        distance: 560,
+
+        lat: 50.4470,
+
+        lng: 30.5290
+    }
 
 ];
