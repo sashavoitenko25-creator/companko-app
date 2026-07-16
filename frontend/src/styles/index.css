@@ -1,0 +1,10 @@
+@import "./reset.css";
+@import "./variables.css";
+@import "./colors.css";
+@import "./spacing.css";
+@import "./typography.css";
+@import "./radius.css";
+@import "./shadows.css";
+@import "./animations.css";
+@import "./z-index.css";
+@import "./globals.css";

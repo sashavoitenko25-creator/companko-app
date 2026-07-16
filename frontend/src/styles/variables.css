@@ -1,0 +1,33 @@
+:root{
+
+--primary:#6C3BFF;
+--primary-hover:#7D52FF;
+--primary-active:#5B29F0;
+
+--background:#070812;
+--surface:#111425;
+--card:#171B2E;
+
+--text:#FFFFFF;
+--text-secondary:#B8B9C6;
+--text-muted:#80849D;
+
+--success:#21D07A;
+--warning:#FFC857;
+--danger:#FF5E7A;
+
+--border:rgba(255,255,255,.08);
+
+--radius-sm:8px;
+--radius-md:14px;
+--radius-lg:20px;
+--radius-full:999px;
+
+--shadow-sm:0 8px 24px rgba(0,0,0,.25);
+--shadow-lg:0 12px 48px rgba(108,59,255,.25);
+
+--blur:18px;
+
+--transition:180ms cubic-bezier(.2,.8,.2,1);
+
+}
