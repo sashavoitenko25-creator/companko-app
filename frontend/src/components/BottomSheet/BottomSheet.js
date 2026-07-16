@@ -7,6 +7,7 @@ export function BottomSheet(){
 
     <div class="bottom-sheet">
 
+
         <div class="bottom-sheet__handle"></div>
 
 
@@ -16,15 +17,17 @@ export function BottomSheet(){
 
 
         <p class="bottom-sheet__subtitle">
-            Что хочешь сделать?
+            Выберите активность
         </p>
-
 
 
         <div class="bottom-sheet__activities">
 
 
-            <button class="activity-option">
+            <button 
+                class="activity-option"
+                data-activity="drink"
+            >
                 🍻
                 <span>
                     Выпить
@@ -32,7 +35,11 @@ export function BottomSheet(){
             </button>
 
 
-            <button class="activity-option">
+
+            <button 
+                class="activity-option"
+                data-activity="coffee"
+            >
                 ☕
                 <span>
                     Кофе
@@ -40,7 +47,11 @@ export function BottomSheet(){
             </button>
 
 
-            <button class="activity-option">
+
+            <button 
+                class="activity-option"
+                data-activity="walk"
+            >
                 🚶
                 <span>
                     Погулять
@@ -48,7 +59,11 @@ export function BottomSheet(){
             </button>
 
 
-            <button class="activity-option">
+
+            <button 
+                class="activity-option"
+                data-activity="chat"
+            >
                 💬
                 <span>
                     Пообщаться
@@ -61,7 +76,7 @@ export function BottomSheet(){
 
 
         <p class="bottom-sheet__subtitle">
-            Время
+            Время LIVE
         </p>
 
 
@@ -69,18 +84,18 @@ export function BottomSheet(){
         <div class="time-options">
 
 
-            <button>
-                15 минут
+            <button data-time="15">
+                15 мин
             </button>
 
 
-            <button>
-                30 минут
+            <button data-time="30">
+                30 мин
             </button>
 
 
-            <button>
-                60 минут
+            <button data-time="60">
+                60 мин
             </button>
 
 

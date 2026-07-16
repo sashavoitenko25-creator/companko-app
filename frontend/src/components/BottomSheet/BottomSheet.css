@@ -195,3 +195,15 @@
     transform:translateY(0);
 
 }
+
+.activity-option.selected,
+.time-options button.selected{
+
+
+    background:var(--primary);
+
+    box-shadow:
+    0 0 20px rgba(108,59,255,.4);
+
+
+}
