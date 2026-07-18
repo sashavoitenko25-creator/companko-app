@@ -10,24 +10,11 @@ export function OnlineCounter(count){
             <div class="online-counter__dot"></div>
 
 
-            <div>
+            <span class="online-counter__text">
 
+                👥 ${count} онлайн
 
-                <div class="online-counter__title">
-
-                    Зараз онлайн
-
-                </div>
-
-
-                <div class="online-counter__count">
-
-                    ${count} людей
-
-                </div>
-
-
-            </div>
+            </span>
 
 
         </div>

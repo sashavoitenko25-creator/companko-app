@@ -1,11 +1,3 @@
-import L from 'leaflet';
-
-
-import {
-    getMap
-} from './mapService';
-
-
 import {
     getProfile
 } from '../../features/profile/profileStore';
@@ -16,34 +8,13 @@ import {
 } from '../../store/liveStore';
 
 
-import {
-    UserMarker
-} from '../../components/UserMarker';
-
-
-
-
-let myMarker = null;
-
-let currentPosition = null;
-
-
-
-
-
-
-
-
 
 export function initLocationEvents(){
 
 
-
     window.addEventListener(
 
-
         'location:updated',
-
 
         (event)=>{
 
@@ -51,26 +22,32 @@ export function initLocationEvents(){
             const position = event.detail;
 
 
-
-            currentPosition = [
-
-
-                position.lat,
-
-
-                position.lng
-
-
-            ];
+            if(!position)
+                return;
 
 
 
-            updateMyMarker();
+            // просто передаем координаты
+            // маркер создаёт myMarkerService
 
+            window.dispatchEvent(
+
+                new CustomEvent(
+
+                    'my-location:update',
+
+                    {
+
+                        detail:position
+
+                    }
+
+                )
+
+            );
 
 
         }
-
 
     );
 
@@ -79,19 +56,16 @@ export function initLocationEvents(){
 
 
     window.addEventListener(
-
 
         'live:started',
 
-
         ()=>{
 
 
-            refreshMyMarker();
+            refreshMyProfile();
 
 
         }
-
 
     );
 
@@ -101,18 +75,15 @@ export function initLocationEvents(){
 
     window.addEventListener(
 
-
         'live:stopped',
-
 
         ()=>{
 
 
-            refreshMyMarker();
+            refreshMyProfile();
 
 
         }
-
 
     );
 
@@ -124,334 +95,67 @@ export function initLocationEvents(){
 
 
 
+function refreshMyProfile(){
+
+
+    const profile =
+        getProfile();
+
+
+    const live =
+        getLiveState();
 
 
 
-
-function updateMyMarker(){
-
-
-
-    const map = getMap();
-
-
-
-    if(!map || !currentPosition)
-
+    if(!profile)
         return;
 
 
 
 
+    window.dispatchEvent(
 
-    if(myMarker){
+        new CustomEvent(
 
+            'my-live:update',
 
-        myMarker.setLatLng(
+            {
 
-            currentPosition
+                detail:{
 
-        );
 
+                    ...profile,
 
-        myMarker.setIcon(
 
-            createIcon()
+                    activity:
 
-        );
+                    live.activity || 'LIVE',
 
 
-        attachClick();
 
+                    duration:
 
-        return;
+                    live.duration || 0,
 
 
-    }
 
+                    isLive:
 
+                    !!live.session_id,
 
 
 
+                    own:true
 
 
-
-    myMarker = L.marker(
-
-
-        currentPosition,
-
-
-        {
-
-            icon:createIcon(),
-
-            zIndexOffset:2000
-
-        }
-
-
-    )
-
-    .addTo(map);
-
-
-
-
-
-    attachClick();
-
-
-
-}
-
-
-
-
-
-
-
-
-
-function attachClick(){
-
-
-
-    if(!myMarker)
-
-        return;
-
-
-
-
-    myMarker.off('click');
-
-
-
-
-
-    myMarker.on(
-
-
-        'click',
-
-
-        ()=>{
-
-
-
-            const live = getLiveState();
-
-
-
-            const profile = getProfile();
-
-
-
-
-
-            // если это свой LIVE
-
-            if(live.session_id){
-
-
-
-                console.log(
-
-                    'MY LIVE CLICK'
-
-                );
-
-
-
-                window.dispatchEvent(
-
-
-
-                    new CustomEvent(
-
-
-                        'my-live:selected',
-
-
-                        {
-
-
-                            detail:{
-
-                                profile,
-
-                                live
-
-
-                            }
-
-
-                        }
-
-
-                    )
-
-
-                );
-
-
-
-                return;
+                }
 
 
             }
 
-
-
-        }
-
+        )
 
     );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-function refreshMyMarker(){
-
-
-
-    if(!myMarker)
-
-        return;
-
-
-
-
-    myMarker.setIcon(
-
-        createIcon()
-
-    );
-
-
-
-}
-
-
-
-
-
-
-
-
-
-function createIcon(){
-
-
-
-    const live = getLiveState();
-
-
-    const profile = getProfile();
-
-
-
-
-
-    if(live.session_id){
-
-
-
-        return L.divIcon({
-
-
-
-            className:'',
-
-
-
-            html:
-
-
-            UserMarker({
-
-
-
-                photo:
-
-
-                profile?.photo_url ||
-
-
-                profile?.photo ||
-
-
-                'https://i.pravatar.cc/150'
-
-
-
-            }),
-
-
-
-            iconSize:[64,64],
-
-
-            iconAnchor:[32,32]
-
-
-
-        });
-
-
-
-    }
-
-
-
-
-
-
-
-    return L.divIcon({
-
-
-
-        className:'',
-
-
-
-        html:`
-
-
-
-        <div class="my-location">
-
-
-            <div class="my-location__pulse"></div>
-
-
-        </div>
-
-
-
-        `,
-
-
-        iconSize:[30,30],
-
-
-        iconAnchor:[15,15]
-
-
-
-    });
-
 
 
 }
