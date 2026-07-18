@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
+
 import App from './App.jsx';
+
+
 
 import {
     getTelegramUser
@@ -19,17 +22,18 @@ import {
 
 
 
-async function initTelegramUser(){
+async function initTelegram(){
 
 
-    const tgUser = getTelegramUser();
+    const tgUser =
+        getTelegramUser();
 
 
 
     if(!tgUser){
 
         console.log(
-            'Telegram user not detected'
+            'NO TELEGRAM USER'
         );
 
         return;
@@ -51,9 +55,7 @@ async function initTelegramUser(){
         if(profile){
 
 
-            setProfile(
-                profile
-            );
+            setProfile(profile);
 
 
             console.log(
@@ -66,15 +68,11 @@ async function initTelegramUser(){
 
 
     }
-
     catch(error){
 
-
         console.error(
-            'Telegram profile error',
             error
         );
-
 
     }
 
@@ -83,24 +81,17 @@ async function initTelegramUser(){
 
 
 
-
-
-initTelegramUser();
-
+initTelegram();
 
 
 
+ReactDOM.createRoot(
 
-ReactDOM
-.createRoot(
-    document.getElementById('root')
+    document.createElement('div')
+
 )
 .render(
 
-    <React.StrictMode>
-
-        <App />
-
-    </React.StrictMode>
+    <App />
 
 );
