@@ -1,34 +1,49 @@
+import React from 'react';
+
+import ReactDOM from 'react-dom/client';
+
+
+import App from './App';
+
+
 import {
     getTelegramUser
-}
-from './services/telegram/telegramService';
+} from './services/telegram/telegramService';
 
 
 import {
     getOrCreateTelegramUser
-}
-from './services/supabase/telegramUserService';
+} from './services/supabase/telegramUserService';
 
 
 import {
     setProfile
-}
-from './features/profile/profileStore';
+} from './features/profile/profileStore';
 
 
 
-const tgUser =
-    getTelegramUser();
+
+async function initTelegramUser(){
+
+
+    const tgUser =
+        getTelegramUser();
 
 
 
-if(tgUser){
+    if(!tgUser)
+        return;
 
 
-    getOrCreateTelegramUser(
-        tgUser
-    )
-    .then(profile=>{
+
+    try{
+
+
+        const profile =
+            await getOrCreateTelegramUser(
+                tgUser
+            );
+
 
 
         if(profile){
@@ -48,7 +63,19 @@ if(tgUser){
         }
 
 
-    });
+    }
+
+
+    catch(error){
+
+
+        console.error(
+            'Telegram user error',
+            error
+        );
+
+
+    }
 
 
 }
@@ -56,9 +83,23 @@ if(tgUser){
 
 
 
+initTelegramUser();
+
+
+
+
 ReactDOM.createRoot(
+
     document.getElementById('root')
+
 )
+
 .render(
-    <App/>
+
+    <React.StrictMode>
+
+        <App/>
+
+    </React.StrictMode>
+
 );
