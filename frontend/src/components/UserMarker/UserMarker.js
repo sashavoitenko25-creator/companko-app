@@ -6,22 +6,44 @@ export function UserMarker(user){
 
     return `
 
-        <div class="user-map-marker">
+
+<div class="user-marker">
 
 
-            <img 
-                src="${user.photo}"
-            />
+    <div class="user-marker__circle">
 
 
-            <div class="user-map-marker__live">
-                ${user.icon}
-            </div>
+        <img
+
+        src="${
+            user.photo ||
+            user.photo_url ||
+            'https://i.pravatar.cc/150'
+        }"
+
+        alt="avatar"
 
 
-        </div>
+        >
 
-    `;
 
+    </div>
+
+
+
+    <div class="user-marker__badge">
+
+
+        🔥 LIVE
+
+
+    </div>
+
+
+
+</div>
+
+
+`;
 
 }

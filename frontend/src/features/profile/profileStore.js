@@ -1,19 +1,17 @@
-let profile = null;
+let currentProfile = null;
 
 
 
-export function saveProfile(data){
+
+export function setProfile(profile){
 
 
-    profile = data;
+    currentProfile = profile;
 
 
     localStorage.setItem(
-
-        'companko_profile',
-
-        JSON.stringify(data)
-
+        'profile',
+        JSON.stringify(profile)
     );
 
 
@@ -23,29 +21,115 @@ export function saveProfile(data){
 
 
 
+
+export function saveProfile(profile){
+
+
+    setProfile(profile);
+
+
+}
+
+
+
+
+
+
 export function getProfile(){
 
 
-    if(profile)
-        return profile;
+    if(currentProfile){
+
+        return currentProfile;
+
+    }
+
 
 
 
     const saved =
-
-    localStorage.getItem(
-        'companko_profile'
-    );
-
+        localStorage.getItem(
+            'profile'
+        );
 
 
-    if(saved){
 
-        profile =
-        JSON.parse(saved);
+    if(!saved){
+
+        return null;
 
     }
 
+
+
+
+    try{
+
+
+        currentProfile =
+            JSON.parse(saved);
+
+
+        return currentProfile;
+
+
+    }
+    catch(error){
+
+
+        console.error(
+            'Profile restore error',
+            error
+        );
+
+
+        clearProfile();
+
+
+        return null;
+
+
+    }
+
+
+}
+
+
+
+
+
+
+export function clearProfile(){
+
+
+    currentProfile = null;
+
+
+    localStorage.removeItem(
+        'profile'
+    );
+
+
+}
+
+
+
+
+
+
+export async function loadProfile(profile){
+
+
+    if(!profile){
+
+        clearProfile();
+
+        return null;
+
+    }
+
+
+    setProfile(profile);
 
 
     return profile;
@@ -57,29 +141,16 @@ export function getProfile(){
 
 
 
-export function hasProfile(){
+
+export async function initProfile(){
 
 
-    return Boolean(
-        getProfile()
-    );
-
-
-}
+    const profile =
+        getProfile();
 
 
 
-
-
-export function clearProfile(){
-
-
-    profile = null;
-
-
-    localStorage.removeItem(
-        'companko_profile'
-    );
+    return profile;
 
 
 }

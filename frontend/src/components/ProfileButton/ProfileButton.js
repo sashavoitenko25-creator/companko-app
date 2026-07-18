@@ -7,37 +7,99 @@ import {
 
 
 
+
+
+
 export function ProfileButton(){
 
 
-    const profile =
-    getProfile();
+
+    const profile = getProfile();
+
+
+
+
+
+    setTimeout(()=>{
+
+
+
+        const button = document.querySelector(
+
+            '#profile-button'
+
+        );
+
+
+
+        if(button){
+
+
+
+            button.onclick = ()=>{
+
+
+
+                window.dispatchEvent(
+
+                    new Event(
+
+                        'profile:open'
+
+                    )
+
+                );
+
+
+            };
+
+
+        }
+
+
+
+    });
+
+
+
+
 
 
 
     return `
 
 
-    <button
-    id="profile-button"
-    class="profile-button"
-    >
+
+        <button
+
+            id="profile-button"
+
+            class="profile-button">
 
 
-        <img
 
-        src="${
-            profile?.photo ||
-            'https://i.pravatar.cc/100'
-        }"
+            <img
 
-        >
+                src="${
+
+                    profile?.photo ||
+
+                    'https://i.pravatar.cc/150'
+
+                }"
+
+                alt="profile"
+
+            >
 
 
-    </button>
+
+        </button>
+
 
 
     `;
+
 
 
 }

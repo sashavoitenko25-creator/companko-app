@@ -1,22 +1,28 @@
 import './FAB.css';
 
 
+
 export function FAB(){
+
 
     return `
 
-        <button class="fab" id="live-button">
 
-            <span class="fab__icon">
-                🔥
-            </span>
+    <button 
+    id="live-button"
+    class="fab">
 
-            <span class="fab__text">
-                LIVE
-            </span>
 
-        </button>
+        <span class="fab__dot"></span>
+
+
+        LIVE
+
+
+    </button>
+
 
     `;
+
 
 }

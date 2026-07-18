@@ -1,32 +1,65 @@
-.user-map-marker{
-
-
-    width:58px;
-    height:58px;
+.user-marker{
 
 
     position:relative;
 
+    width:72px;
 
-    border-radius:50%;
-
-
-    padding:3px;
+    height:82px;
 
 
-    background:var(--primary);
+    display:flex;
 
+    justify-content:center;
 
-    box-shadow:
-
-    0 0 25px rgba(108,59,255,.8);
+    align-items:flex-start;
 
 
 }
 
 
 
-.user-map-marker img{
+
+
+.user-marker__circle{
+
+
+    width:64px;
+
+    height:64px;
+
+
+    border-radius:50%;
+
+
+    overflow:hidden;
+
+
+    background:#111827;
+
+
+    border:4px solid #3b82f6;
+
+
+    box-shadow:
+
+    0 0 18px rgba(59,130,246,.8);
+
+
+    animation:
+
+    livePulse 2s infinite;
+
+
+}
+
+
+
+
+
+
+
+.user-marker__circle img{
 
 
     width:100%;
@@ -34,50 +67,118 @@
     height:100%;
 
 
-    border-radius:50%;
-
-
     object-fit:cover;
-
-
-    border:3px solid white;
 
 
 }
 
 
 
-.user-map-marker__live{
+
+
+
+
+
+
+.user-marker__badge{
 
 
     position:absolute;
 
 
-    right:-8px;
-
-    bottom:-5px;
+    bottom:0;
 
 
-    width:26px;
-
-    height:26px;
+    left:50%;
 
 
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
+    transform:translateX(-50%);
 
 
-    border-radius:50%;
+
+    background:#2563eb;
 
 
-    background:
-
-    var(--surface);
+    color:white;
 
 
-    font-size:14px;
+    font-size:11px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.3px;
+
+
+
+    padding:4px 10px;
+
+
+    border-radius:20px;
+
+
+    border:2px solid white;
+
+
+
+    white-space:nowrap;
+
+
+
+    box-shadow:
+
+    0 4px 12px rgba(0,0,0,.35);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@keyframes livePulse{
+
+
+    0%{
+
+
+        box-shadow:
+
+        0 0 10px rgba(59,130,246,.5);
+
+
+    }
+
+
+
+    50%{
+
+
+        box-shadow:
+
+        0 0 28px rgba(59,130,246,1);
+
+
+    }
+
+
+
+    100%{
+
+
+        box-shadow:
+
+        0 0 10px rgba(59,130,246,.5);
+
+
+    }
+
+
 
 }

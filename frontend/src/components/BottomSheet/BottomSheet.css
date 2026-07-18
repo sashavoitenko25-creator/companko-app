@@ -1,143 +1,165 @@
 .bottom-sheet{
 
-    position:absolute;
+
+    position:fixed;
+
 
     left:0;
+
+
+    right:0;
+
+
     bottom:0;
 
-    width:100%;
 
-
-    padding:24px;
-
-
-    background:
-
-    rgba(17,20,37,.95);
-
-
-    backdrop-filter:blur(20px);
-
-
-    border-radius:
-
-    28px 28px 0 0;
-
-
-    z-index:200;
-
-
-    transform:translateY(100%);
-
-
-    transition:
-
-    transform .35s cubic-bezier(.2,.8,.2,1);
-
-}
+    height:100%;
 
 
 
-.bottom-sheet__handle{
+    background:rgba(0,0,0,.45);
 
 
-    width:44px;
-    height:5px;
+
+    display:none;
 
 
-    margin:0 auto 20px;
-
-
-    border-radius:20px;
-
-
-    background:
-
-    rgba(255,255,255,.25);
+    z-index:6000;
 
 
 }
 
 
 
-.bottom-sheet__title{
 
-    font-size:24px;
 
-    margin-bottom:8px;
+.bottom-sheet--open{
+
+
+    display:block;
+
 
 }
 
 
 
-.bottom-sheet__subtitle{
 
-    color:var(--text-secondary);
 
-    margin:18px 0 12px;
+
+
+.bottom-sheet__box{
+
+
+    position:absolute;
+
+
+    bottom:0;
+
+
+    left:0;
+
+
+    right:0;
+
+
+
+    background:#111827;
+
+
+
+    border-radius:30px 30px 0 0;
+
+
+
+    padding:25px;
+
+
+
+    color:white;
+
+
+
+    animation:
+
+    sheet-up .3s ease;
+
 
 }
 
 
 
-.bottom-sheet__activities{
 
-    display:grid;
 
-    grid-template-columns:1fr 1fr;
+.activity-options{
 
-    gap:12px;
+
+    display:flex;
+
+
+    gap:10px;
+
+
+    flex-wrap:wrap;
+
 
 }
+
+
 
 
 
 .activity-option{
 
 
-    padding:18px;
+    padding:12px 18px;
 
 
-    border-radius:18px;
+    border:none;
 
 
-    background:
+    border-radius:20px;
 
-    rgba(255,255,255,.06);
+
+
+    background:#1f2937;
 
 
     color:white;
 
 
-    display:flex;
 
-    flex-direction:column;
-
-    gap:8px;
+}
 
 
-    font-size:22px;
+
+
+
+.activity-option.selected{
+
+
+    background:#8b5cf6;
 
 
 }
 
 
 
-.activity-option span{
 
-    font-size:14px;
-
-}
 
 
 
 .time-options{
 
+
     display:flex;
+
 
     gap:10px;
 
+
 }
+
+
 
 
 
@@ -150,60 +172,100 @@
     padding:12px;
 
 
-    border-radius:14px;
+
+    border:none;
 
 
-    background:
+    border-radius:15px;
 
-    rgba(255,255,255,.08);
+
+
+    background:#1f2937;
 
 
     color:white;
 
 
 }
+
+
+
+
+
+
+
+.time-options button.selected{
+
+
+    background:#8b5cf6;
+
+
+}
+
+
+
+
 
 
 
 .bottom-sheet__start{
 
 
+    margin-top:25px;
+
+
     width:100%;
 
 
-    margin-top:24px;
+    height:55px;
 
 
-    padding:16px;
+
+    border:none;
 
 
-    border-radius:18px;
+    border-radius:30px;
 
 
-    background:var(--primary);
+
+    background:#8b5cf6;
 
 
     color:white;
 
 
+
+    font-size:18px;
+
+
     font-weight:700;
 
-}
-
-.bottom-sheet--open{
-
-    transform:translateY(0);
 
 }
 
-.activity-option.selected,
-.time-options button.selected{
 
 
-    background:var(--primary);
 
-    box-shadow:
-    0 0 20px rgba(108,59,255,.4);
+
+@keyframes sheet-up{
+
+
+    from{
+
+
+        transform:translateY(100%);
+
+
+    }
+
+
+    to{
+
+
+        transform:translateY(0);
+
+
+    }
 
 
 }

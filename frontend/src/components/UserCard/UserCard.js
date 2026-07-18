@@ -1,73 +1,207 @@
 import './UserCard.css';
 
 
+
 export function UserCard(user){
+
+
+
+    const minutes = user.duration || 60;
+
 
 
     return `
 
 
-    <div class="user-card">
+
+<div class="user-card">
+
+
+
+
+
+    <div class="user-card__top">
+
+
+
 
 
         <div class="user-card__avatar">
 
 
-            <img 
-            src="${user.photo}"
-            />
+
+            <img
+
+            src="${
+                user.photo ||
+                user.photo_url ||
+                'https://i.pravatar.cc/150'
+            }"
+
+
+            >
+
 
 
         </div>
 
 
 
-        <div class="user-card__content">
+
+
+        <div class="user-card__main">
+
 
 
             <h3>
-                ${user.name}, ${user.age}
+
+
+                ${
+                    user.name ||
+                    'Гость'
+                }
+
+                ${
+                    user.age
+                    ?
+                    ', ' + user.age
+                    :
+                    ''
+                }
+
+
             </h3>
 
 
 
-            <p>
-                ${user.icon}
-                ${user.activity}
-            </p>
+
+
+            <div class="user-card__activity">
 
 
 
-            <span>
-                📍 ${user.distance} м
-            </span>
+                ${
+                    user.icon ||
+                    '🔥'
+                }
+
+
+                ${
+                    user.activity ||
+                    'LIVE'
+                }
 
 
 
-            <span class="user-card__online">
+            </div>
 
-                🟢 LIVE
 
-            </span>
 
 
         </div>
 
 
 
-        <button 
-        class="user-card__route"
-        data-user-id="${user.id}"
-        >
-
-            Маршрут
-
-        </button>
 
 
     </div>
 
 
-    `;
+
+
+
+
+
+
+
+    <div class="user-card__info">
+
+
+
+
+
+        <div>
+
+
+            📍
+
+            ${
+                user.distance ||
+                0
+            }
+
+            м
+
+
+
+        </div>
+
+
+
+
+
+        <div>
+
+
+            🔥 LIVE
+
+
+        </div>
+
+
+
+
+
+
+        <div>
+
+
+            ⏱ Активен ещё
+
+
+            ${minutes}
+
+
+            мин
+
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+
+
+
+    <button
+
+    class="user-card__route"
+
+    data-user-id="${user.id || user.user_id}"
+
+    >
+
+
+        🧭 Построить маршрут
+
+
+    </button>
+
+
+
+
+
+
+</div>
+
+
+
+`;
 
 }

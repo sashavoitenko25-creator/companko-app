@@ -1,11 +1,14 @@
 import {
-    hasProfile
+    initProfile,
+    getProfile
 } from '../features/profile/profileStore';
+
 
 
 import {
     Home
 } from '../pages/Home/Home';
+
 
 
 import {
@@ -16,37 +19,57 @@ import {
 
 
 
-function renderApp(){
+
+async function renderApp(){
+
 
 
     const app =
-    document.querySelector('#app');
+        document.querySelector(
+            '#app'
+        );
 
 
 
     if(!app)
+
         return;
 
 
 
-    if(hasProfile()){
+
+
+    const profile =
+        await initProfile();
+
+
+
+
+
+
+    if(profile){
 
 
         app.innerHTML =
-        Home();
+            Home();
 
 
-    }else{
+
+    }
+    else{
 
 
         app.innerHTML =
-        Profile();
+            Profile();
+
 
 
     }
 
 
+
 }
+
 
 
 
@@ -64,17 +87,29 @@ export function initRouter(){
 
 
 
+
+
     window.addEventListener(
 
+
         'profile:created',
+
 
         ()=>{
 
 
-            renderApp();
+            setTimeout(()=>{
+
+
+                renderApp();
+
+
+            },50);
+
 
 
         }
+
 
     );
 
@@ -83,28 +118,41 @@ export function initRouter(){
 
 
 
+
+
+
     window.addEventListener(
 
+
         'profile:open',
+
 
         ()=>{
 
 
+
             const app =
-            document.querySelector('#app');
+                document.querySelector(
+                    '#app'
+                );
 
 
 
             if(!app)
+
                 return;
 
 
 
+
+
             app.innerHTML =
-            Profile();
+                Profile();
+
 
 
         }
+
 
     );
 

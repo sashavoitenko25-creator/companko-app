@@ -9,7 +9,7 @@ import.meta.env.VITE_SUPABASE_URL;
 
 
 
-const supabaseAnonKey =
+const supabaseKey =
 import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 
@@ -17,5 +17,14 @@ import.meta.env.VITE_SUPABASE_ANON_KEY;
 export const supabase =
 createClient(
     supabaseUrl,
-    supabaseAnonKey
+    supabaseKey,
+    {
+
+        auth: {
+
+            persistSession:false
+
+        }
+
+    }
 );

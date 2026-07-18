@@ -1,0 +1,115 @@
+.live-modal{
+
+    position:absolute;
+
+    inset:0;
+
+    z-index:5000;
+
+    background:rgba(0,0,0,.45);
+
+    display:none;
+
+    align-items:flex-end;
+
+}
+
+
+.live-modal.open{
+
+    display:flex;
+
+}
+
+
+
+.live-modal__box{
+
+
+    width:100%;
+
+    background:#15182b;
+
+    border-radius:28px 28px 0 0;
+
+    padding:25px;
+
+    color:white;
+
+
+}
+
+
+
+.live-modal__box h2{
+
+    margin:0 0 10px;
+
+}
+
+
+
+.live-options,
+.time-options{
+
+    display:flex;
+
+    gap:10px;
+
+    flex-wrap:wrap;
+
+    margin-bottom:20px;
+
+}
+
+
+
+.live-option,
+.time-options button{
+
+
+    padding:12px 18px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#242943;
+
+    color:white;
+
+}
+
+
+
+.live-option.active,
+.time-options button.active{
+
+
+    background:#8b5cf6;
+
+}
+
+
+
+.start-live{
+
+
+    width:100%;
+
+    height:55px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:#8b5cf6;
+
+    color:white;
+
+    font-size:18px;
+
+    font-weight:700;
+
+
+}

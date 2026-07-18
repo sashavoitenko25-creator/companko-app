@@ -12,14 +12,24 @@ import {
 } from '../../services/telegram/telegramService';
 
 
+import {
+    createUser
+} from '../../services/supabase/userService';
+
+
+import {
+    createProfile,
+    getProfileByUserId,
+    updateProfile
+} from '../../services/supabase/profileService';
+
+
 
 let selectedGender = null;
 
 let selectedInterests = [];
 
 let selectedActivity = null;
-
-
 
 
 
@@ -40,7 +50,6 @@ export function Profile(){
 
 
 
-
     selectedGender =
     oldProfile?.gender || null;
 
@@ -50,38 +59,28 @@ export function Profile(){
 
 
     selectedActivity =
-    oldProfile?.activity || null;
-
-
+    oldProfile?.favorite_activity || null;
 
 
 
     return `
 
-
 <main class="profile-page">
-
 
 <div class="profile-card">
 
 
-
 <img
-
 class="profile-avatar"
-
 src="${
 tgUser?.photo_url ||
 oldProfile?.photo_url ||
 'https://i.pravatar.cc/150'
 }"
-
 >
 
 
-
 <h1>
-
 ${
 oldProfile
 ?
@@ -89,60 +88,41 @@ oldProfile
 :
 'Создай профиль'
 }
-
 </h1>
 
 
 
-
-
 <input
-
 id="profile-name"
-
 placeholder="Имя"
-
 value="${
 oldProfile?.name ||
 tgUser?.first_name ||
 ''
 }"
-
 >
-
-
 
 
 
 <input
-
 id="profile-age"
-
 type="number"
-
 placeholder="Возраст"
-
 value="${
 oldProfile?.age ||
 ''
 }"
-
 >
 
 
 
-
-
-<h3>
-Пол
-</h3>
+<h3>Пол</h3>
 
 
 <div class="choice-group">
 
 
 <button
-
 class="choice ${
 selectedGender === 'male'
 ?
@@ -150,18 +130,13 @@ selectedGender === 'male'
 :
 ''
 }"
-
 data-gender="male"
-
 >
 👨 Мужчина
 </button>
 
 
-
-
 <button
-
 class="choice ${
 selectedGender === 'female'
 ?
@@ -169,9 +144,7 @@ selectedGender === 'female'
 :
 ''
 }"
-
 data-gender="female"
-
 >
 👩 Женщина
 </button>
@@ -181,21 +154,13 @@ data-gender="female"
 
 
 
-
-
-
-
-<h3>
-Интересы
-</h3>
-
+<h3>Интересы</h3>
 
 
 <div class="choice-group">
 
 
 <button
-
 class="choice interest ${
 selectedInterests.includes('coffee')
 ?
@@ -203,18 +168,13 @@ selectedInterests.includes('coffee')
 :
 ''
 }"
-
 data-interest="coffee"
-
 >
 ☕ Кофе
 </button>
 
 
-
-
 <button
-
 class="choice interest ${
 selectedInterests.includes('walk')
 ?
@@ -222,19 +182,13 @@ selectedInterests.includes('walk')
 :
 ''
 }"
-
 data-interest="walk"
-
 >
 🚶 Прогулки
 </button>
 
 
-
-
-
 <button
-
 class="choice interest ${
 selectedInterests.includes('sport')
 ?
@@ -242,19 +196,13 @@ selectedInterests.includes('sport')
 :
 ''
 }"
-
 data-interest="sport"
-
 >
 🏃 Спорт
 </button>
 
 
-
-
-
 <button
-
 class="choice interest ${
 selectedInterests.includes('games')
 ?
@@ -262,9 +210,7 @@ selectedInterests.includes('games')
 :
 ''
 }"
-
 data-interest="games"
-
 >
 🎮 Игры
 </button>
@@ -274,23 +220,13 @@ data-interest="games"
 
 
 
-
-
-
-
-<h3>
-Любимая активность
-</h3>
-
-
+<h3>Любимая активность</h3>
 
 
 <div class="choice-group">
 
 
-
 <button
-
 class="choice activity ${
 selectedActivity === 'coffee'
 ?
@@ -298,19 +234,13 @@ selectedActivity === 'coffee'
 :
 ''
 }"
-
 data-activity="coffee"
-
 >
 ☕ Кофе
 </button>
 
 
-
-
-
 <button
-
 class="choice activity ${
 selectedActivity === 'walk'
 ?
@@ -318,19 +248,13 @@ selectedActivity === 'walk'
 :
 ''
 }"
-
 data-activity="walk"
-
 >
 🚶 Гулять
 </button>
 
 
-
-
-
 <button
-
 class="choice activity ${
 selectedActivity === 'talk'
 ?
@@ -338,9 +262,7 @@ selectedActivity === 'talk'
 :
 ''
 }"
-
 data-activity="talk"
-
 >
 💬 Общаться
 </button>
@@ -350,34 +272,20 @@ data-activity="talk"
 
 
 
-
-
-
-
 <input
-
 id="profile-city"
-
 placeholder="Город"
-
 value="${
 oldProfile?.city ||
 ''
 }"
-
 >
 
 
 
-
-
-
 <textarea
-
 id="profile-about"
-
 placeholder="О себе"
-
 >${
 
 oldProfile?.about ||
@@ -387,18 +295,10 @@ oldProfile?.about ||
 
 
 
-
-
-
-
 <button
-
 id="profile-save"
-
 class="save-button"
-
 >
-
 ${
 oldProfile
 ?
@@ -406,16 +306,12 @@ oldProfile
 :
 'Продолжить'
 }
-
 </button>
-
 
 
 </div>
 
-
 </main>
-
 
 `;
 
@@ -423,16 +319,7 @@ oldProfile
 
 
 
-
-
-
-
-
-
 function initProfile(){
-
-
-
 
 
 document
@@ -445,22 +332,18 @@ button.onclick=()=>{
 
 document
 .querySelectorAll('[data-gender]')
-.forEach(item=>{
-
+.forEach(item=>
 
 item.classList.remove(
 'active'
+)
+
 );
-
-
-});
-
 
 
 button.classList.add(
 'active'
 );
-
 
 
 selectedGender =
@@ -471,10 +354,6 @@ button.dataset.gender;
 
 
 });
-
-
-
-
 
 
 
@@ -493,15 +372,11 @@ button.classList.toggle(
 );
 
 
-
 const value =
 button.dataset.interest;
 
 
-
-if(
-selectedInterests.includes(value)
-){
+if(selectedInterests.includes(value)){
 
 
 selectedInterests =
@@ -510,7 +385,8 @@ item=>item !== value
 );
 
 
-}else{
+}
+else{
 
 
 selectedInterests.push(value);
@@ -528,10 +404,6 @@ selectedInterests.push(value);
 
 
 
-
-
-
-
 document
 .querySelectorAll('.activity')
 .forEach(button=>{
@@ -542,22 +414,18 @@ button.onclick=()=>{
 
 document
 .querySelectorAll('.activity')
-.forEach(item=>{
-
+.forEach(item=>
 
 item.classList.remove(
 'active'
+)
+
 );
-
-
-});
-
 
 
 button.classList.add(
 'active'
 );
-
 
 
 selectedActivity =
@@ -573,18 +441,13 @@ button.dataset.activity;
 
 
 
-
-
-
-
 document
 .querySelector('#profile-save')
 ?.addEventListener(
 
 'click',
 
-()=>{
-
+async ()=>{
 
 
 const telegramUser =
@@ -592,32 +455,67 @@ getTelegramUser();
 
 
 
-
-
-const data = {
+const userData = {
 
 
 telegram_id:
 
-telegramUser?.id || null,
+telegramUser?.id ||
+
+Date.now(),
 
 
 first_name:
 
-telegramUser?.first_name || null,
+telegramUser?.first_name ||
+
+document
+.querySelector('#profile-name')
+.value,
 
 
 photo_url:
 
-telegramUser?.photo_url || null,
+telegramUser?.photo_url ||
+
+null,
 
 
 language_code:
 
-telegramUser?.language_code || 'ru',
+telegramUser?.language_code ||
+
+'ru'
+
+
+};
 
 
 
+try {
+
+
+
+const user =
+await createUser(
+userData
+);
+
+
+
+const existingProfile =
+await getProfileByUserId(
+user.id
+);
+
+
+
+const profileData = {
+
+
+user_id:
+
+user.id,
 
 
 name:
@@ -627,19 +525,18 @@ document
 .value,
 
 
-
 age:
 
+Number(
 document
 .querySelector('#profile-age')
-.value,
-
+.value
+),
 
 
 gender:
 
 selectedGender,
-
 
 
 city:
@@ -649,7 +546,6 @@ document
 .value,
 
 
-
 about:
 
 document
@@ -657,17 +553,14 @@ document
 .value,
 
 
-
 interests:
 
 selectedInterests,
 
 
-
-activity:
+favorite_activity:
 
 selectedActivity
-
 
 
 };
@@ -676,19 +569,78 @@ selectedActivity
 
 
 
-saveProfile(data);
+let profile;
+
+
+
+if(existingProfile){
+
+
+profile =
+await updateProfile(
+existingProfile.id,
+profileData
+);
+
+
+}
+else{
+
+
+profile =
+await createProfile(
+profileData
+);
+
+
+}
+
+
+
+
+
+saveProfile({
+
+    ...userData,
+
+    ...profile,
+
+    id: user.id,
+
+    user_id: user.id
+
+});
 
 
 
 
 
 window.dispatchEvent(
-
 new Event(
 'profile:created'
 )
-
 );
+
+
+
+
+}
+
+catch(error){
+
+
+console.error(
+'Profile creation failed:',
+error
+);
+
+
+alert(
+'Ошибка создания профиля'
+);
+
+
+}
 
 
 
