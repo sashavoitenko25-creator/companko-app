@@ -1,59 +1,54 @@
-import './styles/globals.css';
+import {
+    getTelegramUser
+}
+from './services/telegram/telegramService';
 
 
 import {
-    initTelegram
-} from './services/telegram/telegramService';
+    getOrCreateTelegramUser
+}
+from './services/supabase/telegramUserService';
 
 
 import {
-    setUser
-} from './store/userStore';
-
-
-import {
-    initRouter
-} from './router/router';
-
-
-import {
-    testSupabaseConnection
-} from './services/supabase/supabaseTest.js'
+    setProfile
+}
+from './features/profile/profileStore';
 
 
 
-
-const telegramUser =
-initTelegram();
-
+const tgUser =
+    getTelegramUser();
 
 
-if(telegramUser){
+
+if(tgUser){
 
 
-    setUser(
-
-        {
-
-            telegram_id:
-            telegramUser.id,
+    getOrCreateTelegramUser(
+        tgUser
+    )
+    .then(profile=>{
 
 
-            first_name:
-            telegramUser.first_name,
+        if(profile){
 
 
-            photo_url:
-            telegramUser.photo_url,
+            setProfile(
+                profile
+            );
 
 
-            language_code:
-            telegramUser.language_code
+            console.log(
+                'TELEGRAM PROFILE',
+                profile
+            );
 
 
         }
 
-    );
+
+    });
 
 
 }
@@ -61,9 +56,9 @@ if(telegramUser){
 
 
 
-initRouter();
-
-
-
-
-testSupabaseConnection()
+ReactDOM.createRoot(
+    document.getElementById('root')
+)
+.render(
+    <App/>
+);

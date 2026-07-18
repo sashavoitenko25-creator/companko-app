@@ -1,17 +1,12 @@
-let telegramUser = null;
+export function getTelegramUser(){
+
+    const tg = window.Telegram?.WebApp;
 
 
-
-export function initTelegram(){
-
-
-    if(
-        !window.Telegram ||
-        !window.Telegram.WebApp
-    ){
+    if(!tg){
 
         console.warn(
-            "Telegram WebApp not detected"
+            'Telegram WebApp not found'
         );
 
         return null;
@@ -20,52 +15,44 @@ export function initTelegram(){
 
 
 
-    const tg =
-    window.Telegram.WebApp;
-
-
-
     tg.ready();
 
 
-    tg.expand();
+
+    const user =
+        tg.initDataUnsafe?.user;
 
 
 
-    telegramUser =
-    tg.initDataUnsafe?.user || null;
+    if(!user){
+
+        console.warn(
+            'Telegram user empty'
+        );
+
+        return null;
+
+    }
 
 
 
-    return telegramUser;
+    return {
 
-}
+        telegram_id:user.id,
 
+        first_name:
+            user.first_name || '',
 
+        last_name:
+            user.last_name || '',
 
+        username:
+            user.username || '',
 
+        photo_url:
+            user.photo_url || ''
 
-export function getTelegramUser(){
+    };
 
-    return telegramUser;
-
-}
-
-
-
-
-
-export function getTelegramLanguage(){
-
-
-    if(!telegramUser)
-        return "ru";
-
-
-    return (
-        telegramUser.language_code
-        ||
-        "ru"
-    );
 
 }
