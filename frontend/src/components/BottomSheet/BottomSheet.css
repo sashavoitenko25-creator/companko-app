@@ -1,0 +1,271 @@
+.bottom-sheet{
+
+
+    position:fixed;
+
+
+    left:0;
+
+
+    right:0;
+
+
+    bottom:0;
+
+
+    height:100%;
+
+
+
+    background:rgba(0,0,0,.45);
+
+
+
+    display:none;
+
+
+    z-index:6000;
+
+
+}
+
+
+
+
+
+.bottom-sheet--open{
+
+
+    display:block;
+
+
+}
+
+
+
+
+
+
+
+.bottom-sheet__box{
+
+
+    position:absolute;
+
+
+    bottom:0;
+
+
+    left:0;
+
+
+    right:0;
+
+
+
+    background:#111827;
+
+
+
+    border-radius:30px 30px 0 0;
+
+
+
+    padding:25px;
+
+
+
+    color:white;
+
+
+
+    animation:
+
+    sheet-up .3s ease;
+
+
+}
+
+
+
+
+
+.activity-options{
+
+
+    display:flex;
+
+
+    gap:10px;
+
+
+    flex-wrap:wrap;
+
+
+}
+
+
+
+
+
+.activity-option{
+
+
+    padding:12px 18px;
+
+
+    border:none;
+
+
+    border-radius:20px;
+
+
+
+    background:#1f2937;
+
+
+    color:white;
+
+
+
+}
+
+
+
+
+
+.activity-option.selected{
+
+
+    background:#8b5cf6;
+
+
+}
+
+
+
+
+
+
+
+.time-options{
+
+
+    display:flex;
+
+
+    gap:10px;
+
+
+}
+
+
+
+
+
+.time-options button{
+
+
+    flex:1;
+
+
+    padding:12px;
+
+
+
+    border:none;
+
+
+    border-radius:15px;
+
+
+
+    background:#1f2937;
+
+
+    color:white;
+
+
+}
+
+
+
+
+
+
+
+.time-options button.selected{
+
+
+    background:#8b5cf6;
+
+
+}
+
+
+
+
+
+
+
+.bottom-sheet__start{
+
+
+    margin-top:25px;
+
+
+    width:100%;
+
+
+    height:55px;
+
+
+
+    border:none;
+
+
+    border-radius:30px;
+
+
+
+    background:#8b5cf6;
+
+
+    color:white;
+
+
+
+    font-size:18px;
+
+
+    font-weight:700;
+
+
+}
+
+
+
+
+
+@keyframes sheet-up{
+
+
+    from{
+
+
+        transform:translateY(100%);
+
+
+    }
+
+
+    to{
+
+
+        transform:translateY(0);
+
+
+    }
+
+
+}

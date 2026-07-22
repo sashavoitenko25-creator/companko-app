@@ -1,0 +1,345 @@
+.bottom-bar {
+
+    position: fixed;
+
+    bottom: 20px;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: calc(100% - 30px);
+
+    max-width: 430px;
+
+    height: 70px;
+
+    background:#10111a;
+
+    border-radius:35px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:0 12px;
+
+    z-index:9000;
+
+    box-shadow:
+    0 10px 40px rgba(0,0,0,.45);
+
+}
+
+
+
+/* LEFT BUTTON */
+
+.bottom-button,
+#settings-button {
+
+
+    width:55px;
+
+    height:55px;
+
+
+    border-radius:50%;
+
+
+    border:none;
+
+
+    background:#1c1e2b;
+
+
+    color:white;
+
+
+    font-size:25px;
+
+
+    display:flex;
+
+
+    align-items:center;
+
+
+    justify-content:center;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+/* LIVE BUTTON */
+
+.live-button {
+
+
+    height:55px;
+
+
+    flex:1;
+
+
+    margin:0 15px;
+
+
+    border:none;
+
+
+    border-radius:18px;
+
+
+    background:
+    linear-gradient(
+        135deg,
+        #9b4dff,
+        #7434ff
+    );
+
+
+    color:white;
+
+
+    font-size:22px;
+
+
+    font-weight:700;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+.live-button.stop-live {
+
+
+    background:
+    linear-gradient(
+        135deg,
+        #ff4545,
+        #d91f1f
+    );
+
+
+}
+
+
+
+.live-dot {
+
+    display:none;
+
+}
+
+
+
+/* SETTINGS POPUP */
+
+
+.settings-window {
+
+
+    position:fixed;
+
+
+    right:20px;
+
+
+    bottom:105px;
+
+
+    width:270px;
+
+
+    padding:25px;
+
+
+    background:#11121b;
+
+
+    color:white;
+
+
+    border-radius:30px;
+
+
+    box-shadow:
+    0 20px 60px rgba(0,0,0,.6);
+
+
+    opacity:0;
+
+
+    transform:
+    translateY(30px);
+
+
+    pointer-events:none;
+
+
+    transition:.3s;
+
+
+    z-index:9500;
+
+
+}
+
+
+
+.settings-window.open {
+
+
+    opacity:1;
+
+
+    transform:
+    translateY(0);
+
+
+    pointer-events:auto;
+
+
+}
+
+
+
+.settings-window h2 {
+
+
+    text-align:center;
+
+    margin-bottom:25px;
+
+}
+
+
+
+/* SWITCH */
+
+
+.theme-switch {
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+
+
+.theme-icon {
+
+
+    font-size:28px;
+
+}
+
+
+
+.switch {
+
+
+    position:relative;
+
+    width:80px;
+
+    height:40px;
+
+}
+
+
+
+.switch input {
+
+
+    display:none;
+
+}
+
+
+
+.slider {
+
+
+    position:absolute;
+
+    inset:0;
+
+    background:#333;
+
+
+    border-radius:40px;
+
+
+    cursor:pointer;
+
+
+}
+
+
+
+.slider:before {
+
+
+    content:"";
+
+
+    position:absolute;
+
+
+    width:34px;
+
+    height:34px;
+
+
+    left:3px;
+
+    top:3px;
+
+
+    background:white;
+
+
+    border-radius:50%;
+
+
+    transition:.3s;
+
+
+}
+
+
+
+.switch input:checked + .slider {
+
+
+    background:#8b45ff;
+
+}
+
+
+
+.switch input:checked + .slider:before {
+
+
+    transform:
+    translateX(40px);
+
+}

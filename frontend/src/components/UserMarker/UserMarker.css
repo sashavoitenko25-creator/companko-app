@@ -1,0 +1,184 @@
+.user-marker{
+
+
+    position:relative;
+
+    width:72px;
+
+    height:82px;
+
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:flex-start;
+
+
+}
+
+
+
+
+
+.user-marker__circle{
+
+
+    width:64px;
+
+    height:64px;
+
+
+    border-radius:50%;
+
+
+    overflow:hidden;
+
+
+    background:#111827;
+
+
+    border:4px solid #3b82f6;
+
+
+    box-shadow:
+
+    0 0 18px rgba(59,130,246,.8);
+
+
+    animation:
+
+    livePulse 2s infinite;
+
+
+}
+
+
+
+
+
+
+
+.user-marker__circle img{
+
+
+    width:100%;
+
+    height:100%;
+
+
+    object-fit:cover;
+
+
+}
+
+
+
+
+
+
+
+
+
+.user-marker__badge{
+
+
+    position:absolute;
+
+
+    bottom:0;
+
+
+    left:50%;
+
+
+    transform:translateX(-50%);
+
+
+
+    background:#2563eb;
+
+
+    color:white;
+
+
+    font-size:11px;
+
+
+    font-weight:700;
+
+
+    letter-spacing:.3px;
+
+
+
+    padding:4px 10px;
+
+
+    border-radius:20px;
+
+
+    border:2px solid white;
+
+
+
+    white-space:nowrap;
+
+
+
+    box-shadow:
+
+    0 4px 12px rgba(0,0,0,.35);
+
+
+
+}
+
+
+
+
+
+
+
+
+
+@keyframes livePulse{
+
+
+    0%{
+
+
+        box-shadow:
+
+        0 0 10px rgba(59,130,246,.5);
+
+
+    }
+
+
+
+    50%{
+
+
+        box-shadow:
+
+        0 0 28px rgba(59,130,246,1);
+
+
+    }
+
+
+
+    100%{
+
+
+        box-shadow:
+
+        0 0 10px rgba(59,130,246,.5);
+
+
+    }
+
+
+
+}

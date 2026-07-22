@@ -1,0 +1,53 @@
+.chip{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    padding:10px 16px;
+
+    border-radius:var(--radius-full);
+
+    background:
+    rgba(255,255,255,.08);
+
+    backdrop-filter:blur(16px);
+
+    color:white;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    font-size:14px;
+
+    cursor:pointer;
+
+    transition:var(--transition);
+
+}
+
+
+.chip:hover{
+
+    background:
+    rgba(255,255,255,.15);
+
+}
+
+
+
+.chip--active{
+
+    background:var(--primary);
+
+    box-shadow:
+    0 0 20px rgba(108,59,255,.5);
+
+}
+
+
+
+.chip__icon{
+
+    font-size:18px;
+
+}

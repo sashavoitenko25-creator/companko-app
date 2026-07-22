@@ -1,0 +1,66 @@
+*{
+    box-sizing:border-box;
+}
+
+
+html,
+body,
+#app{
+
+    width:100%;
+    height:100%;
+
+    margin:0;
+    padding:0;
+
+    overflow:hidden;
+
+    font-family:
+    Inter,
+    Arial,
+    sans-serif;
+
+    background:#080812;
+
+    color:white;
+
+}
+
+
+
+button{
+
+    border:none;
+
+    cursor:pointer;
+
+    font-family:inherit;
+
+}
+
+
+
+:root{
+
+
+    --primary:
+    #7c3cff;
+
+
+    --surface:
+    #111425;
+
+
+    --text:
+    #ffffff;
+
+
+    --text-secondary:
+    #a8a8b8;
+
+
+    --success:
+    #00e676;
+
+
+}

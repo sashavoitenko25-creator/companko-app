@@ -1,0 +1,82 @@
+.route-panel{
+
+    position:absolute;
+
+    left:20px;
+    right:20px;
+    bottom:20px;
+
+    height:170px;
+
+    padding:18px;
+
+    border-radius:24px;
+
+    background:rgba(17,20,37,.96);
+
+    backdrop-filter:blur(20px);
+
+    color:white;
+
+    z-index:9999;
+
+    transform:translateY(150%);
+
+    transition:.35s ease;
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+.route-panel--open{
+
+    transform:translateY(0);
+
+}
+
+.route-panel__title{
+
+    font-size:22px;
+
+    font-weight:700;
+
+    margin-bottom:12px;
+
+}
+
+#route-info{
+
+    flex:1;
+
+}
+
+#route-info div{
+
+    margin-bottom:6px;
+
+    font-size:16px;
+
+}
+
+#route-cancel{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:16px;
+
+    background:#ff4d67;
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+}

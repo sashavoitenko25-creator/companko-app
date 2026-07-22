@@ -1,0 +1,39 @@
+.profile-button{
+
+
+    width:48px;
+
+    height:48px;
+
+
+    border-radius:50%;
+
+
+    overflow:hidden;
+
+
+    padding:0;
+
+
+    background:none;
+
+
+    border:2px solid white;
+
+
+}
+
+
+
+.profile-button img{
+
+
+    width:100%;
+
+    height:100%;
+
+
+    object-fit:cover;
+
+
+}

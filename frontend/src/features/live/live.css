@@ -1,0 +1,23 @@
+.live-users{
+
+
+    position:absolute;
+
+
+    left:20px;
+
+    bottom:130px;
+
+
+    display:flex;
+
+    flex-direction:column;
+
+
+    gap:12px;
+
+
+    z-index:120;
+
+
+}
