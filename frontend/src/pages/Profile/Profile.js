@@ -555,13 +555,12 @@ user_id:user.id
 
 
 window.dispatchEvent(
-
-new Event(
-
-'profile:created'
-
+new CustomEvent(
+'profile:created',
+{
+detail:profile
+}
 )
-
 );
 
 

@@ -130,34 +130,16 @@ export function initRouter(){
 
 
     window.addEventListener(
+    'profile:created',
+    ()=>{
+        console.log('PROFILE UPDATED - reload home');
 
-        'profile:created',
+        const app=document.querySelector('#app');
 
-        ()=>{
-
-
-            console.log(
-                'PROFILE CREATED EVENT'
-            );
-
-
-
-            setTimeout(()=>{
-
-
-                renderApp();
-
-
-
-            },100);
-
-
-
+        if(app){
+            app.innerHTML = Home();
         }
-
-
-    );
-
+    });
 
 
 
