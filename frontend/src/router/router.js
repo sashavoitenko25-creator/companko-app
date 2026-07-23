@@ -149,34 +149,12 @@ export function initRouter(){
 
 
     window.addEventListener(
+    'profile:created',
+    ()=>{
+        console.log('PROFILE UPDATED');
 
-        'profile:open',
-
-        ()=>{
-
-
-
-            const app =
-            document.querySelector(
-                '#app'
-            );
-
-
-
-            if(!app)
-                return;
-
-
-
-            app.innerHTML =
-                Profile();
-
-
-
-        }
-
-
-    );
+        location.reload();
+    });
 
 
 
