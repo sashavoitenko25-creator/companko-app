@@ -190,27 +190,7 @@ async function initHomeEvents(){
     initLiveButton();
     initSettings();
     updateLiveButton();
-
-    // ИСПРАВЛЕНИЕ: после сохранения профиля
-    // не рендерим страницу заново, а просто обновляем Home
-    window.addEventListener(
-        'profile:created',
-        async () => {
-            console.log('PROFILE CREATED - refresh home');
-
-            // сбрасываем только инициализацию Home
-            initialized = false;
-
-            // ждём пока DOM обновится
-            setTimeout(async () => {
-                await initHomeEvents();
-            }, 50);
-        },
-        { once: true }
-    );
 }
-
-
 
 
 
