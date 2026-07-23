@@ -40,6 +40,11 @@ import {
 } from '../../features/profile/SelectedUser';
 
 
+import {
+    ProfileButton
+} from '../../components/ProfileButton/ProfileButton';
+
+
 
 import '../../features/live/live.css';
 
@@ -135,6 +140,10 @@ ${Header()}
 
 
 
+${ProfileButton()}
+
+
+
 <div id="my-live-container"></div>
 
 
@@ -196,6 +205,7 @@ async function initHomeEvents(){
     initLiveButton();
     initSettings();
     updateLiveButton();
+	initProfileButton();
 }
 
 
@@ -1039,5 +1049,27 @@ function initMyLiveSelection(){
 
     );
 
+
+}
+
+function initProfileButton(){
+
+    const button = document.querySelector(
+        '#profile-button'
+    );
+
+    if(!button)
+        return;
+
+
+    button.onclick = ()=>{
+
+        window.dispatchEvent(
+            new Event(
+                'profile:open'
+            )
+        );
+
+    };
 
 }
