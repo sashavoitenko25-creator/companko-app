@@ -31,6 +31,8 @@ let profileInitialized = false;
 
 
 
+
+
 export function Profile(){
 
 
@@ -51,7 +53,6 @@ export function Profile(){
 
 
 
-
     selectedGender =
     oldProfile?.gender || null;
 
@@ -59,35 +60,37 @@ export function Profile(){
 
 
 
-    const photo =
+    return `
 
-    tgUser?.photo_url ||
-
-    oldProfile?.photo_url ||
-
-    '';
-
-
-
-
-return `
 
 
 <main class="profile-page">
+
 
 
 <div class="profile-card">
 
 
 
+
+
+<div class="profile-header">
+
+
 <img
 
 class="profile-avatar"
 
-src="${photo}"
+src="
+${
+tgUser?.photo_url ||
+oldProfile?.photo_url ||
+'https://i.pravatar.cc/150'
+}
+"
+
 
 >
-
 
 
 <h1>
@@ -95,33 +98,68 @@ src="${photo}"
 ${
 oldProfile
 ?
-'Редактирование профиля'
+'Редактирование'
 :
-'Создай профиль'
+'Создание профиля'
 }
 
 </h1>
 
 
+<p>
 
+Как вас будут видеть другие
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+<div class="profile-field">
+
+
+<label>
+Имя
+</label>
 
 
 <input
 
 id="profile-name"
 
-placeholder="Имя"
+placeholder="Ваше имя"
 
-value="${
+value="
+${
 oldProfile?.name ||
 tgUser?.first_name ||
 ''
-}"
+}
+"
 
 >
 
 
+</div>
 
+
+
+
+
+
+
+<div class="profile-field">
+
+
+<label>
+Возраст
+</label>
 
 
 <input
@@ -132,32 +170,39 @@ type="number"
 
 placeholder="Возраст"
 
-value="${
+value="
+${
 oldProfile?.age ||
 ''
-}"
+}
+"
 
 >
 
 
+</div>
 
 
 
 
-<h3>
+
+
+
+
+<label class="profile-label">
+
 Пол
-</h3>
+
+</label>
 
 
 
-
-<div class="choice-group">
-
+<div class="gender-box">
 
 
 <button
 
-class="choice"
+class="gender-choice"
 
 data-gender="male"
 
@@ -172,7 +217,7 @@ data-gender="male"
 
 <button
 
-class="choice"
+class="gender-choice"
 
 data-gender="female"
 
@@ -183,8 +228,9 @@ data-gender="female"
 </button>
 
 
-
 </div>
+
+
 
 
 
@@ -203,13 +249,13 @@ class="save-button"
 ${
 oldProfile
 ?
-'Сохранить изменения'
+'Сохранить'
 :
 'Создать профиль'
 }
 
-
 </button>
+
 
 
 
@@ -221,9 +267,14 @@ oldProfile
 </main>
 
 
+
 `;
 
 }
+
+
+
+
 
 
 
@@ -237,25 +288,34 @@ if(profileInitialized)
 return;
 
 
+
 profileInitialized=true;
 
 
 
 
 
+
+
 document
 
-.querySelectorAll('[data-gender]')
+.querySelectorAll(
+'[data-gender]'
+)
 
 .forEach(button=>{
+
 
 
 button.onclick=()=>{
 
 
+
 document
 
-.querySelectorAll('[data-gender]')
+.querySelectorAll(
+'[data-gender]'
+)
 
 .forEach(item=>{
 
@@ -276,7 +336,6 @@ button.classList.add(
 
 
 selectedGender =
-
 button.dataset.gender;
 
 
@@ -286,6 +345,8 @@ button.dataset.gender;
 
 
 });
+
+
 
 
 
@@ -304,15 +365,17 @@ document
 async()=>{
 
 
+try{
 
-const telegramUser =
 
+
+const tgUser =
 getTelegramUser();
 
 
 
 
-if(!telegramUser?.telegram_id){
+if(!tgUser){
 
 alert(
 'Telegram user not found'
@@ -327,61 +390,33 @@ return;
 
 
 
-
-const userData = {
+const user = await createUser({
 
 
 telegram_id:
 
 Number(
-telegramUser.telegram_id
+tgUser.telegram_id
 ),
 
 
 first_name:
 
-telegramUser.first_name,
+tgUser.first_name,
 
 
 photo_url:
 
-telegramUser.photo_url || null,
+tgUser.photo_url || null,
 
 
 language_code:
 
-telegramUser.language_code || 'ru'
+tgUser.language_code || 'ru'
 
 
-};
+});
 
-
-
-
-
-
-
-try{
-
-
-
-const user =
-
-await createUser(
-userData
-);
-
-
-
-
-
-
-
-const existingProfile =
-
-await getProfileByUserId(
-user.id
-);
 
 
 
@@ -392,16 +427,16 @@ user.id
 const profileData = {
 
 
-user_id:
-
-user.id,
+user_id:user.id,
 
 
 name:
 
 document
 
-.querySelector('#profile-name')
+.querySelector(
+'#profile-name'
+)
 
 .value,
 
@@ -413,7 +448,9 @@ Number(
 
 document
 
-.querySelector('#profile-age')
+.querySelector(
+'#profile-age'
+)
 
 .value
 
@@ -421,15 +458,19 @@ document
 
 
 
-gender:
+gender:selectedGender,
 
-selectedGender,
+
+telegram_id:
+
+Number(
+tgUser.telegram_id
+),
 
 
 photo_url:
 
-telegramUser.photo_url || null
-
+tgUser.photo_url || null
 
 
 };
@@ -439,20 +480,27 @@ telegramUser.photo_url || null
 
 
 
+
+
+const old = await getProfileByUserId(
+
+user.id
+
+);
+
+
+
+
 let profile;
 
 
 
+if(old){
 
 
-if(existingProfile){
+profile = await updateProfile(
 
-
-profile =
-
-await updateProfile(
-
-existingProfile.id,
+old.id,
 
 profileData
 
@@ -464,9 +512,7 @@ profileData
 else{
 
 
-profile =
-
-await createProfile(
+profile = await createProfile(
 
 profileData
 
@@ -482,16 +528,27 @@ profileData
 
 saveProfile({
 
-...userData,
+
+...user,
+
 
 ...profile,
 
+
+photo_url:
+
+tgUser.photo_url,
+
+
 id:user.id,
+
 
 user_id:user.id
 
 
 });
+
+
 
 
 
@@ -523,18 +580,17 @@ error
 );
 
 
-
 alert(
-'Ошибка профиля'
+'Ошибка сохранения'
 );
 
 
-}
-
-
 
 }
 
+
+
+}
 
 );
 
