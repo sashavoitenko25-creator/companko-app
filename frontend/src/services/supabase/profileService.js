@@ -9,53 +9,49 @@ import {
 export async function getProfileByUserId(userId){
 
 
+    const {
+        data,
+        error
+    } = await supabase
 
-const {
+        .from('profiles')
 
-data,
+        .select('*')
 
-error
+        .eq(
+            'user_id',
+            userId
+        )
 
-}=await supabase
-
-.from('profiles')
-
-.select('*')
-
-.eq(
-
-'user_id',
-
-userId
-
-)
-
-.maybeSingle();
+        .maybeSingle();
 
 
 
 
 
-if(error){
+    if(error){
 
 
-console.error(
-'GET PROFILE ERROR',
-error
-);
+        console.error(
+            'Get profile error:',
+            error
+        );
 
 
-return null;
+        return null;
 
 
-}
+    }
 
 
 
-return data;
+
+
+    return data;
 
 
 }
+
 
 
 
@@ -68,86 +64,74 @@ export async function createProfile(profile){
 
 
 
-const {
+    const {
+        data,
+        error
+    } = await supabase
 
-data,
+        .from('profiles')
 
-error
-
-}=await supabase
-
-.from('profiles')
-
-.insert({
+        .insert({
 
 
-
-user_id:
-
-profile.user_id,
+            user_id:
+            profile.user_id,
 
 
-
-telegram_id:
-
-profile.telegram_id,
+            name:
+            profile.name,
 
 
-
-photo_url:
-
-profile.photo_url,
+            age:
+            profile.age,
 
 
+            gender:
+            profile.gender,
 
-name:
 
-profile.name,
+            photo_url:
+            profile.photo_url || null
 
 
 
-age:
+        })
 
-profile.age,
+        .select()
 
-
-
-gender:
-
-profile.gender
-
-
-
-})
-
-.select()
-
-.single();
+        .single();
 
 
 
 
 
-if(error){
+
+    if(error){
 
 
-console.error(
-
-'CREATE PROFILE ERROR',
-
-error
-
-);
+        console.error(
+            'Create profile error:',
+            error
+        );
 
 
-throw error;
+        throw error;
 
 
-}
+    }
 
 
 
-return data;
+
+
+    console.log(
+        'Profile created:',
+        data
+    );
+
+
+
+    return data;
 
 
 }
@@ -161,91 +145,89 @@ return data;
 
 
 export async function updateProfile(
-
-profileId,
-
-profile
-
+    profileId,
+    profile
 ){
 
 
 
-const {
+    const {
+        data,
+        error
+    } = await supabase
 
-data,
+        .from('profiles')
 
-error
-
-}=await supabase
-
-.from('profiles')
-
-.update({
+        .update({
 
 
 
-photo_url:
-
-profile.photo_url,
-
-
-
-name:
-
-profile.name,
+            name:
+            profile.name,
 
 
 
-age:
-
-profile.age,
-
-
-
-gender:
-
-profile.gender
+            age:
+            profile.age,
 
 
 
-})
+            gender:
+            profile.gender,
 
-.eq(
 
-'id',
 
-profileId
+            photo_url:
+            profile.photo_url || null
 
-)
 
-.select()
 
-.single();
+        })
+
+
+        .eq(
+
+            'id',
+
+            profileId
+
+        )
+
+
+        .select()
+
+
+        .single();
 
 
 
 
 
-if(error){
 
 
-console.error(
-
-'UPDATE PROFILE ERROR',
-
-error
-
-);
+    if(error){
 
 
-throw error;
+        console.error(
+
+            'Update profile error:',
+
+            error
+
+        );
 
 
-}
+        throw error;
+
+
+    }
 
 
 
-return data;
+
+
+
+    return data;
 
 
 }

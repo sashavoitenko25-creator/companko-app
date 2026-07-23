@@ -7,6 +7,7 @@ import {
 
 
 
+
 export async function getLiveUsers(){
 
 
@@ -14,30 +15,21 @@ export async function getLiveUsers(){
 
 
 
+
     const {
-
         data:sessions,
-
         error
-
     } = await supabase
 
         .from('live_sessions')
 
         .select(`
-
             id,
-
             user_id,
-
             activity,
-
             duration,
-
             status,
-
             expires_at
-
         `)
 
         .eq(
@@ -66,11 +58,15 @@ export async function getLiveUsers(){
 
 
 
+
     if(!sessions || sessions.length === 0){
 
         return [];
 
     }
+
+
+
 
 
 
@@ -85,9 +81,13 @@ export async function getLiveUsers(){
 
 
 
-    const {
 
-        data:profiles
+
+
+
+    const {
+        data:profiles,
+        error:profileError
 
     } = await supabase
 
@@ -96,16 +96,11 @@ export async function getLiveUsers(){
         .select(`
 
             user_id,
-
             name,
-
             age,
-
             gender,
-
-            city,
-
-            about
+            telegram_id,
+            photo_url
 
         `)
 
@@ -118,9 +113,26 @@ export async function getLiveUsers(){
 
 
 
-    const {
+    if(profileError){
 
-        data:locations
+        console.error(
+            'Profiles load error:',
+            profileError
+        );
+
+    }
+
+
+
+
+
+
+
+
+
+    const {
+        data:locations,
+        error:locationError
 
     } = await supabase
 
@@ -129,11 +141,8 @@ export async function getLiveUsers(){
         .select(`
 
             user_id,
-
             latitude,
-
             longitude,
-
             created_at
 
         `)
@@ -148,9 +157,7 @@ export async function getLiveUsers(){
             'created_at',
 
             {
-
                 ascending:false
-
             }
 
         );
@@ -159,22 +166,63 @@ export async function getLiveUsers(){
 
 
 
-    return sessions.map(session=>{
+    if(locationError){
+
+        console.error(
+            'Locations load error:',
+            locationError
+        );
+
+    }
+
+
+
+
+
+
+
+
+
+    return sessions
+
+    .map(session=>{
+
+
+
 
 
         const profile = profiles?.find(
 
-            p => p.user_id === session.user_id
+            p =>
+
+            String(p.user_id)
+
+            ===
+
+            String(session.user_id)
 
         );
+
+
+
+
 
 
 
         const location = locations?.find(
 
-            l => l.user_id === session.user_id
+            l =>
+
+            String(l.user_id)
+
+            ===
+
+            String(session.user_id)
 
         );
+
+
+
 
 
 
@@ -182,52 +230,133 @@ export async function getLiveUsers(){
         return {
 
 
+
+
             id:
+
             session.id,
 
 
+
+
             user_id:
+
             session.user_id,
 
 
+
+
             name:
-            profile?.name || 'Гость',
+
+            profile?.name ||
+
+            'Гость',
+
+
+
 
 
             age:
-            profile?.age || '',
+
+            profile?.age ||
+
+            '',
+
+
+
+
+
+
+            telegram_id:
+
+            profile?.telegram_id || null,
+
+
+
+
+
+
+            // теперь реальное фото Telegram
+
+            photo_url:
+
+            profile?.photo_url || null,
+
+
+
+
+
+            // оставляем photo,
+            // потому что карточка и карта его используют
+
+            photo:
+
+            profile?.photo_url || null,
+
+
+
+
+
 
 
             activity:
+
             session.activity,
 
 
+
+
+
+
+
             duration:
+
             session.duration,
 
 
+
+
+
+
+
             expires_at:
+
             session.expires_at,
 
 
-            photo:
-            `https://i.pravatar.cc/150?u=${session.user_id}`,
+
+
+
 
 
             lat:
+
             location?.latitude ?? null,
 
 
+
+
+
+
             lng:
+
             location?.longitude ?? null
+
+
+
 
 
         };
 
 
+
     })
 
-    .filter(user=>
+
+
+
+
+    .filter(user =>
 
         user.lat !== null &&
 
@@ -236,7 +365,11 @@ export async function getLiveUsers(){
     );
 
 
+
 }
+
+
+
 
 
 
@@ -263,28 +396,32 @@ export async function createLiveSession(data){
         .select(`
 
             id,
-
             status,
-
             expires_at,
-
             activity,
-
             duration
 
         `)
 
         .eq(
+
             'user_id',
+
             data.user_id
+
         )
 
         .eq(
+
             'status',
+
             'active'
+
         )
 
         .maybeSingle();
+
+
 
 
 
@@ -304,11 +441,14 @@ export async function createLiveSession(data){
 
 
 
+
     if(existing){
 
         return existing;
 
     }
+
+
 
 
 
@@ -341,6 +481,9 @@ export async function createLiveSession(data){
 
 
 
+
+
+
     const {
 
         data:session,
@@ -353,24 +496,28 @@ export async function createLiveSession(data){
 
         .insert({
 
-
             user_id:
+
             data.user_id,
 
 
             activity:
+
             data.activity,
 
 
             duration:
+
             data.duration || 60,
 
 
             status:
+
             'active',
 
 
             expires_at:
+
             expiresAt.toISOString()
 
 
@@ -379,6 +526,8 @@ export async function createLiveSession(data){
         .select()
 
         .single();
+
+
 
 
 
@@ -398,7 +547,11 @@ export async function createLiveSession(data){
 
 
 
+
+
+
     return session;
+
 
 
 }
@@ -426,6 +579,7 @@ export async function stopLiveSession(sessionId){
         .update({
 
             status:
+
             'finished'
 
         })
@@ -437,6 +591,8 @@ export async function stopLiveSession(sessionId){
             sessionId
 
         );
+
+
 
 
 
@@ -467,7 +623,14 @@ async function clearExpiredLiveSessions(){
 
 
 
-    const now = new Date().toISOString();
+    const now =
+
+    new Date()
+
+    .toISOString();
+
+
+
 
 
 
@@ -483,6 +646,7 @@ async function clearExpiredLiveSessions(){
         .update({
 
             status:
+
             'finished'
 
         })
@@ -502,6 +666,8 @@ async function clearExpiredLiveSessions(){
             now
 
         );
+
+
 
 
 
@@ -574,6 +740,8 @@ export async function getOnlineCount(){
 
 
 
+
+
     if(error){
 
         console.error(
@@ -588,7 +756,10 @@ export async function getOnlineCount(){
 
 
 
+
+
     return count || 0;
+
 
 
 }

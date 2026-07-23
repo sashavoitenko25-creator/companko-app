@@ -31,8 +31,6 @@ let profileInitialized = false;
 
 
 
-
-
 export function Profile(){
 
 
@@ -53,13 +51,26 @@ export function Profile(){
 
 
 
+
     selectedGender =
     oldProfile?.gender || null;
 
 
 
 
-    return `
+
+    const photo =
+
+    tgUser?.photo_url ||
+
+    oldProfile?.photo_url ||
+
+    '';
+
+
+
+
+return `
 
 
 <main class="profile-page">
@@ -73,11 +84,7 @@ export function Profile(){
 
 class="profile-avatar"
 
-src="${
-tgUser?.photo_url ||
-oldProfile?.photo_url ||
-'https://i.pravatar.cc/150'
-}"
+src="${photo}"
 
 >
 
@@ -88,12 +95,13 @@ oldProfile?.photo_url ||
 ${
 oldProfile
 ?
-'Редактирование'
+'Редактирование профиля'
 :
 'Создай профиль'
 }
 
 </h1>
+
 
 
 
@@ -111,6 +119,7 @@ tgUser?.first_name ||
 }"
 
 >
+
 
 
 
@@ -133,13 +142,17 @@ oldProfile?.age ||
 
 
 
+
+
 <h3>
 Пол
 </h3>
 
 
 
+
 <div class="choice-group">
+
 
 
 <button
@@ -170,7 +183,9 @@ data-gender="female"
 </button>
 
 
+
 </div>
+
 
 
 
@@ -188,12 +203,14 @@ class="save-button"
 ${
 oldProfile
 ?
-'Сохранить'
+'Сохранить изменения'
 :
-'Продолжить'
+'Создать профиль'
 }
 
+
 </button>
+
 
 
 
@@ -212,8 +229,6 @@ oldProfile
 
 
 
-
-
 function initProfile(){
 
 
@@ -222,7 +237,7 @@ if(profileInitialized)
 return;
 
 
-profileInitialized = true;
+profileInitialized=true;
 
 
 
@@ -235,9 +250,7 @@ document
 .forEach(button=>{
 
 
-
 button.onclick=()=>{
-
 
 
 document
@@ -246,12 +259,13 @@ document
 
 .forEach(item=>{
 
+
 item.classList.remove(
 'active'
 );
 
-});
 
+});
 
 
 
@@ -262,6 +276,7 @@ button.classList.add(
 
 
 selectedGender =
+
 button.dataset.gender;
 
 
@@ -269,9 +284,8 @@ button.dataset.gender;
 };
 
 
+
 });
-
-
 
 
 
@@ -290,7 +304,9 @@ document
 async()=>{
 
 
+
 const telegramUser =
+
 getTelegramUser();
 
 
@@ -309,11 +325,10 @@ return;
 
 
 
-try{
 
 
 
-const userData={
+const userData = {
 
 
 telegram_id:
@@ -325,11 +340,7 @@ telegramUser.telegram_id
 
 first_name:
 
-document
-
-.querySelector('#profile-name')
-
-.value,
+telegramUser.first_name,
 
 
 photo_url:
@@ -348,6 +359,12 @@ telegramUser.language_code || 'ru'
 
 
 
+
+
+try{
+
+
+
 const user =
 
 await createUser(
@@ -359,22 +376,25 @@ userData
 
 
 
-const profileData={
+
+const existingProfile =
+
+await getProfileByUserId(
+user.id
+);
 
 
-user_id:user.id,
 
 
-telegram_id:
-
-Number(
-telegramUser.telegram_id
-),
 
 
-photo_url:
 
-telegramUser.photo_url || null,
+const profileData = {
+
+
+user_id:
+
+user.id,
 
 
 name:
@@ -403,7 +423,12 @@ document
 
 gender:
 
-selectedGender
+selectedGender,
+
+
+photo_url:
+
+telegramUser.photo_url || null
 
 
 
@@ -414,30 +439,20 @@ selectedGender
 
 
 
-
-const existing =
-
-await getProfileByUserId(
-
-user.id
-
-);
-
-
-
-
 let profile;
 
 
 
-if(existing){
+
+
+if(existingProfile){
 
 
 profile =
 
 await updateProfile(
 
-existing.id,
+existingProfile.id,
 
 profileData
 
@@ -465,7 +480,6 @@ profileData
 
 
 
-
 saveProfile({
 
 ...userData,
@@ -483,8 +497,6 @@ user_id:user.id
 
 
 
-
-
 window.dispatchEvent(
 
 new Event(
@@ -494,8 +506,6 @@ new Event(
 )
 
 );
-
-
 
 
 
@@ -513,10 +523,9 @@ error
 );
 
 
+
 alert(
-
-'Ошибка сохранения профиля'
-
+'Ошибка профиля'
 );
 
 
@@ -524,11 +533,10 @@ alert(
 
 
 
-
 }
 
-);
 
+);
 
 
 }
