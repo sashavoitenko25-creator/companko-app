@@ -4,46 +4,59 @@ import {
 
 
 
+
+
 export async function getProfileByUserId(userId){
 
 
-    const {
-        data,
-        error
-    } = await supabase
 
-        .from('profiles')
+const {
 
-        .select('*')
+data,
 
-        .eq(
-            'user_id',
-            userId
-        )
+error
 
-        .maybeSingle();
+}=await supabase
 
+.from('profiles')
 
+.select('*')
 
-    if(error){
+.eq(
 
+'user_id',
 
-        console.error(
-            'Get profile error:',
-            error
-        );
+userId
 
+)
 
-        return null;
-
-    }
+.maybeSingle();
 
 
 
-    return data;
+
+
+if(error){
+
+
+console.error(
+'GET PROFILE ERROR',
+error
+);
+
+
+return null;
 
 
 }
+
+
+
+return data;
+
+
+}
+
 
 
 
@@ -54,79 +67,87 @@ export async function getProfileByUserId(userId){
 export async function createProfile(profile){
 
 
-    const {
-        data,
-        error
-    } = await supabase
 
-        .from('profiles')
+const {
 
-        .insert({
+data,
 
-            user_id:
-            profile.user_id,
+error
 
+}=await supabase
 
-            name:
-            profile.name,
+.from('profiles')
 
-
-            age:
-            profile.age,
-
-
-            gender:
-            profile.gender,
-
-
-            city:
-            profile.city,
-
-
-            about:
-            profile.about,
-
-
-            interests:
-            profile.interests,
-
-
-            favorite_activity:
-            profile.favorite_activity
-
-
-        })
-
-        .select()
-
-        .single();
+.insert({
 
 
 
+user_id:
 
-    if(error){
-
-
-        console.error(
-            'Create profile error:',
-            error
-        );
-
-
-        throw error;
-
-
-    }
+profile.user_id,
 
 
 
-    console.log(
-        'Profile created:',
-        data
-    );
+telegram_id:
+
+profile.telegram_id,
 
 
-    return data;
+
+photo_url:
+
+profile.photo_url,
+
+
+
+name:
+
+profile.name,
+
+
+
+age:
+
+profile.age,
+
+
+
+gender:
+
+profile.gender
+
+
+
+})
+
+.select()
+
+.single();
+
+
+
+
+
+if(error){
+
+
+console.error(
+
+'CREATE PROFILE ERROR',
+
+error
+
+);
+
+
+throw error;
+
+
+}
+
+
+
+return data;
 
 
 }
@@ -137,81 +158,94 @@ export async function createProfile(profile){
 
 
 
+
+
 export async function updateProfile(
-    profileId,
-    profile
+
+profileId,
+
+profile
+
 ){
 
 
-    const {
-        data,
-        error
-    } = await supabase
 
-        .from('profiles')
+const {
 
-        .update({
+data,
 
-            name:
-            profile.name,
+error
 
+}=await supabase
 
-            age:
-            profile.age,
+.from('profiles')
 
-
-            gender:
-            profile.gender,
-
-
-            city:
-            profile.city,
-
-
-            about:
-            profile.about,
-
-
-            interests:
-            profile.interests,
-
-
-            favorite_activity:
-            profile.favorite_activity
-
-
-        })
-
-        .eq(
-            'id',
-            profileId
-        )
-
-        .select()
-
-        .single();
+.update({
 
 
 
+photo_url:
 
-    if(error){
-
-
-        console.error(
-            'Update profile error:',
-            error
-        );
+profile.photo_url,
 
 
-        throw error;
+
+name:
+
+profile.name,
 
 
-    }
+
+age:
+
+profile.age,
+
+
+
+gender:
+
+profile.gender
+
+
+
+})
+
+.eq(
+
+'id',
+
+profileId
+
+)
+
+.select()
+
+.single();
 
 
 
 
-    return data;
+
+if(error){
+
+
+console.error(
+
+'UPDATE PROFILE ERROR',
+
+error
+
+);
+
+
+throw error;
+
+
+}
+
+
+
+return data;
 
 
 }

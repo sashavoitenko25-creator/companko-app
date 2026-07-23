@@ -27,11 +27,6 @@ import {
 
 let selectedGender = null;
 
-let selectedInterests = [];
-
-let selectedActivity = null;
-
-
 let profileInitialized = false;
 
 
@@ -58,18 +53,8 @@ export function Profile(){
 
 
 
-
     selectedGender =
     oldProfile?.gender || null;
-
-
-    selectedInterests =
-    oldProfile?.interests || [];
-
-
-    selectedActivity =
-    oldProfile?.favorite_activity || null;
-
 
 
 
@@ -98,20 +83,17 @@ oldProfile?.photo_url ||
 
 
 
-
-
 <h1>
 
 ${
 oldProfile
 ?
-'Редактирование профиля'
+'Редактирование'
 :
 'Создай профиль'
 }
 
 </h1>
-
 
 
 
@@ -129,7 +111,6 @@ tgUser?.first_name ||
 }"
 
 >
-
 
 
 
@@ -152,8 +133,10 @@ oldProfile?.age ||
 
 
 
+<h3>
+Пол
+</h3>
 
-<h3>Пол</h3>
 
 
 <div class="choice-group">
@@ -194,169 +177,6 @@ data-gender="female"
 
 
 
-<h3>Интересы</h3>
-
-
-<div class="choice-group">
-
-
-<button
-
-class="choice interest"
-
-data-interest="coffee"
-
->
-
-☕ Кофе
-
-</button>
-
-
-
-
-<button
-
-class="choice interest"
-
-data-interest="walk"
-
->
-
-🚶 Прогулки
-
-</button>
-
-
-
-
-<button
-
-class="choice interest"
-
-data-interest="sport"
-
->
-
-🏃 Спорт
-
-</button>
-
-
-
-
-<button
-
-class="choice interest"
-
-data-interest="games"
-
->
-
-🎮 Игры
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-
-<h3>Любимая активность</h3>
-
-
-<div class="choice-group">
-
-
-<button
-
-class="choice activity"
-
-data-activity="coffee"
-
->
-
-☕ Кофе
-
-</button>
-
-
-
-
-<button
-
-class="choice activity"
-
-data-activity="walk"
-
->
-
-🚶 Гулять
-
-</button>
-
-
-
-
-<button
-
-class="choice activity"
-
-data-activity="talk"
-
->
-
-💬 Общаться
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-
-
-<input
-
-id="profile-city"
-
-placeholder="Город"
-
-value="${
-oldProfile?.city || ''
-}"
-
->
-
-
-
-
-
-
-<textarea
-
-id="profile-about"
-
-placeholder="О себе"
-
->${
-oldProfile?.about || ''
-}</textarea>
-
-
-
-
-
-
-
 <button
 
 id="profile-save"
@@ -365,15 +185,13 @@ class="save-button"
 
 >
 
-
 ${
 oldProfile
 ?
-'Сохранить изменения'
+'Сохранить'
 :
 'Продолжить'
 }
-
 
 </button>
 
@@ -396,21 +214,15 @@ oldProfile
 
 
 
-
-
 function initProfile(){
 
 
+if(profileInitialized)
 
-    if(profileInitialized)
-
-        return;
-
+return;
 
 
-    profileInitialized = true;
-
-
+profileInitialized = true;
 
 
 
@@ -434,11 +246,9 @@ document
 
 .forEach(item=>{
 
-
 item.classList.remove(
 'active'
 );
-
 
 });
 
@@ -452,139 +262,11 @@ button.classList.add(
 
 
 selectedGender =
-
 button.dataset.gender;
 
 
 
 };
-
-
-
-});
-
-
-
-
-
-
-
-
-
-document
-
-.querySelectorAll('.interest')
-
-.forEach(button=>{
-
-
-
-button.onclick=()=>{
-
-
-
-button.classList.toggle(
-'active'
-);
-
-
-
-
-const value =
-
-button.dataset.interest;
-
-
-
-
-
-if(selectedInterests.includes(value)){
-
-
-
-selectedInterests =
-
-selectedInterests.filter(
-
-item=>item !== value
-
-);
-
-
-
-}
-
-else{
-
-
-
-selectedInterests.push(value);
-
-
-
-}
-
-
-
-};
-
-
-
-});
-
-
-
-
-
-
-
-
-
-document
-
-.querySelectorAll('.activity')
-
-.forEach(button=>{
-
-
-
-button.onclick=()=>{
-
-
-
-document
-
-.querySelectorAll('.activity')
-
-.forEach(item=>{
-
-
-item.classList.remove(
-'active'
-);
-
-
-});
-
-
-
-
-
-button.classList.add(
-'active'
-);
-
-
-
-
-selectedActivity =
-
-button.dataset.activity;
-
-
-
-};
-
 
 
 });
@@ -605,46 +287,33 @@ document
 
 'click',
 
-async ()=>{
-
-
-
+async()=>{
 
 
 const telegramUser =
-
 getTelegramUser();
-
-
-
 
 
 
 
 if(!telegramUser?.telegram_id){
 
-
-
 alert(
 'Telegram user not found'
 );
 
-
 return;
-
 
 }
 
 
 
 
+try{
 
 
 
-
-const userData = {
-
-
+const userData={
 
 
 telegram_id:
@@ -654,11 +323,7 @@ telegramUser.telegram_id
 ),
 
 
-
-
 first_name:
-
-telegramUser.first_name ||
 
 document
 
@@ -667,19 +332,14 @@ document
 .value,
 
 
-
-
 photo_url:
 
 telegramUser.photo_url || null,
 
 
-
-
 language_code:
 
 telegramUser.language_code || 'ru'
-
 
 
 };
@@ -688,22 +348,10 @@ telegramUser.language_code || 'ru'
 
 
 
-
-
-
-
-try{
-
-
-
-
-
 const user =
 
 await createUser(
-
 userData
-
 );
 
 
@@ -711,35 +359,22 @@ userData
 
 
 
+const profileData={
 
 
-
-const existingProfile =
-
-await getProfileByUserId(
-
-user.id
-
-);
+user_id:user.id,
 
 
+telegram_id:
+
+Number(
+telegramUser.telegram_id
+),
 
 
+photo_url:
 
-
-
-
-
-const profileData = {
-
-
-
-
-user_id:
-
-user.id,
-
-
+telegramUser.photo_url || null,
 
 
 name:
@@ -749,8 +384,6 @@ document
 .querySelector('#profile-name')
 
 .value,
-
-
 
 
 
@@ -768,52 +401,9 @@ document
 
 
 
-
-
 gender:
 
-selectedGender,
-
-
-
-
-
-city:
-
-document
-
-.querySelector('#profile-city')
-
-.value,
-
-
-
-
-
-about:
-
-document
-
-.querySelector('#profile-about')
-
-.value,
-
-
-
-
-
-interests:
-
-selectedInterests,
-
-
-
-
-
-favorite_activity:
-
-selectedActivity
-
+selectedGender
 
 
 
@@ -825,35 +415,38 @@ selectedActivity
 
 
 
+const existing =
+
+await getProfileByUserId(
+
+user.id
+
+);
+
+
 
 
 let profile;
 
 
 
-
-
-
-if(existingProfile){
-
+if(existing){
 
 
 profile =
 
 await updateProfile(
 
-existingProfile.id,
+existing.id,
 
 profileData
 
 );
 
 
-
 }
 
 else{
-
 
 
 profile =
@@ -865,10 +458,7 @@ profileData
 );
 
 
-
 }
-
-
 
 
 
@@ -878,18 +468,13 @@ profileData
 
 saveProfile({
 
-
 ...userData,
-
 
 ...profile,
 
-
 id:user.id,
 
-
 user_id:user.id
-
 
 
 });
@@ -900,16 +485,13 @@ user_id:user.id
 
 
 
-
 window.dispatchEvent(
-
 
 new Event(
 
 'profile:created'
 
 )
-
 
 );
 
@@ -922,36 +504,28 @@ new Event(
 catch(error){
 
 
-
-
-
 console.error(
 
-'Profile creation failed:',
+'PROFILE ERROR',
 
 error
 
 );
 
 
-
-
 alert(
 
-'Ошибка создания профиля'
+'Ошибка сохранения профиля'
 
 );
 
 
-
-
-
 }
 
 
 
-}
 
+}
 
 );
 
