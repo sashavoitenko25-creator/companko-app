@@ -100,6 +100,9 @@ let initialized = false;
 
 
 export function Home(){
+	
+console.log("HOME START");
+
 
 
 
@@ -114,7 +117,7 @@ export function Home(){
 
 
 
-
+console.log("HOME BEFORE RETURN");
 
     return `
 
@@ -163,6 +166,9 @@ ${BottomBar()}
 `;
 
 }
+
+
+
 
 
 
