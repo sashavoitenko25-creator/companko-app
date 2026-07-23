@@ -16,20 +16,31 @@ export async function getLiveUsers(){
 
 
 
+
     const {
+
         data:sessions,
+
         error
+
     } = await supabase
 
         .from('live_sessions')
 
         .select(`
+
             id,
+
             user_id,
+
             activity,
+
             duration,
+
             status,
+
             expires_at
+
         `)
 
         .eq(
@@ -45,6 +56,7 @@ export async function getLiveUsers(){
 
 
 
+
     if(error){
 
         console.error(
@@ -55,6 +67,8 @@ export async function getLiveUsers(){
         throw error;
 
     }
+
+
 
 
 
@@ -86,7 +100,9 @@ export async function getLiveUsers(){
 
 
     const {
+
         data:profiles,
+
         error:profileError
 
     } = await supabase
@@ -96,10 +112,15 @@ export async function getLiveUsers(){
         .select(`
 
             user_id,
+
             name,
+
             age,
+
             gender,
+
             telegram_id,
+
             photo_url
 
         `)
@@ -108,6 +129,7 @@ export async function getLiveUsers(){
             'user_id',
             userIds
         );
+
 
 
 
@@ -131,7 +153,9 @@ export async function getLiveUsers(){
 
 
     const {
+
         data:locations,
+
         error:locationError
 
     } = await supabase
@@ -141,8 +165,11 @@ export async function getLiveUsers(){
         .select(`
 
             user_id,
+
             latitude,
+
             longitude,
+
             created_at
 
         `)
@@ -157,10 +184,14 @@ export async function getLiveUsers(){
             'created_at',
 
             {
+
                 ascending:false
+
             }
 
         );
+
+
 
 
 
@@ -183,9 +214,7 @@ export async function getLiveUsers(){
 
 
 
-    return sessions
-
-    .map(session=>{
+    return sessions.map(session=>{
 
 
 
@@ -195,14 +224,9 @@ export async function getLiveUsers(){
 
             p =>
 
-            String(p.user_id)
-
-            ===
-
-            String(session.user_id)
+            p.user_id === session.user_id
 
         );
-
 
 
 
@@ -213,11 +237,7 @@ export async function getLiveUsers(){
 
             l =>
 
-            String(l.user_id)
-
-            ===
-
-            String(session.user_id)
+            l.user_id === session.user_id
 
         );
 
@@ -227,123 +247,70 @@ export async function getLiveUsers(){
 
 
 
+
+
         return {
 
-
-
-
             id:
-
             session.id,
 
 
 
-
             user_id:
-
             session.user_id,
 
 
 
-
             name:
-
-            profile?.name ||
-
-            'Гость',
-
-
+            profile?.name || 'Гость',
 
 
 
             age:
-
-            profile?.age ||
-
-            '',
+            profile?.age || '',
 
 
 
-
-
-
-            telegram_id:
-
-            profile?.telegram_id || null,
-
-
-
-
-
-
-            // теперь реальное фото Telegram
-
-            photo_url:
-
-            profile?.photo_url || null,
-
-
-
-
-
-            // оставляем photo,
-            // потому что карточка и карта его используют
-
-            photo:
-
-            profile?.photo_url || null,
-
-
-
-
+            gender:
+            profile?.gender || '',
 
 
 
             activity:
-
             session.activity,
 
 
 
-
-
-
-
             duration:
-
             session.duration,
 
 
 
-
-
-
-
             expires_at:
-
             session.expires_at,
 
 
 
+            // ВАЖНО
+            // теперь берём Telegram фото
 
+            photo_url:
+            profile?.photo_url || null,
+
+
+
+            photo:
+            profile?.photo_url || null,
 
 
 
             lat:
-
             location?.latitude ?? null,
 
 
 
-
-
-
             lng:
-
             location?.longitude ?? null
-
-
-
 
 
         };
@@ -354,22 +321,19 @@ export async function getLiveUsers(){
 
 
 
-
-
     .filter(user =>
+
 
         user.lat !== null &&
 
         user.lng !== null
+
 
     );
 
 
 
 }
-
-
-
 
 
 
@@ -396,27 +360,25 @@ export async function createLiveSession(data){
         .select(`
 
             id,
+
             status,
+
             expires_at,
+
             activity,
+
             duration
 
         `)
 
         .eq(
-
             'user_id',
-
             data.user_id
-
         )
 
         .eq(
-
             'status',
-
             'active'
-
         )
 
         .maybeSingle();
@@ -454,7 +416,9 @@ export async function createLiveSession(data){
 
 
 
+
     const expiresAt = new Date(
+
 
         Date.now()
 
@@ -473,6 +437,7 @@ export async function createLiveSession(data){
             1000
 
         )
+
 
     );
 
@@ -496,29 +461,31 @@ export async function createLiveSession(data){
 
         .insert({
 
-            user_id:
 
+
+            user_id:
             data.user_id,
 
 
-            activity:
 
+            activity:
             data.activity,
 
 
-            duration:
 
+            duration:
             data.duration || 60,
 
 
-            status:
 
+            status:
             'active',
 
 
-            expires_at:
 
+            expires_at:
             expiresAt.toISOString()
+
 
 
         })
@@ -526,6 +493,7 @@ export async function createLiveSession(data){
         .select()
 
         .single();
+
 
 
 
@@ -579,7 +547,6 @@ export async function stopLiveSession(sessionId){
         .update({
 
             status:
-
             'finished'
 
         })
@@ -609,6 +576,7 @@ export async function stopLiveSession(sessionId){
     }
 
 
+
 }
 
 
@@ -625,9 +593,7 @@ async function clearExpiredLiveSessions(){
 
     const now =
 
-    new Date()
-
-    .toISOString();
+    new Date().toISOString();
 
 
 
@@ -646,7 +612,6 @@ async function clearExpiredLiveSessions(){
         .update({
 
             status:
-
             'finished'
 
         })
@@ -681,6 +646,7 @@ async function clearExpiredLiveSessions(){
         );
 
     }
+
 
 
 }
