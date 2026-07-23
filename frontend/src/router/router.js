@@ -20,8 +20,8 @@ import {
 
 
 
-async function renderApp(){
 
+async function renderApp(){
 
 
     const app =
@@ -32,43 +32,85 @@ async function renderApp(){
 
 
     if(!app)
-
         return;
 
 
 
 
+    try{
 
-    const profile =
+
         await initProfile();
 
 
 
+        const profile =
+            getProfile();
 
 
 
-    if(profile){
 
 
-        app.innerHTML =
-            Home();
+        console.log(
+            'ROUTER PROFILE:',
+            profile
+        );
+
+
+
+
+
+        if(profile){
+
+
+            app.innerHTML =
+                Home();
+
+
+
+        }
+        else{
+
+
+            app.innerHTML =
+                Profile();
+
+
+
+        }
+
 
 
 
     }
-    else{
+
+    catch(error){
 
 
-        app.innerHTML =
-            Profile();
+        console.error(
+            'RENDER APP ERROR:',
+            error
+        );
 
+
+
+        app.innerHTML = `
+
+        <div style="
+        color:white;
+        padding:30px;
+        ">
+        Ошибка загрузки приложения
+        </div>
+
+        `;
 
 
     }
-
 
 
 }
+
 
 
 
@@ -87,15 +129,17 @@ export function initRouter(){
 
 
 
-
-
     window.addEventListener(
-
 
         'profile:created',
 
-
         ()=>{
+
+
+            console.log(
+                'PROFILE CREATED EVENT'
+            );
+
 
 
             setTimeout(()=>{
@@ -104,7 +148,8 @@ export function initRouter(){
                 renderApp();
 
 
-            },50);
+
+            },100);
 
 
 
@@ -123,26 +168,21 @@ export function initRouter(){
 
     window.addEventListener(
 
-
         'profile:open',
-
 
         ()=>{
 
 
 
             const app =
-                document.querySelector(
-                    '#app'
-                );
+            document.querySelector(
+                '#app'
+            );
 
 
 
             if(!app)
-
                 return;
-
-
 
 
 
