@@ -6,6 +6,11 @@ import {
 } from '../../features/profile/profileStore';
 
 
+import {
+    getTelegramUser
+} from '../../services/telegram/telegramService';
+
+
 
 
 
@@ -15,6 +20,27 @@ export function ProfileButton(){
 
 
     const profile = getProfile();
+
+
+    const telegramUser = getTelegramUser();
+
+
+
+
+
+    const photo =
+
+        profile?.photo_url ||
+
+        profile?.photo ||
+
+        telegramUser?.photo_url ||
+
+        '';
+
+
+
+
 
 
 
@@ -58,7 +84,9 @@ export function ProfileButton(){
 
 
 
-    });
+    },0);
+
+
 
 
 
@@ -78,19 +106,42 @@ export function ProfileButton(){
 
 
 
-            <img
 
-                src="${
 
-                    profile?.photo ||
+            ${
+                photo
 
-                    'https://i.pravatar.cc/150'
+                ?
 
-                }"
+                `
 
-                alt="profile"
+                <img
 
-            >
+                    src="${photo}"
+
+                    alt="profile"
+
+                >
+
+                `
+
+
+                :
+
+
+                `
+
+                <div class="profile-button__empty">
+
+                    👤
+
+                </div>
+
+                `
+
+            }
+
+
 
 
 
