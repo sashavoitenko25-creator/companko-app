@@ -2,64 +2,55 @@ import {
     getMap
 } from './mapService';
 
-
 import {
     getCurrentPosition
 } from '../location/locationService';
 
-
-
-
-export function centerOnMyLocation(){
-
-
+export async function centerOnMyLocation(){
 
     const map = getMap();
 
-
-
-    const position = getCurrentPosition();
-
-
-
-
-    if(
-        !map ||
-        !position
-    )
-
+    if(!map)
         return;
 
+    try{
 
+        const position = await getCurrentPosition();
 
+        if(!position)
+            return;
 
+        map.flyTo(
 
+            [
 
-    map.setView(
+                position.latitude,
 
+                position.longitude
 
-        [
+            ],
 
-            position.lat,
+            17,
 
-            position.lng
+            {
 
-        ],
+                animate:true,
 
+                duration:1.2
 
-        16,
+            }
 
+        );
 
-        {
+    }
 
-            animate:true,
+    catch(error){
 
-            duration:0.8
+        console.error(
+            'CENTER LOCATION ERROR',
+            error
+        );
 
-        }
-
-
-    );
-
+    }
 
 }
