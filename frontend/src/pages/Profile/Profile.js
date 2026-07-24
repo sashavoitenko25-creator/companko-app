@@ -527,26 +527,16 @@ profileData
 
 
 saveProfile({
-
-
-...user,
-
-
-...profile,
-
-
-photo_url:
-
-tgUser.photo_url,
-
-
-id:user.id,
-
-
-user_id:user.id
-
-
+    ...profile,
+    id: user.id,
+    user_id: user.id,
+    telegram_id: tgUser.telegram_id,
+    first_name: tgUser.first_name,
+    photo_url: tgUser.photo_url
 });
+
+// после сохранения полностью перезагружаем WebApp
+window.location.reload();
 
 
 

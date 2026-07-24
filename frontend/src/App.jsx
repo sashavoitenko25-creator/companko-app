@@ -1,16 +1,12 @@
-import {
-    initRouter
-} from './router/router';
+import { useEffect } from 'react';
+import { initRouter } from './router/router';
 
+export default function App() {
 
-
-export default function App(){
-
-
-    initRouter();
-
+    useEffect(() => {
+        initRouter();
+    }, []);
 
     return null;
-
 
 }
