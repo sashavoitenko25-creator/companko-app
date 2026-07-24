@@ -1,82 +1,207 @@
 .route-panel{
 
-    position:absolute;
+position:absolute;
 
-    left:20px;
-    right:20px;
-    bottom:20px;
+left:16px;
+right:16px;
 
-    height:170px;
+bottom:105px;
 
-    padding:18px;
+padding:22px;
 
-    border-radius:24px;
+background:rgba(17,20,37,.96);
 
-    background:rgba(17,20,37,.96);
+backdrop-filter:blur(26px);
 
-    backdrop-filter:blur(20px);
+border-radius:28px;
 
-    color:white;
+box-shadow:
+0 18px 45px rgba(0,0,0,.45);
 
-    z-index:9999;
+color:white;
 
-    transform:translateY(150%);
+z-index:9999;
 
-    transition:.35s ease;
+transform:translateY(150%);
+transition:.35s ease;
 
-    display:flex;
-    flex-direction:column;
+display:flex;
+flex-direction:column;
 
 }
 
 .route-panel--open{
 
-    transform:translateY(0);
+transform:translateY(0);
 
 }
 
 .route-panel__title{
 
-    font-size:22px;
+font-size:30px;
+font-weight:700;
 
-    font-weight:700;
-
-    margin-bottom:12px;
+margin-bottom:18px;
 
 }
 
 #route-info{
 
-    flex:1;
+display:flex;
+flex-direction:column;
+
+gap:12px;
+
+margin-bottom:20px;
 
 }
 
-#route-info div{
+.route-user{
 
-    margin-bottom:6px;
+font-size:24px;
+font-weight:700;
 
-    font-size:16px;
+margin-bottom:6px;
+
+}
+
+.route-stat{
+
+display:flex;
+align-items:center;
+gap:10px;
+
+padding:12px 16px;
+
+background:#1e2133;
+
+border-radius:18px;
+
+font-size:18px;
+font-weight:600;
+
+}
+
+.transport-buttons{
+
+display:flex;
+
+gap:10px;
+
+margin-bottom:18px;
+
+}
+
+.transport-buttons button{
+
+flex:1;
+
+height:50px;
+
+border:none;
+
+border-radius:18px;
+
+background:#262a40;
+
+color:white;
+
+font-size:16px;
+font-weight:600;
+
+cursor:pointer;
+
+transition:.2s;
+
+}
+
+.transport-buttons button:hover{
+
+background:#323755;
+
+}
+
+.transport-buttons button.active{
+
+background:linear-gradient(
+90deg,
+#6E35FF,
+#9B4DFF
+);
+
+box-shadow:
+0 0 20px rgba(124,99,255,.45);
 
 }
 
 #route-cancel{
 
-    width:100%;
+width:100%;
 
-    padding:14px;
+height:56px;
 
-    border:none;
+border:none;
 
-    border-radius:16px;
+border-radius:20px;
 
-    background:#ff4d67;
+background:linear-gradient(
+90deg,
+#ff5470,
+#ff3558
+);
 
-    color:white;
+color:white;
 
-    font-size:17px;
+font-size:20px;
+font-weight:700;
 
-    font-weight:700;
+cursor:pointer;
 
-    cursor:pointer;
+transition:.2s;
+
+}
+
+#route-cancel:hover{
+
+transform:scale(.98);
+
+}
+
+@media(max-width:480px){
+
+.route-panel{
+
+left:12px;
+right:12px;
+
+bottom:102px;
+
+padding:18px;
+
+}
+
+.route-panel__title{
+
+font-size:26px;
+
+}
+
+.route-user{
+
+font-size:21px;
+
+}
+
+.route-stat{
+
+font-size:16px;
+
+}
+
+.transport-buttons button{
+
+font-size:14px;
+
+}
 
 }
