@@ -416,3 +416,16 @@ if(modal){
 
 
 }
+
+
+const modal = document.querySelector('#live-modal');
+
+modal.onclick = (e)=>{
+
+    if(e.target.id === 'live-modal'){
+
+        closeLiveModal();
+
+    }
+
+};
