@@ -5,20 +5,26 @@ let routeLine = null;
 let activeUser = null;
 let animationFrame = null;
 
-export async function startRoute(user) {
+const PROFILE = {
+    car: 'driving',
+    bike: 'cycling',
+    foot: 'foot'
+};
+
+export async function startRoute(user, type = 'car') {
     activeUser = user;
 
-    if (user.lat == null || user.lng == null) return;
+    if (user.lat == null || user.lng == null) return null;
 
-    const position = await getCurrentPosition();
+    const pos = await getCurrentPosition();
+    if (!pos) return null;
 
-    if (!position) return;
-
-    await buildRoute(
-        position.latitude,
-        position.longitude,
+    return await buildRoute(
+        pos.latitude,
+        pos.longitude,
         user.lat,
-        user.lng
+        user.lng,
+        type
     );
 }
 
@@ -35,88 +41,79 @@ export function stopRoute() {
     }
 
     routeLine = null;
-    activeUser = null;
 }
 
-export function getRoute() {
-    return activeUser;
-}
-
-async function buildRoute(fromLat, fromLng, toLat, toLng) {
-
-    const map = getMap();
-    if (!map) return;
+async function buildRoute(fromLat, fromLng, toLat, toLng, type) {
 
     stopRoute();
 
+    const map = getMap();
+    if (!map) return null;
+
     try {
 
+        const profile = PROFILE[type] || 'driving';
+
         const response = await fetch(
-            `https://router.project-osrm.org/route/v1/driving/` +
-            `${fromLng},${fromLat};${toLng},${toLat}` +
-            `?overview=full&geometries=geojson`
+            `https://router.project-osrm.org/route/v1/${profile}/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`
         );
 
         const json = await response.json();
 
-        if (!json.routes?.length) return;
+        if (!json.routes || !json.routes.length)
+            return null;
 
-        const fullPath = json.routes[0].geometry.coordinates.map(item => [
-            item[1],
-            item[0]
+        const route = json.routes[0];
+
+        const points = route.geometry.coordinates.map(p => [
+            p[1],
+            p[0]
         ]);
 
         routeLine = L.polyline([], {
-            color: '#7c3aed',
+            color: '#8B5CF6',
             weight: 6,
             opacity: 0.95
         }).addTo(map);
 
-        map.fitBounds(fullPath, {
-            padding: [80, 80],
-            animate: true,
-            duration: 1
+        map.fitBounds(points, {
+            padding: [80, 80]
         });
 
-        animateRoute(fullPath);
+        animateRoute(points);
 
-    } catch (error) {
-        console.error(error);
+        return {
+            distance: Math.round(route.distance),
+            duration: Math.round(route.duration / 60)
+        };
+
+    } catch (e) {
+
+        console.error(e);
+
+        return null;
+
     }
 }
 
 function animateRoute(points) {
 
-    let index = 0;
-
-    const speed = 4; // чем больше — тем быстрее рисуется
+    let i = 0;
 
     function draw() {
 
         if (!routeLine) return;
 
-        const next = Math.min(index + speed, points.length);
+        i += 5;
 
         routeLine.setLatLngs(
-            points.slice(0, next)
+            points.slice(0, i)
         );
 
-        if (next < points.length) {
+        if (i < points.length) {
 
-            const p = points[next - 1];
-
-            getMap().panTo(p, {
-                animate: true,
-                duration: 0.15
-            });
-
-            index = next;
-
-            animationFrame = requestAnimationFrame(draw);
-
-        } else {
-
-            animationFrame = null;
+            animationFrame =
+                requestAnimationFrame(draw);
 
         }
     }
@@ -130,9 +127,9 @@ function getCurrentPosition() {
 
         navigator.geolocation.getCurrentPosition(
 
-            position => resolve({
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude
+            pos => resolve({
+                latitude: pos.coords.latitude,
+                longitude: pos.coords.longitude
             }),
 
             () => resolve(null),

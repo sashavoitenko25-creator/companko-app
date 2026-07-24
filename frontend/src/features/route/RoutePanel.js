@@ -1,67 +1,41 @@
 import './route.css';
 
-
 import {
-    stopRoute,
-    startRoute
+    startRoute,
+    stopRoute
 } from './routeService';
 
+export function RoutePanel() {
 
-import {
-    getRoute
-} from '../../services/route/osrmService';
+    return `
 
+<div id="route-panel" class="route-panel">
 
+    <div class="route-panel__title">
+        Маршрут
+    </div>
 
-export function RoutePanel(){
+    <div id="route-info"></div>
 
-return `
+    <div class="transport-buttons">
 
-<div
-id="route-panel"
-class="route-panel">
+        <button data-mode="foot">
+            🚶 Пешком
+        </button>
 
+        <button data-mode="bike">
+            🚲 Велосипед
+        </button>
 
-<div class="route-panel__title">
+        <button data-mode="car" class="active">
+            🚗 Машина
+        </button>
 
-Маршрут
+    </div>
 
-</div>
-
-
-
-<div id="route-info"></div>
-
-
-
-<div class="transport-buttons">
-
-
-<button data-mode="foot">
-🚶 Пешком
-</button>
-
-
-<button data-mode="bike">
-🚲 Велосипед
-</button>
-
-
-<button data-mode="car">
-🚗 Машина
-</button>
-
-
-</div>
-
-
-
-<button id="route-cancel">
-
-Отменить
-
-</button>
-
+    <button id="route-cancel">
+        Отменить
+    </button>
 
 </div>
 
@@ -69,209 +43,92 @@ class="route-panel">
 
 }
 
+export function showRoute(user) {
 
+    window.dispatchEvent(
+        new Event('ui:close-all')
+    );
 
+    const panel =
+        document.querySelector('#route-panel');
 
+    const info =
+        document.querySelector('#route-info');
 
-export function showRoute(user){
+    if (!panel || !info)
+        return;
 
+    panel.classList.add('route-panel--open');
 
-window.dispatchEvent(
-new Event('ui:close-all')
-);
+    let mode = 'car';
 
+    async function build() {
 
+        info.innerHTML = `
+            <div>Строим маршрут...</div>
+        `;
 
-const panel =
-document.querySelector(
-'#route-panel'
-);
+        const result =
+            await startRoute(user, mode);
 
+        if (!result) {
 
+            info.innerHTML =
+                'Не удалось построить маршрут';
 
-const info =
-document.querySelector(
-'#route-info'
-);
+            return;
+        }
 
-
-
-if(!panel || !info)
-return;
-
-
-
-
-panel.classList.add(
-'route-panel--open'
-);
-
-
-
-let mode='foot';
-
-
-
-
-async function build(){
-
-
-try{
-
-
-info.innerHTML=`
-
-<div>
-Строим маршрут...
-</div>
-
-`;
-
-
-
-const result =
-await getRoute(
-
-window.myLocation,
-
-{
-
-lat:user.latitude,
-
-lng:user.longitude
-
-},
-
-mode
-
-);
-
-
-
-
-info.innerHTML=`
+        info.innerHTML = `
 
 <div class="route-user">
-
 ${user.name}
-
 </div>
 
-
 <div>
-📍 ${result.distance} м
+📍 ${(result.distance / 1000).toFixed(1)} км
 </div>
 
-
 <div>
-⏱ ${result.duration} минут
+⏱ ${result.duration} мин
 </div>
 
 `;
 
+    }
 
+    document
+        .querySelectorAll('.transport-buttons button')
+        .forEach(button => {
 
-startRoute({
+            button.onclick = async () => {
 
-geometry:
-result.geometry
+                document
+                    .querySelectorAll('.transport-buttons button')
+                    .forEach(b => b.classList.remove('active'));
 
-});
+                button.classList.add('active');
 
+                mode = button.dataset.mode;
 
-}
+                await build();
 
-catch(error){
+            };
 
+        });
 
-console.error(
-error
-);
+    build();
 
+    document
+        .querySelector('#route-cancel')
+        .onclick = () => {
 
-info.innerHTML=
-`
-Ошибка построения маршрута
-`;
+            panel.classList.remove(
+                'route-panel--open'
+            );
 
-}
+            stopRoute();
 
-
-}
-
-
-
-
-document
-
-.querySelectorAll(
-'.transport-buttons button'
-)
-
-.forEach(button=>{
-
-
-button.onclick=()=>{
-
-
-document
-
-.querySelectorAll(
-'.transport-buttons button'
-)
-
-.forEach(
-b=>b.classList.remove(
-'active'
-)
-);
-
-
-
-button.classList.add(
-'active'
-);
-
-
-
-mode =
-button.dataset.mode;
-
-
-
-build();
-
-
-
-};
-
-
-});
-
-
-
-
-build();
-
-
-
-
-document
-
-.querySelector('#route-cancel')
-
-.onclick=()=>{
-
-
-panel.classList.remove(
-'route-panel--open'
-);
-
-
-stopRoute();
-
-
-};
-
+        };
 
 }
