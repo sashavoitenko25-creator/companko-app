@@ -5,7 +5,7 @@ position:absolute;
 left:16px;
 right:16px;
 
-bottom:105px;
+bottom:110px;
 
 padding:22px;
 
@@ -69,11 +69,10 @@ margin-bottom:6px;
 
 display:flex;
 align-items:center;
-gap:10px;
 
-padding:12px 16px;
+padding:14px 16px;
 
-background:#1e2133;
+background:#1f2337;
 
 border-radius:18px;
 
@@ -117,7 +116,7 @@ transition:.2s;
 
 .transport-buttons button:hover{
 
-background:#323755;
+background:#343956;
 
 }
 
@@ -167,6 +166,71 @@ transform:scale(.98);
 
 }
 
+/* ---------- маленькая кнопка ---------- */
+
+.route-open-button{
+
+position:absolute;
+
+right:20px;
+
+bottom:118px;
+
+width:58px;
+
+height:58px;
+
+border:none;
+
+border-radius:50%;
+
+background:linear-gradient(
+135deg,
+#6E35FF,
+#9B4DFF
+);
+
+color:white;
+
+font-size:26px;
+
+cursor:pointer;
+
+display:flex;
+align-items:center;
+justify-content:center;
+
+box-shadow:
+0 10px 30px rgba(0,0,0,.35);
+
+opacity:0;
+
+pointer-events:none;
+
+transform:scale(.8);
+
+transition:.25s;
+
+z-index:9999;
+
+}
+
+.route-open-button--show{
+
+opacity:1;
+
+pointer-events:auto;
+
+transform:scale(1);
+
+}
+
+.route-open-button:hover{
+
+transform:scale(1.08);
+
+}
+
 @media(max-width:480px){
 
 .route-panel{
@@ -201,6 +265,14 @@ font-size:16px;
 .transport-buttons button{
 
 font-size:14px;
+
+}
+
+.route-open-button{
+
+right:16px;
+
+bottom:112px;
 
 }
 

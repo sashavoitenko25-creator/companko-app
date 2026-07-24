@@ -145,15 +145,13 @@ export function initMap(){
 
         ()=>{
 
-
             window.dispatchEvent(
-
-                new Event(
-                    'ui:close-all'
-                )
-
+                new Event('ui:close-all')
             );
 
+            window.dispatchEvent(
+                new Event('route:collapse')
+            );
 
         }
 
@@ -281,7 +279,23 @@ export function initMap(){
 
 
 
+    window.removeEventListener(
+        'profile:open',
+        focusRoutePanel
+    );
 
+    window.addEventListener(
+        'profile:open',
+        focusRoutePanel
+    );
+
+    function focusRoutePanel(){
+
+        window.dispatchEvent(
+            new Event('route:collapse')
+        );
+
+    }
 
 
 

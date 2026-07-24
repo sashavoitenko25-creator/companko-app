@@ -5,6 +5,10 @@ import {
     stopRoute
 } from './routeService';
 
+let currentUser = null;
+let currentMode = 'car';
+let collapsed = false;
+
 export function RoutePanel() {
 
     return `
@@ -39,58 +43,71 @@ export function RoutePanel() {
 
 </div>
 
+<button
+    id="route-open-button"
+    class="route-open-button">
+
+🧭
+
+</button>
+
 `;
 
 }
 
-export function showRoute(user) {
+export function showRoute(user){
+
+    currentUser=user;
+    currentMode='car';
+    collapsed=false;
 
     window.dispatchEvent(
         new Event('ui:close-all')
     );
 
-    const panel =
-        document.querySelector('#route-panel');
+    const panel=document.querySelector('#route-panel');
+    const info=document.querySelector('#route-info');
+    const openButton=document.querySelector('#route-open-button');
 
-    const info =
-        document.querySelector('#route-info');
-
-    if (!panel || !info)
-        return;
+    if(!panel||!info) return;
 
     panel.classList.add('route-panel--open');
+    openButton.classList.remove('route-open-button--show');
 
-    let mode = 'car';
+    async function build(){
 
-    async function build() {
+        info.innerHTML=`<div>Строим маршрут...</div>`;
 
-        info.innerHTML = `
-            <div>Строим маршрут...</div>
-        `;
+        const result=await startRoute(
+            currentUser,
+            currentMode
+        );
 
-        const result =
-            await startRoute(user, mode);
+        if(!result){
 
-        if (!result) {
-
-            info.innerHTML =
-                'Не удалось построить маршрут';
-
+            info.innerHTML='Не удалось построить маршрут';
             return;
+
         }
 
-        info.innerHTML = `
+        info.innerHTML=`
 
 <div class="route-user">
-${user.name}
+
+${currentUser.name}
+
 </div>
 
-<div>
-📍 ${(result.distance / 1000).toFixed(1)} км
+<div class="route-stat">
+
+📍 ${(result.distance/1000).toFixed(1)} км
+
 </div>
 
-<div>
+<div class="route-stat">
+
 ⏱ ${result.duration} мин
+
 </div>
 
 `;
@@ -98,37 +115,70 @@ ${user.name}
     }
 
     document
-        .querySelectorAll('.transport-buttons button')
-        .forEach(button => {
+    .querySelectorAll('.transport-buttons button')
+    .forEach(button=>{
 
-            button.onclick = async () => {
+        button.onclick=async()=>{
 
-                document
-                    .querySelectorAll('.transport-buttons button')
-                    .forEach(b => b.classList.remove('active'));
+            document
+            .querySelectorAll('.transport-buttons button')
+            .forEach(item=>item.classList.remove('active'));
 
-                button.classList.add('active');
+            button.classList.add('active');
 
-                mode = button.dataset.mode;
+            currentMode=button.dataset.mode;
 
-                await build();
+            await build();
 
-            };
+        };
 
-        });
+    });
 
     build();
 
-    document
-        .querySelector('#route-cancel')
-        .onclick = () => {
+    document.querySelector('#route-cancel').onclick=()=>{
 
-            panel.classList.remove(
-                'route-panel--open'
-            );
+        stopRoute();
 
-            stopRoute();
+        panel.classList.remove('route-panel--open');
 
-        };
+        openButton.classList.remove('route-open-button--show');
+
+        currentUser=null;
+
+    };
+
+    openButton.onclick=()=>{
+
+        collapsed=false;
+
+        panel.classList.add('route-panel--open');
+
+        openButton.classList.remove('route-open-button--show');
+
+    };
+
+    window.removeEventListener(
+        'route:collapse',
+        collapseRoute
+    );
+
+    window.addEventListener(
+        'route:collapse',
+        collapseRoute
+    );
+
+    function collapseRoute(){
+
+        if(!currentUser) return;
+        if(collapsed) return;
+
+        collapsed=true;
+
+        panel.classList.remove('route-panel--open');
+
+        openButton.classList.add('route-open-button--show');
+
+    }
 
 }
