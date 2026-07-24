@@ -12,22 +12,24 @@ const PROFILE = {
     foot: 'foot'
 };
 
-export async function startRoute(user, type = 'car') {
+export async function startRoute(user, mode = 'driving') {
+
     activeUser = user;
-	activeMode = mode || 'driving';
+    activeMode = mode;
 
     if (user.lat == null || user.lng == null) return null;
 
-    const pos = await getCurrentPosition();
-    if (!pos) return null;
+    const position = await getCurrentPosition();
+
+    if (!position) return null;
 
     return await buildRoute(
-        pos.latitude,
-        pos.longitude,
+        position.latitude,
+        position.longitude,
         user.lat,
-        user.lng,
-        type
+        user.lng
     );
+
 }
 
 export function stopRoute() {
