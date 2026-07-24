@@ -219,115 +219,65 @@ class="start-live">
 
 function initLiveModal(){
 
-
-
 console.log(
     'LIVE MODAL INIT'
 );
-
-
-
 
 setActivity(
     'Выпить'
 );
 
-
-
 setDuration(
     60
 );
 
-
-
-
-
 document
-
 .querySelectorAll('.live-option')
-
 .forEach(button=>{
-
 
     button.onclick=()=>{
 
-
         document
-
         .querySelectorAll('.live-option')
-
         .forEach(item=>{
-
 
             item.classList.remove(
                 'active'
             );
 
-
         });
-
-
-
 
         button.classList.add(
             'active'
         );
 
-
-
-
         setActivity(
-
             button.dataset.activity
-
         );
-
 
     };
 
-
 });
 
-
-
-
-
-
-
-
 document
-
 .querySelectorAll('.time-options button')
-
 .forEach(button=>{
-
 
     button.onclick=()=>{
 
-
         document
-
         .querySelectorAll('.time-options button')
-
         .forEach(item=>{
-
 
             item.classList.remove(
                 'active'
             );
 
-
         });
-
-
-
 
         button.classList.add(
             'active'
         );
-
-
-
 
         setDuration(
 
@@ -339,17 +289,28 @@ document
 
         );
 
-
     };
-
 
 });
 
+const modal =
+document.querySelector('#live-modal');
 
+if(modal){
+
+    modal.onclick=(event)=>{
+
+        if(event.target===modal){
+
+            closeLiveModal();
+
+        }
+
+    };
 
 }
 
-
+}
 
 
 
@@ -416,16 +377,3 @@ if(modal){
 
 
 }
-
-
-const modal = document.querySelector('#live-modal');
-
-modal.onclick = (e)=>{
-
-    if(e.target.id === 'live-modal'){
-
-        closeLiveModal();
-
-    }
-
-};
