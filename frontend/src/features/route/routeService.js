@@ -4,6 +4,7 @@ import { getMap } from '../../services/map/mapService';
 let routeLine = null;
 let activeUser = null;
 let animationFrame = null;
+let activeMode = 'driving';
 
 const PROFILE = {
     car: 'driving',
@@ -13,6 +14,7 @@ const PROFILE = {
 
 export async function startRoute(user, type = 'car') {
     activeUser = user;
+	activeMode = mode || 'driving';
 
     if (user.lat == null || user.lng == null) return null;
 
@@ -43,57 +45,77 @@ export function stopRoute() {
     routeLine = null;
 }
 
-async function buildRoute(fromLat, fromLng, toLat, toLng, type) {
-
-    stopRoute();
+async function buildRoute(fromLat, fromLng, toLat, toLng) {
 
     const map = getMap();
     if (!map) return null;
 
+    stopRoute();
+
+    let profile = 'driving';
+
+    switch (activeMode) {
+
+        case 'foot':
+            profile = 'foot';
+            break;
+
+        case 'bike':
+            profile = 'bike';
+            break;
+
+        default:
+            profile = 'driving';
+            break;
+
+    }
+
     try {
 
-        const profile = PROFILE[type] || 'driving';
-
         const response = await fetch(
-            `https://router.project-osrm.org/route/v1/${profile}/${fromLng},${fromLat};${toLng},${toLat}?overview=full&geometries=geojson`
+            `https://router.project-osrm.org/route/v1/${profile}/` +
+            `${fromLng},${fromLat};${toLng},${toLat}` +
+            `?overview=full&geometries=geojson`
         );
 
         const json = await response.json();
 
-        if (!json.routes || !json.routes.length)
-            return null;
+        if (!json.routes?.length) return null;
 
         const route = json.routes[0];
 
-        const points = route.geometry.coordinates.map(p => [
-            p[1],
-            p[0]
+        const fullPath = route.geometry.coordinates.map(item => [
+            item[1],
+            item[0]
         ]);
 
         routeLine = L.polyline([], {
-            color: '#8B5CF6',
+            color: '#7c3aed',
             weight: 6,
             opacity: 0.95
         }).addTo(map);
 
-        map.fitBounds(points, {
-            padding: [80, 80]
+        map.fitBounds(fullPath, {
+            padding: [80, 80],
+            animate: true,
+            duration: 1
         });
 
-        animateRoute(points);
+        animateRoute(fullPath);
 
         return {
-            distance: Math.round(route.distance),
+            distance: route.distance,
             duration: Math.round(route.duration / 60)
         };
 
-    } catch (e) {
+    } catch (error) {
 
-        console.error(e);
+        console.error(error);
 
         return null;
 
     }
+
 }
 
 function animateRoute(points) {
