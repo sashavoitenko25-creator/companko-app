@@ -7,8 +7,7 @@ let routeLine = null;
 
 export function drawRoute(
     map,
-    from,
-    to
+    points
 ){
 
 
@@ -22,20 +21,18 @@ export function drawRoute(
 
 
 
+
     routeLine = L.polyline(
 
-        [
-            from,
-            to
-        ],
+        points,
 
         {
 
-            color:"#8b63ff",
+            color:'#8b63ff',
 
-            weight:5,
+            weight:6,
 
-            opacity:0.8
+            opacity:.9
 
         }
 
@@ -44,16 +41,15 @@ export function drawRoute(
 
 
 
-
     map.fitBounds(
 
-        [
-            from,
-            to
-        ],
+        routeLine.getBounds(),
 
         {
-            padding:[80,80]
+            padding:[
+                80,
+                80
+            ]
         }
 
     );
@@ -63,12 +59,11 @@ export function drawRoute(
 
 
 
-
-
 export function clearRoute(map){
 
 
     if(routeLine){
+
 
         map.removeLayer(
             routeLine
@@ -76,6 +71,7 @@ export function clearRoute(map){
 
 
         routeLine=null;
+
 
     }
 

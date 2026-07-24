@@ -2,11 +2,9 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 
-
 import {
     setMap
 } from './mapService';
-
 
 
 import {
@@ -15,17 +13,14 @@ import {
 } from './liveMarkerService';
 
 
-
 import {
     initLocationRealtime
 } from '../supabase/locationRealtimeService';
 
 
-
 import {
     watchLocation
 } from '../location/locationService';
-
 
 
 import {
@@ -34,17 +29,16 @@ import {
 } from './myMarkerService';
 
 
-
 import {
     initLocationEvents
 } from './locationEvents';
-
 
 
 import {
     getTileUrl,
     setCurrentTileLayer
 } from './mapThemeService';
+
 
 
 
@@ -57,11 +51,7 @@ let tileLayer = null;
 
 
 
-
-
-
 export function initMap(){
-
 
 
     if(initialized)
@@ -74,13 +64,9 @@ export function initMap(){
 
 
 
-
-
     console.log(
         'MAP INIT'
     );
-
-
 
 
 
@@ -103,18 +89,13 @@ export function initMap(){
     .setView(
 
         [
-
             50.4501,
-
             30.5234
-
         ],
 
         14
 
     );
-
-
 
 
 
@@ -127,14 +108,6 @@ export function initMap(){
 
 
 
-
-
-
-
-
-    // ==========================
-    // MAP THEME
-    // ==========================
 
 
     tileLayer = L.tileLayer(
@@ -166,12 +139,6 @@ export function initMap(){
 
 
 
-
-    // ==========================
-    // CLOSE WINDOWS
-    // ==========================
-
-
     map.on(
 
         'click',
@@ -182,9 +149,7 @@ export function initMap(){
             window.dispatchEvent(
 
                 new Event(
-
                     'ui:close-all'
-
                 )
 
             );
@@ -202,14 +167,7 @@ export function initMap(){
 
 
 
-    // ==========================
-    // MY MARKER
-    // ==========================
-
-
     initMyMarker();
-
-
 
 
 
@@ -223,14 +181,10 @@ export function initMap(){
 
 
 
-    // ==========================
-    // LOCATION
-    // ==========================
-
-
     watchLocation(
 
         (position)=>{
+
 
 
             console.log(
@@ -245,6 +199,34 @@ export function initMap(){
 
 
 
+
+            // ==========================
+            // СОХРАНЯЕМ МОЮ ПОЗИЦИЮ
+            // ДЛЯ МАРШРУТА
+            // ==========================
+
+
+            window.myLocation = {
+
+
+                lat:
+
+                position.latitude,
+
+
+                lng:
+
+                position.longitude
+
+
+            };
+
+
+
+
+
+
+
             updateMyMarker(
 
                 position.latitude,
@@ -252,6 +234,8 @@ export function initMap(){
                 position.longitude
 
             );
+
+
 
 
 
@@ -280,7 +264,6 @@ export function initMap(){
 
                         }
 
-
                     }
 
                 )
@@ -300,11 +283,6 @@ export function initMap(){
 
 
 
-
-
-    // ==========================
-    // LIVE
-    // ==========================
 
 
     loadLiveMarkers();
@@ -378,8 +356,6 @@ export function initMap(){
         }
 
     );
-
-
 
 
 
