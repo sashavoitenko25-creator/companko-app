@@ -158,21 +158,25 @@ function initMapSafe(){
 
 
     const button =
-
-    document.querySelector(
-        '#my-location-button'
-    );
-
-
-
+    document.querySelector('#my-location-button');
 
     if(button){
 
+        button.replaceWith(button.cloneNode(true));
 
-        button.onclick =
+        const newButton =
+        document.querySelector('#my-location-button');
 
-        centerOnMyLocation;
+        newButton.addEventListener(
+            'click',
+            ()=>{
 
+                console.log('LOCATION BUTTON');
+
+                centerOnMyLocation();
+
+            }
+        );
 
     }
 
