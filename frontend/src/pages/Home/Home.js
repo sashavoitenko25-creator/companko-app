@@ -45,6 +45,12 @@ import {
 } from '../../components/ProfileButton/ProfileButton';
 
 
+import {
+    FeedbackModal,
+    initFeedbackModal
+}
+from '../../components/FeedbackModal/FeedbackModal';
+
 
 import '../../features/live/live.css';
 
@@ -156,6 +162,10 @@ ${Settings()}
 
 
 
+${FeedbackModal()}
+
+
+
 ${RoutePanel()}
 
 
@@ -204,6 +214,7 @@ async function initHomeEvents(){
     initMyLiveSelection();
     initLiveButton();
     initSettings();
+	initFeedbackModal();
     updateLiveButton();
 	initProfileButton();
 }

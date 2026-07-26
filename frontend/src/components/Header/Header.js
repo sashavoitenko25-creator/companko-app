@@ -1,72 +1,46 @@
 import './Header.css';
 
-
 import {
     ProfileButton
 } from '../ProfileButton/ProfileButton';
 
-
-
 export function Header(){
 
-
-    setTimeout(initHeader);
-
-
+    setTimeout(initHeader,0);
 
     return `
 
-
 <header class="header">
 
+    <div class="header-title">
+        Я тут
+    </div>
 
-<div class="header-title">
-
-    Companko
-
-</div>
-
-
-
-${ProfileButton()}
-
-
+    ${ProfileButton()}
 
 </header>
-
 
 `;
 
 }
 
-
-
-
 function initHeader(){
 
+    const button =
+    document.querySelector('#profile-button');
 
+    if(!button)
+        return;
 
-document
-.querySelector('#profile-button')
-?.addEventListener(
+    button.onclick = (event)=>{
 
-'click',
+        event.preventDefault();
+        event.stopPropagation();
 
-()=>{
+        window.dispatchEvent(
+            new Event('profile:open')
+        );
 
-
-window.dispatchEvent(
-
-new Event(
-'profile:open'
-)
-
-);
-
-
-}
-
-);
-
+    };
 
 }

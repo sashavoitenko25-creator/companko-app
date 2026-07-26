@@ -39,24 +39,42 @@ export function BottomBar(){
 
 function initBottomBar(){
 
-    document
-        .querySelector('#my-location-button')
-        ?.addEventListener(
-            'click',
-            centerOnMyLocation
-        );
+    const locationButton =
+    document.querySelector('#my-location-button');
 
-    document
-        .querySelector('#settings-button')
-        ?.addEventListener(
-            'click',
-            ()=>{
+    if(locationButton){
 
-                document
-                    .querySelector('#settings-window')
-                    ?.classList.toggle('open');
+        locationButton.onclick = (event)=>{
 
-            }
-        );
+            event.preventDefault();
+            event.stopPropagation();
+
+            centerOnMyLocation();
+
+        };
+
+    }
+
+    const settingsButton =
+    document.querySelector('#settings-button');
+
+    if(settingsButton){
+
+        settingsButton.onclick = (event)=>{
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const settings =
+            document.querySelector('#settings-window');
+
+            if(!settings)
+                return;
+
+            settings.classList.toggle('open');
+
+        };
+
+    }
 
 }
