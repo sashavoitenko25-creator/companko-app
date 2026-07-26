@@ -2,7 +2,7 @@ import './BottomBar.css';
 
 import {
     centerOnMyLocation
-} from '../../services/map/locationControlService';
+} from './services/map/locationControlService';
 
 export function BottomBar(){
 
