@@ -2,55 +2,60 @@ import {
     getMap
 } from './mapService';
 
-import {
-    getCurrentPosition
-} from '../location/locationService';
-
-export async function centerOnMyLocation(){
+export function centerOnMyLocation(){
 
     const map = getMap();
 
     if(!map)
         return;
 
-    try{
+    if(!navigator.geolocation){
 
-        const position = await getCurrentPosition();
+        console.error('No geolocation');
 
-        if(!position)
-            return;
-
-        map.flyTo(
-
-            [
-
-                position.latitude,
-
-                position.longitude
-
-            ],
-
-            17,
-
-            {
-
-                animate:true,
-
-                duration:1.2
-
-            }
-
-        );
+        return;
 
     }
 
-    catch(error){
+    navigator.geolocation.getCurrentPosition(
 
-        console.error(
-            'CENTER LOCATION ERROR',
-            error
-        );
+        position=>{
 
-    }
+            map.flyTo(
+
+                [
+
+                    position.coords.latitude,
+
+                    position.coords.longitude
+
+                ],
+
+                17,
+
+                {
+
+                    animate:true,
+                    duration:1
+
+                }
+
+            );
+
+        },
+
+        error=>{
+
+            console.error(error);
+
+        },
+
+        {
+
+            enableHighAccuracy:true
+
+        }
+
+    );
 
 }
