@@ -142,17 +142,3 @@
     font-weight:600;
 
 }
-
-#profile-button{
-
-    position:absolute;
-
-    top:18px;
-
-    right:18px;
-
-    z-index:6000;
-
-    pointer-events:auto;
-
-}
