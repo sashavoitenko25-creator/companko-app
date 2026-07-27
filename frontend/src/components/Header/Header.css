@@ -2,11 +2,15 @@
 
     position:absolute;
 
-    inset:0;
+    top:0;
+
+    left:0;
+
+    right:0;
+
+    z-index:5000;
 
     pointer-events:none;
-
-    z-index:4000;
 
 }
 
@@ -14,28 +18,27 @@
 
     position:absolute;
 
-    top:22px;
+    top:18px;
 
-    left:20px;
+    left:18px;
 
     display:flex;
 
     align-items:center;
 
-    gap:16px;
+    gap:12px;
 
-    padding:18px 22px;
+    padding:10px 14px;
 
-    border-radius:26px;
+    border-radius:18px;
 
-    background:rgba(18,20,35,.92);
+    background:rgba(18,20,35,.88);
 
-    backdrop-filter:blur(20px);
+    backdrop-filter:blur(18px);
 
-    border:1px solid rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
 
-    box-shadow:
-    0 15px 40px rgba(0,0,0,.35);
+    box-shadow:0 10px 25px rgba(0,0,0,.30);
 
     pointer-events:auto;
 
@@ -43,11 +46,11 @@
 
 .header-brand__logo{
 
-    width:58px;
+    width:42px;
 
-    height:58px;
+    height:42px;
 
-    border-radius:18px;
+    border-radius:14px;
 
     display:flex;
 
@@ -62,7 +65,15 @@
     );
 
     box-shadow:
-    0 8px 30px rgba(139,92,246,.45);
+    0 6px 18px rgba(139,92,246,.35);
+
+}
+
+.header-brand__logo svg{
+
+    width:22px;
+
+    height:22px;
 
 }
 
@@ -72,15 +83,17 @@
 
     flex-direction:column;
 
+    justify-content:center;
+
 }
 
 .header-brand__title{
 
-    color:white;
-
-    font-size:28px;
+    font-size:19px;
 
     font-weight:800;
+
+    color:white;
 
     line-height:1;
 
@@ -92,27 +105,31 @@
 
     align-items:center;
 
-    gap:8px;
+    gap:6px;
 
-    margin-top:8px;
+    margin-top:4px;
 
-    color:rgba(255,255,255,.72);
+    font-size:12px;
 
-    font-size:17px;
-
-    font-weight:500;
+    color:rgba(255,255,255,.75);
 
 }
 
 .header-online-dot{
 
-    width:8px;
+    width:7px;
 
-    height:8px;
+    height:7px;
 
     border-radius:50%;
 
-    background:#9D4EDD;
+    background:#8B5CF6;
+
+}
+
+.header-online-dot.hidden{
+
+    display:none;
 
 }
 
@@ -120,7 +137,9 @@
 
     color:white;
 
-    opacity:.82;
+    font-size:12px;
+
+    font-weight:600;
 
 }
 
@@ -130,9 +149,9 @@
 
     top:18px;
 
-    right:20px;
+    right:18px;
 
-    z-index:4500;
+    z-index:6000;
 
     pointer-events:auto;
 

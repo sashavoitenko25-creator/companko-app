@@ -5,6 +5,11 @@ import {
 }
 from '../ProfileButton/ProfileButton';
 
+import {
+    getOnlineCount
+}
+from '../../services/supabase/liveService';
+
 export function Header(){
 
     setTimeout(initHeader);
@@ -13,61 +18,53 @@ export function Header(){
 
 <header class="header">
 
-    <div class="header-brand">
+<div class="header-brand">
 
-        <div class="header-brand__logo">
+    <div class="header-brand__logo">
 
-            <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none">
+        <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none">
 
-                <path
-                d="M12 22C12 22 5 15.5 5 10C5 6.134 8.134 3 12 3C15.866 3 19 6.134 19 10C19 15.5 12 22 12 22Z"
-                fill="white"/>
+            <path
+            d="M12 22C12 22 5 15.5 5 10C5 6.134 8.134 3 12 3C15.866 3 19 6.134 19 10C19 15.5 12 22 12 22Z"
+            fill="white"/>
 
-                <circle
-                cx="12"
-                cy="10"
-                r="2.8"
-                fill="#8B5CF6"/>
+            <circle
+            cx="12"
+            cy="10"
+            r="2.5"
+            fill="#8B5CF6"/>
 
-            </svg>
+        </svg>
+
+    </div>
+
+    <div class="header-brand__text">
+
+        <div class="header-brand__title">
+
+            Я тут
 
         </div>
 
-        <div class="header-brand__text">
+        <div class="header-brand__subtitle">
 
-            <div class="header-brand__title">
+            <span id="header-status">
 
-                Я тут
+                Люди рядом
 
-            </div>
-
-            <div class="header-brand__subtitle">
-
-                <span>
-                    Люди рядом
-                </span>
-
-                <span
-                class="header-online-dot"></span>
-
-                <span
-                id="header-online-count">
-
-                    0 онлайн
-
-                </span>
-
-            </div>
+            </span>
 
         </div>
 
     </div>
 
-    ${ProfileButton()}
+</div>
+
+${ProfileButton()}
 
 </header>
 
@@ -97,36 +94,49 @@ function initHeader(){
 
     );
 
-}
+    updateOnline();
 
-export function setHeaderOnline(count){
-
-    const element =
-    document.querySelector(
-        '#header-online-count'
+    setInterval(
+        updateOnline,
+        5000
     );
 
-    if(!element)
-        return;
+}
 
-    if(count<=0){
+async function updateOnline(){
 
-        element.innerHTML='';
+    try{
 
-        document
-        .querySelector('.header-online-dot')
-        ?.classList.add('hidden');
+        const count =
+        await getOnlineCount();
+
+        const status =
+        document.querySelector(
+            '#header-status'
+        );
+
+        if(!status)
+            return;
+
+        if(count>0){
+
+            status.innerHTML=
+            `Люди рядом • ${count} онлайн`;
+
+        }
+
+        else{
+
+            status.innerHTML=
+            'Люди рядом';
+
+        }
 
     }
 
-    else{
+    catch(error){
 
-        element.innerHTML=
-        `${count} онлайн`;
-
-        document
-        .querySelector('.header-online-dot')
-        ?.classList.remove('hidden');
+        console.error(error);
 
     }
 
