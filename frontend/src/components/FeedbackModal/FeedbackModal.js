@@ -1,34 +1,45 @@
 import './FeedbackModal.css';
 
-let currentType = 'problem';
+import {
+    getProfile
+} from '../../features/profile/profileStore';
 
-export function FeedbackModal() {
+import {
+    sendFeedback
+} from '../../services/supabase/feedbackService';
+
+let feedbackType = 'problem';
+
+export function FeedbackModal(){
 
 return `
 
-<div id="feedback-overlay" class="feedback-overlay">
+<div
+id="feedback-overlay"
+class="feedback-overlay">
 
-    <div id="feedback-modal" class="feedback-modal">
+    <div class="feedback-modal">
 
         <button
-            id="feedback-back"
-            class="feedback-back">
+        id="feedback-back"
+        class="feedback-back">
             ←
         </button>
 
-        <h2 id="feedback-title">
+        <h2
+        id="feedback-title">
             Сообщить о проблеме
         </h2>
 
         <textarea
-            id="feedback-text"
-            class="feedback-text"
-            placeholder="Опишите подробнее..."
+        id="feedback-message"
+        class="feedback-text"
+        placeholder="Опишите подробнее..."
         ></textarea>
 
         <button
-            id="feedback-send"
-            class="feedback-send">
+        id="feedback-send"
+        class="feedback-send">
             Отправить
         </button>
 
@@ -40,113 +51,115 @@ return `
 
 }
 
-export function initFeedbackModal() {
+export function initFeedbackModal(){
 
-const overlay =
-document.querySelector('#feedback-overlay');
+    const overlay =
+    document.querySelector(
+        '#feedback-overlay'
+    );
 
-const modal =
-document.querySelector('#feedback-modal');
+    const title =
+    document.querySelector(
+        '#feedback-title'
+    );
 
-const textarea =
-document.querySelector('#feedback-text');
+    const textarea =
+    document.querySelector(
+        '#feedback-message'
+    );
 
-const title =
-document.querySelector('#feedback-title');
+    window.addEventListener(
+        'feedback:problem',
+        ()=>{
 
-if(!overlay || !modal)
-    return;
+            feedbackType='problem';
 
-window.addEventListener(
-'feedback:problem',
-()=>{
+            title.innerHTML='🐞 Сообщить о проблеме';
 
-    currentType='problem';
+            textarea.value='';
 
-    title.innerHTML='🐞 Сообщить о проблеме';
+            overlay.classList.add('open');
 
-    textarea.value='';
+        }
+    );
 
-    textarea.placeholder='Опишите проблему...';
+    window.addEventListener(
+        'feedback:idea',
+        ()=>{
 
-    overlay.classList.add('open');
+            feedbackType='idea';
 
-});
+            title.innerHTML='💡 Предложить идею';
 
-window.addEventListener(
-'feedback:idea',
-()=>{
+            textarea.value='';
 
-    currentType='idea';
+            overlay.classList.add('open');
 
-    title.innerHTML='💡 Предложить идею';
+        }
+    );
 
-    textarea.value='';
+    document
+        .querySelector('#feedback-back')
+        .onclick=()=>{
 
-    textarea.placeholder='Расскажите вашу идею...';
+            overlay.classList.remove('open');
 
-    overlay.classList.add('open');
+        };
 
-});
+    overlay.onclick=(e)=>{
 
-overlay.onclick=(event)=>{
+        if(e.target===overlay){
 
-    if(event.target===overlay){
+            overlay.classList.remove('open');
 
-        overlay.classList.remove('open');
+        }
 
-    }
+    };
 
-};
+    document
+        .querySelector('#feedback-send')
+        .onclick=async()=>{
 
-document
-.querySelector('#feedback-back')
-.onclick=()=>{
+            const text=
+            textarea.value.trim();
 
-    overlay.classList.remove('open');
+            if(!text)
+                return;
 
-};
+            const profile=
+            getProfile();
 
-document
-.querySelector('#feedback-send')
-.onclick=()=>{
+            try{
 
-    const text=
-    textarea.value.trim();
+                await sendFeedback({
 
-    if(!text){
+                    telegram_id:
+                    profile.telegram_id,
 
-        textarea.focus();
+                    first_name:
+                    profile.first_name,
 
-        return;
+                    username:
+                    profile.username,
 
-    }
+                    type:
+                    feedbackType,
 
-    console.log({
+                    message:
+                    text
 
-        type:currentType,
+                });
 
-        text
+                overlay.classList.remove('open');
 
-    });
+            }
 
-    textarea.value='';
+            catch(error){
 
-    title.innerHTML='✅ Спасибо!';
+                console.error(error);
 
-    setTimeout(()=>{
+            }
 
-        overlay.classList.remove('open');
-
-        title.innerHTML=
-        currentType==='problem'
-        ?
-        '🐞 Сообщить о проблеме'
-        :
-        '💡 Предложить идею';
-
-    },1200);
-
-};
+        };
 
 }

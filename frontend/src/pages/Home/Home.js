@@ -52,6 +52,12 @@ import {
 from '../../components/FeedbackModal/FeedbackModal';
 
 
+import {
+    AdminPanel
+}
+from '../../components/AdminPanel/AdminPanel';
+
+
 import '../../features/live/live.css';
 
 import '../../features/route/route.css';
@@ -166,6 +172,10 @@ ${FeedbackModal()}
 
 
 
+${AdminPanel()}
+
+
+
 ${RoutePanel()}
 
 
@@ -215,6 +225,7 @@ async function initHomeEvents(){
     initLiveButton();
     initSettings();
 	initFeedbackModal();
+	initAdminPanel();
     updateLiveButton();
 	initProfileButton();
 }
@@ -1082,5 +1093,65 @@ function initProfileButton(){
         );
 
     };
+
+}
+
+function initAdminPanel(){
+
+    const profile = getProfile();
+
+    if(!profile)
+        return;
+
+    const telegramId =
+        Number(profile.telegram_id);
+
+    if(telegramId !== 6859689857)
+        return;
+
+    const settings =
+        document.querySelector(
+            '#settings-window'
+        );
+
+    if(!settings)
+        return;
+
+    const button =
+    document.createElement('button');
+
+    button.className =
+    'settings-action';
+
+    button.innerHTML =
+    '👑 Админка';
+
+    settings
+    .querySelector('.settings-actions')
+    ?.appendChild(button);
+
+    const panel =
+    document.querySelector(
+        '#admin-panel'
+    );
+
+    button.onclick=()=>{
+
+        settings.classList.remove('open');
+
+        panel.classList.add('open');
+
+    };
+
+    document
+    .querySelector('#admin-back')
+    ?.addEventListener(
+        'click',
+        ()=>{
+
+            panel.classList.remove('open');
+
+        }
+    );
 
 }
