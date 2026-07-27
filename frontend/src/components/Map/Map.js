@@ -4,10 +4,6 @@ import {
     initMap
 } from '../../services/map/mapInit';
 
-import {
-    centerOnMyLocation
-} from '../../services/map/locationControlService';
-
 let initialized = false;
 
 export function Map(){
@@ -28,14 +24,6 @@ export function Map(){
 <div
     id="selected-user-container">
 </div>
-
-<button
-    id="my-location-button"
-    class="my-location-button">
-
-    📍
-
-</button>
 
 `;
 
@@ -72,49 +60,13 @@ function initMapSafe(){
 
     }
 
-    const button =
-    document.querySelector(
-        '#my-location-button'
-    );
-
-    if(button){
-
-        button.replaceWith(
-            button.cloneNode(true)
-        );
-
-        const newButton =
-        document.querySelector(
-            '#my-location-button'
-        );
-
-        newButton.addEventListener(
-
-            'click',
-
-            ()=>{
-
-                console.log(
-                    'LOCATION BUTTON'
-                );
-
-                centerOnMyLocation();
-
-            }
-
-        );
-
-    }
-
-    // обновляем только карту
     window.addEventListener(
 
         'live:refresh',
 
         ()=>{
 
-            // здесь ничего не делаем
-            // карта сама обновляется через mapInit
+            // карта обновляется автоматически
 
         }
 

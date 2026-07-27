@@ -1,20 +1,22 @@
-.bottom-bar {
+.bottom-bar{
 
-    position: fixed;
+    position:fixed;
 
-    bottom: 20px;
+    bottom:20px;
 
-    left: 50%;
+    left:50%;
 
-    transform: translateX(-50%);
+    transform:translateX(-50%);
 
-    width: calc(100% - 30px);
+    width:calc(100% - 30px);
 
-    max-width: 430px;
+    max-width:430px;
 
-    height: 70px;
+    height:70px;
 
-    background:#10111a;
+    background:rgba(16,17,26,.94);
+
+    backdrop-filter:blur(20px);
 
     border-radius:35px;
 
@@ -29,194 +31,177 @@
     z-index:9000;
 
     box-shadow:
-    0 10px 40px rgba(0,0,0,.45);
+        0 15px 45px rgba(0,0,0,.45);
 
 }
 
-
-
-/* LEFT BUTTON */
+/* =======================
+   LEFT + RIGHT BUTTON
+======================= */
 
 .bottom-button,
-#settings-button {
+#settings-button{
 
+    width:56px;
 
-    width:55px;
-
-    height:55px;
-
-
-    border-radius:50%;
-
+    height:56px;
 
     border:none;
-
-
-    background:#1c1e2b;
-
-
-    color:white;
-
-
-    font-size:25px;
-
-
-    display:flex;
-
-
-    align-items:center;
-
-
-    justify-content:center;
-
-
-    cursor:pointer;
-
-
-}
-
-
-
-/* LIVE BUTTON */
-
-.live-button {
-
-
-    height:55px;
-
-
-    flex:1;
-
-
-    margin:0 15px;
-
-
-    border:none;
-
 
     border-radius:18px;
 
+    background:rgba(28,30,43,.95);
 
-    background:
-    linear-gradient(
-        135deg,
-        #9b4dff,
-        #7434ff
-    );
+    display:flex;
 
+    align-items:center;
 
-    color:white;
-
-
-    font-size:22px;
-
-
-    font-weight:700;
-
+    justify-content:center;
 
     cursor:pointer;
 
+    transition:.18s;
+
+    box-shadow:
+        0 6px 20px rgba(0,0,0,.35);
 
 }
 
+.bottom-button:hover{
 
+    transform:translateY(-2px);
 
-.live-button.stop-live {
+}
 
+.bottom-button:active{
+
+    transform:scale(.92);
+
+}
+
+.location-icon{
+
+    width:24px;
+
+    height:24px;
+
+}
+
+/* =======================
+      LIVE BUTTON
+======================= */
+
+.live-button{
+
+    height:56px;
+
+    flex:1;
+
+    margin:0 15px;
+
+    border:none;
+
+    border-radius:18px;
 
     background:
-    linear-gradient(
-        135deg,
-        #ff4545,
-        #d91f1f
-    );
+        linear-gradient(
+            135deg,
+            #8B5CF6,
+            #A855F7
+        );
 
+    color:white;
+
+    font-size:22px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.18s;
+
+    box-shadow:
+        0 10px 28px rgba(139,92,246,.35);
 
 }
 
+.live-button:hover{
 
+    transform:translateY(-2px);
 
-.live-dot {
+}
+
+.live-button:active{
+
+    transform:scale(.97);
+
+}
+
+.live-button.stop-live{
+
+    background:
+        linear-gradient(
+            135deg,
+            #EF4444,
+            #DC2626
+        );
+
+}
+
+.live-dot{
 
     display:none;
 
 }
 
+/* =======================
+      SETTINGS
+======================= */
 
-
-/* SETTINGS POPUP */
-
-
-.settings-window {
-
+.settings-window{
 
     position:fixed;
 
-
     right:20px;
-
 
     bottom:105px;
 
-
     width:270px;
-
 
     padding:25px;
 
-
     background:#11121b;
-
 
     color:white;
 
-
     border-radius:30px;
 
-
     box-shadow:
-    0 20px 60px rgba(0,0,0,.6);
-
+        0 20px 60px rgba(0,0,0,.6);
 
     opacity:0;
 
-
-    transform:
-    translateY(30px);
-
+    transform:translateY(30px);
 
     pointer-events:none;
 
-
     transition:.3s;
-
 
     z-index:9500;
 
-
 }
 
-
-
-.settings-window.open {
-
+.settings-window.open{
 
     opacity:1;
 
-
-    transform:
-    translateY(0);
-
+    transform:translateY(0);
 
     pointer-events:auto;
 
-
 }
 
-
-
-.settings-window h2 {
-
+.settings-window h2{
 
     text-align:center;
 
@@ -224,13 +209,11 @@
 
 }
 
+/* =======================
+      SWITCH
+======================= */
 
-
-/* SWITCH */
-
-
-.theme-switch {
-
+.theme-switch{
 
     display:flex;
 
@@ -242,19 +225,13 @@
 
 }
 
-
-
-.theme-icon {
-
+.theme-icon{
 
     font-size:28px;
 
 }
 
-
-
-.switch {
-
+.switch{
 
     position:relative;
 
@@ -264,19 +241,13 @@
 
 }
 
-
-
-.switch input {
-
+.switch input{
 
     display:none;
 
 }
 
-
-
-.slider {
-
+.slider{
 
     position:absolute;
 
@@ -284,62 +255,42 @@
 
     background:#333;
 
-
     border-radius:40px;
-
 
     cursor:pointer;
 
-
 }
 
-
-
-.slider:before {
-
+.slider:before{
 
     content:"";
 
-
     position:absolute;
-
 
     width:34px;
 
     height:34px;
 
-
     left:3px;
 
     top:3px;
 
-
     background:white;
-
 
     border-radius:50%;
 
-
     transition:.3s;
-
 
 }
 
-
-
-.switch input:checked + .slider {
-
+.switch input:checked + .slider{
 
     background:#8b45ff;
 
 }
 
+.switch input:checked + .slider:before{
 
-
-.switch input:checked + .slider:before {
-
-
-    transform:
-    translateX(40px);
+    transform:translateX(40px);
 
 }
