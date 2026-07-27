@@ -152,6 +152,20 @@ export function initFeedbackModal(){
 
                 overlay.classList.remove('open');
 
+                setTimeout(()=>{
+
+                    alert(
+
+                `✅ Спасибо!
+
+                Ваше сообщение успешно отправлено.
+
+                Мы обязательно его рассмотрим ❤️`
+
+                    );
+
+                },200);
+
             }
 
             catch(error){
