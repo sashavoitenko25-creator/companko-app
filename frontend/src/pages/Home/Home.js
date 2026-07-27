@@ -41,11 +41,6 @@ import {
 
 
 import {
-    ProfileButton
-} from '../../components/ProfileButton/ProfileButton';
-
-
-import {
     FeedbackModal,
     initFeedbackModal
 }
@@ -156,10 +151,6 @@ ${Map()}
 
 
 ${Header()}
-
-
-
-${ProfileButton()}
 
 
 
