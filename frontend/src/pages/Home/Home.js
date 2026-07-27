@@ -1104,54 +1104,50 @@ function initAdminPanel(){
         return;
 
     const telegramId =
-        Number(profile.telegram_id);
+    Number(profile.telegram_id);
 
     if(telegramId !== 6859689857)
         return;
 
-    const settings =
-        document.querySelector(
-            '#settings-window'
-        );
+    initAdminComponent();
 
-    if(!settings)
+    const settings =
+    document.querySelector(
+        '#settings-window'
+    );
+
+    const actions =
+    settings?.querySelector(
+        '.settings-actions'
+    );
+
+    if(!actions)
+        return;
+
+    if(document.querySelector('#admin-open'))
         return;
 
     const button =
     document.createElement('button');
 
-    button.className =
-    'settings-action';
+    button.id='admin-open';
 
-    button.innerHTML =
-    '👑 Админка';
+    button.className='settings-action';
 
-    settings
-    .querySelector('.settings-actions')
-    ?.appendChild(button);
+    button.innerHTML='👑 Админка';
 
-    const panel =
-    document.querySelector(
-        '#admin-panel'
-    );
+    actions.appendChild(button);
 
     button.onclick=()=>{
 
         settings.classList.remove('open');
 
-        panel.classList.add('open');
+        document
+        .querySelector('#admin-panel')
+        ?.classList.add('open');
+
+        loadFeedback();
 
     };
-
-    document
-    .querySelector('#admin-back')
-    ?.addEventListener(
-        'click',
-        ()=>{
-
-            panel.classList.remove('open');
-
-        }
-    );
 
 }
