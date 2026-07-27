@@ -98,7 +98,7 @@ function initHeader(){
 
     setInterval(
         updateOnline,
-        5000
+        1000
     );
 
 }
