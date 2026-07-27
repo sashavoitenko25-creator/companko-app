@@ -2,18 +2,41 @@ import './Header.css';
 
 import {
     ProfileButton
-} from '../ProfileButton/ProfileButton';
+}
+from '../ProfileButton/ProfileButton';
 
 export function Header(){
 
-    setTimeout(initHeader,0);
+    setTimeout(initHeader);
 
     return `
 
 <header class="header">
 
-    <div class="header-title">
-        Я тут
+    <div class="header-brand">
+
+        <div class="header-brand__logo">
+
+            <div class="header-brand__dot"></div>
+
+        </div>
+
+        <div class="header-brand__text">
+
+            <div class="header-brand__title">
+
+                Я тут
+
+            </div>
+
+            <div class="header-brand__subtitle">
+
+                онлайн рядом
+
+            </div>
+
+        </div>
+
     </div>
 
     ${ProfileButton()}
@@ -26,21 +49,24 @@ export function Header(){
 
 function initHeader(){
 
-    const button =
-    document.querySelector('#profile-button');
+    document
+    .querySelector('#profile-button')
+    ?.addEventListener(
 
-    if(!button)
-        return;
+        'click',
 
-    button.onclick = (event)=>{
+        ()=>{
 
-        event.preventDefault();
-        event.stopPropagation();
+            window.dispatchEvent(
 
-        window.dispatchEvent(
-            new Event('profile:open')
-        );
+                new Event(
+                    'profile:open'
+                )
 
-    };
+            );
+
+        }
+
+    );
 
 }
