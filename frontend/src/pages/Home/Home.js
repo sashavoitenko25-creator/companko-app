@@ -58,6 +58,13 @@ import {
 from '../../components/AdminPanel/AdminPanel';
 
 
+import {
+    initAdminPanel as initAdminComponent,
+    loadFeedback
+}
+from '../../components/AdminPanel/AdminPanel';
+
+
 import '../../features/live/live.css';
 
 import '../../features/route/route.css';
