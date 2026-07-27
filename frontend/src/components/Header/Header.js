@@ -17,7 +17,23 @@ export function Header(){
 
         <div class="header-brand__logo">
 
-            <div class="header-brand__dot"></div>
+            <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none">
+
+                <path
+                d="M12 22C12 22 5 15.5 5 10C5 6.134 8.134 3 12 3C15.866 3 19 6.134 19 10C19 15.5 12 22 12 22Z"
+                fill="white"/>
+
+                <circle
+                cx="12"
+                cy="10"
+                r="2.8"
+                fill="#8B5CF6"/>
+
+            </svg>
 
         </div>
 
@@ -31,7 +47,19 @@ export function Header(){
 
             <div class="header-brand__subtitle">
 
-                онлайн рядом
+                <span>
+                    Люди рядом
+                </span>
+
+                <span
+                class="header-online-dot"></span>
+
+                <span
+                id="header-online-count">
+
+                    0 онлайн
+
+                </span>
 
             </div>
 
@@ -68,5 +96,38 @@ function initHeader(){
         }
 
     );
+
+}
+
+export function setHeaderOnline(count){
+
+    const element =
+    document.querySelector(
+        '#header-online-count'
+    );
+
+    if(!element)
+        return;
+
+    if(count<=0){
+
+        element.innerHTML='';
+
+        document
+        .querySelector('.header-online-dot')
+        ?.classList.add('hidden');
+
+    }
+
+    else{
+
+        element.innerHTML=
+        `${count} онлайн`;
+
+        document
+        .querySelector('.header-online-dot')
+        ?.classList.remove('hidden');
+
+    }
 
 }
