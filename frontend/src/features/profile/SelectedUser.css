@@ -1,462 +1,1008 @@
-.selected-user {
+/* ========================================
+   КОНТЕЙНЕР
+======================================== */
+
+#selected-user {
 
     position: fixed;
 
-    left: 20px;
+    inset: 0;
 
-    right: 20px;
+    z-index: 9999;
 
-    bottom: 90px;
+    display: flex;
 
-    z-index: 5000;
+    align-items: flex-end;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(5, 5, 12, .48);
+
+    backdrop-filter:
+        blur(8px);
+
+    -webkit-backdrop-filter:
+        blur(8px);
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity .25s ease;
 
 }
 
 
-.selected-user.hidden {
+#selected-user.selected-user--visible {
 
-    display:none;
+    opacity: 1;
+
+    pointer-events: auto;
 
 }
 
 
+#selected-user.hidden {
+
+    display: none;
+
+}
 
 
-
-
+/* ========================================
+   КАРТОЧКА
+======================================== */
 
 .profile-live-card {
 
+    position: relative;
 
-    background:
-
-    linear-gradient(
-
-        135deg,
-
-        #111827,
-
-        #182338
-
+    width: min(
+        430px,
+        100%
     );
 
+    max-height: 90vh;
 
-    border-radius:32px;
+    overflow: hidden;
 
+    border-radius: 34px;
 
-    padding:22px;
+    background:
+        linear-gradient(
+            145deg,
+            #191a2b,
+            #10111c
+        );
 
-
-    color:white;
-
+    color: #fff;
 
     box-shadow:
+        0 30px 90px
+        rgba(0, 0, 0, .65),
 
-    0 20px 60px rgba(0,0,0,.55);
+        0 0 0 1px
+        rgba(255, 255, 255, .07);
 
+    transform:
+        translateY(35px)
+        scale(.97);
 
+    opacity: 0;
 
-    backdrop-filter:blur(20px);
-
-
-
-}
-
-
-
-
-
-
-
-.profile-live-top {
-
-
-    display:flex;
-
-
-    align-items:center;
-
-
-    gap:16px;
-
-
+    transition:
+        transform .35s cubic-bezier(
+            .2,
+            .9,
+            .2,
+            1
+        ),
+        opacity .3s ease;
 
 }
 
 
+#selected-user.selected-user--visible
+.profile-live-card {
+
+    transform:
+        translateY(0)
+        scale(1);
+
+    opacity: 1;
+
+}
 
 
+/* ========================================
+   HERO
+======================================== */
 
+.profile-live-hero {
+
+    position: relative;
+
+    height: 390px;
+
+    overflow: hidden;
+
+    background:
+        #202132;
+
+}
 
 
 .profile-live-avatar {
 
+    width: 100%;
 
-    width:90px;
+    height: 100%;
 
+    object-fit: cover;
 
-    height:90px;
-
-
-    border-radius:50%;
-
-
-    object-fit:cover;
-
-
-
-    border:
-
-    3px solid #8b5cf6;
-
-
+    display: block;
 
 }
 
 
+.profile-live-hero-gradient {
 
+    position: absolute;
 
+    inset: 0;
 
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,.05) 25%,
+            rgba(8,9,18,.05) 45%,
+            rgba(8,9,18,.92) 100%
+        );
 
-
-
-.profile-live-info {
-
-
-    display:flex;
-
-
-    flex-direction:column;
-
-
-    gap:8px;
-
-
+    pointer-events: none;
 
 }
 
 
+/* ========================================
+   CLOSE
+======================================== */
+
+.profile-live-close {
+
+    position: absolute;
+
+    top: 16px;
+
+    right: 16px;
+
+    width: 42px;
+
+    height: 42px;
+
+    border: 0;
+
+    border-radius: 50%;
+
+    background:
+        rgba(15,15,25,.62);
+
+    color: #fff;
+
+    font-size: 27px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.3);
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
+
+}
 
 
+.profile-live-close:hover {
 
+    transform:
+        scale(1.07);
+
+    background:
+        rgba(255,255,255,.16);
+
+}
+
+
+.profile-live-close:active {
+
+    transform:
+        scale(.92);
+
+}
+
+
+/* ========================================
+   LIVE BADGE
+======================================== */
+
+.profile-live-badge {
+
+    position: absolute;
+
+    top: 20px;
+
+    left: 20px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 9px 14px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(20,20,30,.68);
+
+    backdrop-filter:
+        blur(12px);
+
+    -webkit-backdrop-filter:
+        blur(12px);
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: .7px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.25);
+
+}
+
+
+.profile-live-badge span {
+
+    width: 8px;
+
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #45e879;
+
+    box-shadow:
+        0 0 12px
+        rgba(69,232,121,.9);
+
+    animation:
+        livePulse 1.5s infinite;
+
+}
+
+
+@keyframes livePulse {
+
+    0%,
+    100% {
+
+        transform: scale(1);
+
+        opacity: 1;
+
+    }
+
+    50% {
+
+        transform: scale(1.35);
+
+        opacity: .65;
+
+    }
+
+}
+
+
+/* ========================================
+   ИМЯ НА ФОТО
+======================================== */
+
+.profile-live-hero-name {
+
+    position: absolute;
+
+    left: 24px;
+
+    right: 24px;
+
+    bottom: 24px;
+
+}
 
 
 .profile-live-name {
 
+    font-size: 32px;
 
-    font-size:22px;
+    font-weight: 850;
 
+    line-height: 1.05;
 
-    font-weight:700;
+    letter-spacing: -.7px;
 
-
-
-}
-
-
-
-
-
-
-
-.profile-live-status {
-
-
-    color:#22c55e;
-
-
-    font-size:15px;
-
-
-    font-weight:600;
-
-
+    text-shadow:
+        0 3px 18px
+        rgba(0,0,0,.35);
 
 }
 
 
+.profile-live-gender {
 
+    display: inline-flex;
 
+    margin-top: 10px;
 
+    padding: 7px 12px;
 
+    border-radius: 999px;
 
+    background:
+        rgba(255,255,255,.13);
 
-.profile-live-activity {
+    border:
+        1px solid
+        rgba(255,255,255,.14);
 
+    backdrop-filter:
+        blur(10px);
 
-    margin-top:18px;
+    -webkit-backdrop-filter:
+        blur(10px);
 
+    font-size: 13px;
 
-    font-size:18px;
+    font-weight: 700;
 
-
-    font-weight:600;
-
-
+    color:
+        rgba(255,255,255,.94);
 
 }
 
 
+/* ========================================
+   BODY
+======================================== */
+
+.profile-live-body {
+
+    padding: 20px;
+
+}
 
 
+/* ========================================
+   META
+======================================== */
+
+.profile-live-meta {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 10px;
+
+    margin-bottom: 13px;
+
+}
 
 
+.profile-live-meta-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    min-width: 0;
+
+    padding: 13px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,.055);
+
+    border:
+        1px solid
+        rgba(255,255,255,.06);
+
+}
+
+
+.profile-live-meta-icon {
+
+    width: 38px;
+
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background:
+        rgba(139,74,255,.16);
+
+    font-size: 19px;
+
+}
+
+
+.profile-live-meta-item div {
+
+    min-width: 0;
+
+}
+
+
+.profile-live-meta-item small {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color:
+        rgba(255,255,255,.45);
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+}
+
+
+.profile-live-meta-item strong {
+
+    display: block;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 13px;
+
+    font-weight: 750;
+
+}
+
+
+/* ========================================
+   ACTIVITY
+======================================== */
+
+.profile-live-activity-card {
+
+    position: relative;
+
+    min-height: 110px;
+
+    display: flex;
+
+    align-items: center;
+
+    overflow: hidden;
+
+    margin-bottom: 16px;
+
+    border-radius: 23px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(139,72,255,.18),
+            rgba(96,62,180,.06)
+        );
+
+    border:
+        1px solid
+        rgba(158,110,255,.18);
+
+}
+
+
+.profile-live-activity-image {
+
+    width: 130px;
+
+    height: 110px;
+
+    flex-shrink: 0;
+
+    overflow: hidden;
+
+}
+
+
+.profile-live-activity-image img {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: block;
+
+    object-fit: cover;
+
+    object-position: center;
+
+}
+
+
+.profile-live-activity-icon {
+
+    width: 82px;
+
+    height: 82px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin-left: 15px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(139,72,255,.18);
+
+    font-size: 36px;
+
+}
+
+
+.profile-live-activity-info {
+
+    padding:
+        16px 8px 16px 16px;
+
+}
+
+
+.profile-live-activity-info span {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color:
+        rgba(255,255,255,.45);
+
+    font-size: 11px;
+
+    font-weight: 650;
+
+}
+
+
+.profile-live-activity-info strong {
+
+    display: block;
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+    letter-spacing: -.2px;
+
+}
+
+
+.profile-live-activity-arrow {
+
+    margin-left: auto;
+
+    padding-right: 18px;
+
+    color:
+        rgba(255,255,255,.3);
+
+    font-size: 28px;
+
+}
+
+
+/* ========================================
+   BOTTOM
+======================================== */
 
 .profile-live-bottom {
 
+    display: flex;
 
-    margin-top:20px;
+    align-items: center;
 
+    justify-content: space-between;
 
-    display:flex;
-
-
-    align-items:center;
-
-
-    justify-content:space-between;
-
-
+    gap: 15px;
 
 }
 
 
+/* ========================================
+   TIMER
+======================================== */
 
+.profile-live-time {
 
+    display: flex;
 
+    align-items: center;
 
+    gap: 11px;
+
+}
 
 
 .live-circle {
 
+    position: relative;
 
-    width:80px;
+    width: 72px;
 
-
-    height:80px;
-
-
-    position:relative;
-
-
+    height: 72px;
 
 }
-
-
-
-
-
-
 
 
 .live-circle svg {
 
+    width: 72px;
 
-    width:80px;
+    height: 72px;
 
-
-    height:80px;
-
-
-    transform:rotate(-90deg);
-
-
+    transform:
+        rotate(-90deg);
 
 }
-
-
-
-
-
-
 
 
 .circle-bg {
 
+    fill: none;
 
-    fill:none;
+    stroke:
+        rgba(255,255,255,.08);
 
-
-    stroke:#263244;
-
-
-    stroke-width:7;
-
-
+    stroke-width: 5;
 
 }
-
-
-
-
-
 
 
 .circle-progress {
 
+    fill: none;
 
-    fill:none;
+    stroke:
+        #9b5cff;
 
+    stroke-width: 5;
 
-    stroke:#8b5cf6;
+    stroke-linecap: round;
 
+    filter:
+        drop-shadow(
+            0 0 7px
+            rgba(155,92,255,.7)
+        );
 
-    stroke-width:7;
-
-
-    stroke-linecap:round;
-
-
-    transition:.5s;
-
-
+    transition:
+        stroke-dashoffset .5s linear;
 
 }
-
-
-
-
-
-
 
 
 .live-time-text {
 
+    position: absolute;
 
-    position:absolute;
+    inset: 0;
 
+    display: flex;
 
-    inset:0;
+    align-items: center;
 
+    justify-content: center;
 
-    display:flex;
+    font-size: 12px;
 
-
-    align-items:center;
-
-
-    justify-content:center;
-
-
-    font-size:16px;
-
-
-    font-weight:700;
-
-
+    font-weight: 800;
 
 }
 
 
+.profile-live-time-label {
+
+    color:
+        rgba(255,255,255,.43);
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+}
 
 
-
-
-
+/* ========================================
+   ACTIONS
+======================================== */
 
 .profile-live-actions {
 
+    flex: 1;
 
-    display:flex;
+    display: flex;
 
-
-    align-items:center;
-
-
-    gap:12px;
-
-
+    justify-content: flex-end;
 
 }
-
-
-
-
-
-
-
-
-.profile-live-owner {
-
-
-    background:
-
-    rgba(139,92,246,.25);
-
-
-
-    padding:12px 20px;
-
-
-    border-radius:20px;
-
-
-    font-weight:600;
-
-
-
-}
-
-
-
-
-
-
 
 
 .user-card__route {
 
+    min-height: 58px;
 
-    width:55px;
+    width: 100%;
 
+    max-width: 220px;
 
-    height:55px;
+    display: flex;
 
+    align-items: center;
 
-    border-radius:50%;
+    justify-content: center;
 
+    gap: 9px;
 
-    border:none;
+    border: 0;
 
+    border-radius: 18px;
 
     background:
+        linear-gradient(
+            135deg,
+            #a45cff,
+            #7138ff
+        );
 
+    color: #fff;
 
-    linear-gradient(
+    cursor: pointer;
 
-        135deg,
+    box-shadow:
+        0 12px 30px
+        rgba(126,60,255,.35);
 
-        #8b5cf6,
-
-        #6d28d9
-
-    );
-
-
-    color:white;
-
-
-    font-size:24px;
-
-
-    cursor:pointer;
-
-
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 
 }
 
 
+.user-card__route span {
+
+    font-size: 20px;
+
+}
 
 
+.user-card__route strong {
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+}
 
 
+.user-card__route:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 16px 35px
+        rgba(126,60,255,.45);
+
+}
 
 
 .user-card__route:active {
 
+    transform:
+        scale(.97);
 
-    transform:scale(.95);
+}
 
 
+/* ========================================
+   OWNER
+======================================== */
+
+.profile-live-owner {
+
+    min-height: 58px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    padding:
+        0 20px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(139,72,255,.12);
+
+    border:
+        1px solid
+        rgba(155,92,255,.2);
+
+    color:
+        rgba(255,255,255,.9);
+
+    font-size: 14px;
+
+    font-weight: 800;
+
+}
+
+
+.profile-live-owner-dot {
+
+    width: 9px;
+
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #45e879;
+
+    box-shadow:
+        0 0 10px
+        rgba(69,232,121,.8);
+
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 480px) {
+
+    #selected-user {
+
+        padding:
+            10px;
+
+    }
+
+
+    .profile-live-card {
+
+        width: 100%;
+
+        max-height: 92vh;
+
+        border-radius:
+            30px;
+
+    }
+
+
+    .profile-live-hero {
+
+        height: 340px;
+
+    }
+
+
+    .profile-live-name {
+
+        font-size: 28px;
+
+    }
+
+
+    .profile-live-body {
+
+        padding: 15px;
+
+    }
+
+
+    .profile-live-meta {
+
+        gap: 8px;
+
+    }
+
+
+    .profile-live-meta-item {
+
+        padding: 10px;
+
+    }
+
+
+    .profile-live-activity-image {
+
+        width: 110px;
+
+        height: 105px;
+
+    }
+
+
+    .profile-live-bottom {
+
+        gap: 10px;
+
+    }
+
+
+    .profile-live-time-label {
+
+        display: none;
+
+    }
+
+
+    .user-card__route {
+
+        min-height: 55px;
+
+        max-width: none;
+
+    }
 
 }
