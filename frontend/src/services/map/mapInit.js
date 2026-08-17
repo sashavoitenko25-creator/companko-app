@@ -140,10 +140,8 @@ export function initMap(){
 
 
     map.on(
-
         'click',
-
-        ()=>{
+        event => {
 
             window.dispatchEvent(
                 new Event('ui:close-all')
@@ -154,7 +152,6 @@ export function initMap(){
             );
 
         }
-
     );
 
 

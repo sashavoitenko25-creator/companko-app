@@ -272,32 +272,24 @@ function createMarker(
 
 
     marker.on(
-
         'click',
+        event => {
 
-        ()=>{
-
-
+            // Не передаём клик дальше карте
+            if (event.originalEvent) {
+                event.originalEvent.stopPropagation();
+            }
 
             window.dispatchEvent(
-
                 new CustomEvent(
-
                     'user:selected',
-
                     {
-
-                        detail:user
-
+                        detail: user
                     }
-
                 )
-
             );
 
-
         }
-
     );
 
 
