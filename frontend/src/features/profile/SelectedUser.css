@@ -82,6 +82,7 @@
     color: #fff;
 
     box-shadow:
+
         0 30px 90px
         rgba(0, 0, 0, .65),
 
@@ -95,12 +96,14 @@
     opacity: 0;
 
     transition:
+
         transform .35s cubic-bezier(
             .2,
             .9,
             .2,
             1
         ),
+
         opacity .3s ease;
 
 }
@@ -656,7 +659,7 @@
 
     justify-content: space-between;
 
-    gap: 15px;
+    gap: 18px;
 
 }
 
@@ -671,7 +674,7 @@
 
     align-items: center;
 
-    gap: 11px;
+    gap: 12px;
 
 }
 
@@ -680,21 +683,56 @@
 
     position: relative;
 
-    width: 72px;
+    width: 74px;
 
-    height: 72px;
+    height: 74px;
+
+    flex: 0 0 74px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #1c1a2d 0%,
+            #12121e 65%,
+            #0d0d16 100%
+        );
+
+    box-shadow:
+
+        0 0 0 5px
+        rgba(155,92,255,.07),
+
+        0 0 18px
+        rgba(155,92,255,.22),
+
+        inset 0 0 18px
+        rgba(155,92,255,.08);
 
 }
 
 
 .live-circle svg {
 
-    width: 72px;
+    position: absolute;
 
-    height: 72px;
+    inset: 0;
+
+    width: 74px;
+
+    height: 74px;
 
     transform:
         rotate(-90deg);
+
+    overflow: visible;
 
 }
 
@@ -723,9 +761,15 @@
     stroke-linecap: round;
 
     filter:
+
         drop-shadow(
-            0 0 7px
-            rgba(155,92,255,.7)
+            0 0 5px
+            rgba(155,92,255,.95)
+        )
+
+        drop-shadow(
+            0 0 10px
+            rgba(155,92,255,.35)
         );
 
     transition:
@@ -746,9 +790,29 @@
 
     justify-content: center;
 
-    font-size: 12px;
+    z-index: 3;
 
-    font-weight: 800;
+    color: #fff;
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 850;
+
+    letter-spacing: -.5px;
+
+    line-height: 1;
+
+    text-align: center;
+
+    text-shadow:
+        0 1px 8px
+        rgba(0,0,0,.45);
 
 }
 
@@ -756,11 +820,85 @@
 .profile-live-time-label {
 
     color:
-        rgba(255,255,255,.43);
+        rgba(255,255,255,.38);
 
-    font-size: 11px;
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
-    font-weight: 600;
+    font-size: 9px;
+
+    font-weight: 750;
+
+    text-transform: uppercase;
+
+    letter-spacing: .7px;
+
+    white-space: nowrap;
+
+}
+
+
+/* ========================================
+   TIMER GLOW
+======================================== */
+
+@keyframes timerGlow {
+
+    0% {
+
+        box-shadow:
+
+            0 0 0 5px
+            rgba(155,92,255,.06),
+
+            0 0 18px
+            rgba(155,92,255,.18),
+
+            inset 0 0 18px
+            rgba(155,92,255,.06);
+
+    }
+
+    50% {
+
+        box-shadow:
+
+            0 0 0 5px
+            rgba(155,92,255,.09),
+
+            0 0 25px
+            rgba(155,92,255,.30),
+
+            inset 0 0 22px
+            rgba(155,92,255,.10);
+
+    }
+
+    100% {
+
+        box-shadow:
+
+            0 0 0 5px
+            rgba(155,92,255,.06),
+
+            0 0 18px
+            rgba(155,92,255,.18),
+
+            inset 0 0 18px
+            rgba(155,92,255,.06);
+
+    }
+
+}
+
+
+.live-circle {
+
+    animation:
+        timerGlow 3s ease-in-out infinite;
 
 }
 
@@ -777,10 +915,18 @@
 
     justify-content: flex-end;
 
+    min-width: 0;
+
 }
 
 
+/* ========================================
+   PREMIUM ROUTE BUTTON
+======================================== */
+
 .user-card__route {
+
+    position: relative;
 
     min-height: 58px;
 
@@ -794,66 +940,266 @@
 
     justify-content: center;
 
-    gap: 9px;
+    gap: 10px;
 
-    border: 0;
+    padding:
+        0 18px;
+
+    border: 1px solid
+        rgba(255,255,255,.12);
 
     border-radius: 18px;
 
     background:
+
         linear-gradient(
             135deg,
-            #a45cff,
-            #7138ff
+            #a85cff 0%,
+            #8a48ff 48%,
+            #7138ff 100%
         );
 
     color: #fff;
 
     cursor: pointer;
 
+    overflow: hidden;
+
+    isolation: isolate;
+
     box-shadow:
+
         0 12px 30px
-        rgba(126,60,255,.35);
+        rgba(126,60,255,.35),
+
+        inset 0 1px 0
+        rgba(255,255,255,.18);
 
     transition:
-        transform .2s ease,
-        box-shadow .2s ease;
+
+        transform .22s ease,
+
+        box-shadow .22s ease,
+
+        filter .22s ease;
 
 }
 
+
+/* ========================================
+   УБИРАЕМ СТАРЫЙ ЭМОДЗИ
+======================================== */
 
 .user-card__route span {
 
-    font-size: 20px;
+    display: none !important;
 
 }
 
 
+/* ========================================
+   СВЕТЯЩИЙСЯ БЛИК
+======================================== */
+
+.user-card__route::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: -90%;
+
+    width: 55%;
+
+    height: 100%;
+
+    background:
+
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255,255,255,.20),
+            transparent
+        );
+
+    transform:
+        skewX(-20deg);
+
+    transition:
+        left .6s ease;
+
+    pointer-events: none;
+
+    z-index: 1;
+
+}
+
+
+/* ========================================
+   ИКОНКА МАРШРУТА
+   Минималистичная геометка
+======================================== */
+
+.user-card__route::after {
+
+    content: "";
+
+    position: relative;
+
+    width: 18px;
+
+    height: 18px;
+
+    flex: 0 0 18px;
+
+    border:
+        2px solid
+        rgba(255,255,255,.95);
+
+    border-radius:
+        50% 50% 50% 0;
+
+    background:
+
+        radial-gradient(
+            circle,
+            #fff 0 3px,
+            transparent 3.5px
+        );
+
+    transform:
+        rotate(-45deg);
+
+    filter:
+
+        drop-shadow(
+            0 0 5px
+            rgba(255,255,255,.45)
+        );
+
+    transition:
+        transform .25s ease,
+        filter .25s ease;
+
+    z-index: 2;
+
+}
+
+
+/* ========================================
+   ТЕКСТ
+======================================== */
+
 .user-card__route strong {
+
+    position: relative;
+
+    z-index: 3;
+
+    display: block;
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
     font-size: 14px;
 
     font-weight: 800;
 
+    letter-spacing: -.15px;
+
+    line-height: 1;
+
+    white-space: nowrap;
+
 }
 
+
+/* ========================================
+   HOVER
+======================================== */
 
 .user-card__route:hover {
 
     transform:
         translateY(-2px);
 
+    filter:
+        brightness(1.06);
+
     box-shadow:
-        0 16px 35px
-        rgba(126,60,255,.45);
+
+        0 17px 38px
+        rgba(126,60,255,.48),
+
+        inset 0 1px 0
+        rgba(255,255,255,.22);
 
 }
 
+
+.user-card__route:hover::before {
+
+    left: 140%;
+
+}
+
+
+.user-card__route:hover::after {
+
+    transform:
+        rotate(-45deg)
+        scale(1.08);
+
+    filter:
+
+        drop-shadow(
+            0 0 8px
+            rgba(255,255,255,.65)
+        );
+
+}
+
+
+/* ========================================
+   ACTIVE
+======================================== */
 
 .user-card__route:active {
 
     transform:
         scale(.97);
+
+    box-shadow:
+
+        0 8px 20px
+        rgba(126,60,255,.32);
+
+}
+
+
+/* ========================================
+   FOCUS
+======================================== */
+
+.user-card__route:focus-visible {
+
+    outline: none;
+
+    box-shadow:
+
+        0 0 0 3px
+        rgba(255,255,255,.12),
+
+        0 0 0 6px
+        rgba(139,72,255,.35),
+
+        0 12px 30px
+        rgba(126,60,255,.35);
 
 }
 
@@ -990,18 +1336,78 @@
     }
 
 
-    .profile-live-time-label {
+    /* ====================================
+       TIMER MOBILE
+    ==================================== */
 
-        display: none;
+    .live-circle {
+
+        width: 70px;
+
+        height: 70px;
+
+        flex-basis: 70px;
 
     }
 
+
+    .live-circle svg {
+
+        width: 70px;
+
+        height: 70px;
+
+    }
+
+
+    .live-time-text {
+
+        font-size: 13px;
+
+    }
+
+
+    .profile-live-time-label {
+
+        display: block;
+
+        font-size: 8px;
+
+    }
+
+
+    /* ====================================
+       ROUTE BUTTON MOBILE
+    ==================================== */
 
     .user-card__route {
 
         min-height: 55px;
 
         max-width: none;
+
+        padding:
+            0 15px;
+
+        gap: 9px;
+
+    }
+
+
+    .user-card__route strong {
+
+        font-size: 13px;
+
+    }
+
+
+    .user-card__route::after {
+
+        width: 18px;
+
+        height: 18px;
+
+        flex-basis: 18px;
 
     }
 

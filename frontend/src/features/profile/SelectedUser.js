@@ -27,7 +27,7 @@ const ACTIVITY_IMAGES = {
 
 
 /* ========================================
-   НАЗВАНИЯ АКТИВНОСТЕЙ
+   НАЗВАНИЯ
 ======================================== */
 
 const ACTIVITY_NAMES = {
@@ -84,25 +84,23 @@ export function showUserCard(user) {
             '#selected-user'
         );
 
-
     if (!container) {
         return;
     }
 
 
-    /* Останавливаем старый таймер */
+    /* Останавливаем предыдущий таймер */
 
     if (timer) {
 
         clearInterval(timer);
-
         timer = null;
 
     }
 
 
     /* ====================================
-       СВОЯ КАРТОЧКА
+       МОЯ КАРТОЧКА
     ==================================== */
 
     const isMine =
@@ -115,7 +113,6 @@ export function showUserCard(user) {
         user
     );
 
-
     console.log(
         'IS MY CARD:',
         isMine
@@ -123,7 +120,7 @@ export function showUserCard(user) {
 
 
     /*
-       Запоминаем, чья карточка сейчас открыта.
+       Запоминаем тип открытой карточки.
 
        true  = моя
        false = чужая
@@ -312,7 +309,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       HTML
+       HTML КАРТОЧКИ
     ==================================== */
 
     container.innerHTML = `
@@ -337,6 +334,8 @@ export function showUserCard(user) {
                 </div>
 
 
+                <!-- CLOSE -->
+
                 <button
                     class="profile-live-close"
                     type="button">
@@ -346,6 +345,8 @@ export function showUserCard(user) {
                 </button>
 
 
+                <!-- LIVE -->
+
                 <div class="profile-live-badge">
 
                     <span></span>
@@ -354,6 +355,8 @@ export function showUserCard(user) {
 
                 </div>
 
+
+                <!-- NAME -->
 
                 <div
                     class="profile-live-hero-name">
@@ -400,7 +403,6 @@ export function showUserCard(user) {
                     <div
                         class="profile-live-meta-item">
 
-
                         <span
                             class="profile-live-meta-icon">
 
@@ -426,13 +428,12 @@ export function showUserCard(user) {
 
                         </div>
 
-
                     </div>
+
 
 
                     <div
                         class="profile-live-meta-item">
-
 
                         <span
                             class="profile-live-meta-icon">
@@ -456,7 +457,6 @@ export function showUserCard(user) {
 
                         </div>
 
-
                     </div>
 
 
@@ -475,16 +475,13 @@ export function showUserCard(user) {
                     <div
                         class="profile-live-activity-info">
 
-
                         <span>
                             Сейчас хочет
                         </span>
 
-
                         <strong>
                             ${activityName}
                         </strong>
-
 
                     </div>
 
@@ -517,7 +514,8 @@ export function showUserCard(user) {
 
 
                             <svg
-                                viewBox="0 0 80 80">
+                                viewBox="0 0 80 80"
+                                aria-hidden="true">
 
 
                                 <circle
@@ -603,7 +601,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       КНОПКА ЗАКРЫТИЯ
+       CLOSE
     ==================================== */
 
     const closeButton =
@@ -614,15 +612,15 @@ export function showUserCard(user) {
 
     if (closeButton) {
 
-        closeButton.onclick = (
-            event
-        ) => {
+        closeButton.onclick =
+            (event) => {
 
-            event.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
 
-            hideUserCard();
+                hideUserCard();
 
-        };
+            };
 
     }
 
@@ -705,7 +703,7 @@ function getActivityKey(activity) {
 
 
 /* ========================================
-   ТАЙМЕР
+   ТАЙМЕР LIVE
 ======================================== */
 
 function startCountdown(
@@ -730,9 +728,13 @@ function startCountdown(
     }
 
 
+    /* ====================================
+       ЕСЛИ НЕТ ВРЕМЕНИ
+    ==================================== */
+
     if (!expiresAt) {
 
-        text.innerHTML =
+        text.textContent =
             '--:--';
 
         return;
@@ -748,7 +750,7 @@ function startCountdown(
 
     if (Number.isNaN(end)) {
 
-        text.innerHTML =
+        text.textContent =
             '--:--';
 
         return;
@@ -756,11 +758,19 @@ function startCountdown(
     }
 
 
+    /* ====================================
+       ОБЩАЯ ПРОДОЛЖИТЕЛЬНОСТЬ
+    ==================================== */
+
     const total =
         duration
             ? Number(duration) * 60
             : 3600;
 
+
+    /* ====================================
+       КОЛЬЦО
+    ==================================== */
 
     const radius = 34;
 
@@ -772,8 +782,18 @@ function startCountdown(
 
 
     circle.style.strokeDasharray =
-        circumference;
+        `${circumference}`;
 
+
+    circle.style.strokeDashoffset =
+        '0';
+
+
+    /*
+       Плавное обновление.
+       requestAnimationFrame используется
+       только для визуальной анимации.
+    */
 
     function update() {
 
@@ -792,6 +812,10 @@ function startCountdown(
         }
 
 
+        /* =================================
+           МИНУТЫ / СЕКУНДЫ
+        ================================= */
+
         const min =
             Math.floor(
                 left / 60
@@ -802,15 +826,13 @@ function startCountdown(
             left % 60;
 
 
-        text.innerHTML =
-            min +
-            ':' +
-            String(sec)
-                .padStart(
-                    2,
-                    '0'
-                );
+        text.textContent =
+            `${min}:${String(sec).padStart(2, '0')}`;
 
+
+        /* =================================
+           ПРОГРЕСС
+        ================================= */
 
         const progress =
             Math.max(
@@ -822,13 +844,21 @@ function startCountdown(
             );
 
 
-        circle.style.strokeDashoffset =
+        const offset =
             circumference -
             (
                 circumference *
                 progress
             );
 
+
+        circle.style.strokeDashoffset =
+            offset;
+
+
+        /* =================================
+           ЗАВЕРШЕНИЕ
+        ================================= */
 
         if (left <= 0) {
 
@@ -841,6 +871,10 @@ function startCountdown(
                 timer = null;
 
             }
+
+
+            text.textContent =
+                '0:00';
 
         }
 
@@ -860,7 +894,7 @@ function startCountdown(
 
 
 /* ========================================
-   ЗАКРЫТЬ
+   ЗАКРЫТЬ КАРТОЧКУ
 ======================================== */
 
 export function hideUserCard() {
@@ -895,11 +929,8 @@ export function hideUserCard() {
     setTimeout(() => {
 
         /*
-           Проверяем, что контейнер всё ещё
-           должен быть закрыт.
-
-           Если за это время открыли новую
-           карточку — не прячем её.
+           Если за это время открыли
+           новую карточку — НЕ скрываем её.
         */
 
         if (
@@ -907,7 +938,9 @@ export function hideUserCard() {
                 'selected-user--visible'
             )
         ) {
+
             return;
+
         }
 
 
@@ -928,15 +961,6 @@ export function hideUserCard() {
    UI:CLOSE-ALL
 ======================================== */
 
-/*
-   ВАЖНО:
-
-   ui:close-all НЕ закрывает собственную
-   LIVE-карточку.
-
-   Чужую карточку закрывает.
-*/
-
 window.addEventListener(
     'ui:close-all',
     () => {
@@ -953,8 +977,8 @@ window.addEventListener(
 
 
         /*
-           Если сейчас открыта моя карточка,
-           вообще ничего не делаем.
+           МОЯ LIVE-КАРТОЧКА НЕ ЗАКРЫВАЕТСЯ
+           от общего ui:close-all.
         */
 
         if (
