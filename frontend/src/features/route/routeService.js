@@ -5,9 +5,9 @@ import { supabase } from '../../services/supabase/supabaseClient';
 let routeLine = null;
 let activeUser = null;
 let animationFrame = null;
-let activeMode = 'driving';
+let activeMode = 'car';
 
-export async function startRoute(user, mode = 'driving') {
+export async function startRoute(user, mode = 'car') {
     activeUser = user;
     activeMode = mode;
 
@@ -59,32 +59,58 @@ async function buildRoute(
     stopRoute();
 
     try {
-        const { data, error } = await supabase.functions.invoke(
-            'route',
-            {
-                body: {
-                    fromLat,
-                    fromLng,
-                    toLat,
-                    toLng,
-                    mode: activeMode
+        console.log('Building route:', {
+            fromLat,
+            fromLng,
+            toLat,
+            toLng,
+            mode: activeMode
+        });
+
+        const { data, error } =
+            await supabase.functions.invoke(
+                'route',
+                {
+                    body: {
+                        fromLat,
+                        fromLng,
+                        toLat,
+                        toLng,
+                        mode: activeMode
+                    }
                 }
-            }
-        );
+            );
 
         if (error) {
-            console.error('Route function error:', error);
+            console.error(
+                'Route function error:',
+                error
+            );
+
             return null;
         }
+
+        console.log(
+            'Route response:',
+            data
+        );
 
         if (!data?.geometry) {
-            console.error('No route geometry:', data);
+            console.error(
+                'No route geometry:',
+                data
+            );
+
             return null;
         }
 
-        const fullPath = data.geometry.coordinates.map(
-            ([lng, lat]) => [lat, lng]
-        );
+        const fullPath =
+            data.geometry.coordinates.map(
+                ([lng, lat]) => [
+                    lat,
+                    lng
+                ]
+            );
 
         routeLine = L.polyline([], {
             color: '#7c3aed',
@@ -100,16 +126,26 @@ async function buildRoute(
 
         animateRoute(fullPath);
 
+        const distance =
+            Number(data.distance) || 0;
+
+        const duration =
+            Number(data.duration) || 0;
+
         return {
-            distance: data.distance,
+            distance,
             duration: Math.max(
                 1,
-                Math.round(data.duration / 60)
+                Math.round(duration / 60)
             )
         };
 
     } catch (error) {
-        console.error('Route error:', error);
+        console.error(
+            'Route error:',
+            error
+        );
+
         return null;
     }
 }
@@ -149,8 +185,11 @@ function getCurrentPosition() {
         navigator.geolocation.getCurrentPosition(
             position => {
                 resolve({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude
+                    latitude:
+                        position.coords.latitude,
+
+                    longitude:
+                        position.coords.longitude
                 });
             },
 
