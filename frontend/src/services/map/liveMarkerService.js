@@ -31,27 +31,18 @@ let refreshTimer = null;
 
 
 /* ========================================
-   АКТИВНОСТЬ → ЦВЕТ
+   ЦВЕТ АКТИВНОСТИ
 ======================================== */
 
-function getActivityClass(activity) {
-
-    if (!activity) {
-
-        return 'activity-default';
-
-    }
-
+function getActivityColor(activity) {
 
     const value =
-        String(activity)
+        String(activity || '')
             .toLowerCase()
             .trim();
 
 
-    /* ====================================
-       ГУЛЯТЬ
-    ==================================== */
+    /* ГУЛЯТЬ — ЗЕЛЁНЫЙ */
 
     if (
 
@@ -63,14 +54,16 @@ function getActivityClass(activity) {
 
     ) {
 
-        return 'activity-walk';
+        return {
+            main: '#45e879',
+            glow: 'rgba(69,232,121,.75)',
+            soft: 'rgba(69,232,121,.28)'
+        };
 
     }
 
 
-    /* ====================================
-       КОФЕ
-    ==================================== */
+    /* КОФЕ — КОРИЧНЕВЫЙ */
 
     if (
 
@@ -80,14 +73,16 @@ function getActivityClass(activity) {
 
     ) {
 
-        return 'activity-coffee';
+        return {
+            main: '#c58a5a',
+            glow: 'rgba(197,138,90,.75)',
+            soft: 'rgba(197,138,90,.28)'
+        };
 
     }
 
 
-    /* ====================================
-       ВЫПИТЬ
-    ==================================== */
+    /* ВЫПИТЬ — ОРАНЖЕВЫЙ */
 
     if (
 
@@ -101,14 +96,16 @@ function getActivityClass(activity) {
 
     ) {
 
-        return 'activity-beer';
+        return {
+            main: '#ffad32',
+            glow: 'rgba(255,173,50,.8)',
+            soft: 'rgba(255,173,50,.3)'
+        };
 
     }
 
 
-    /* ====================================
-       ОБЩАТЬСЯ
-    ==================================== */
+    /* ОБЩАТЬСЯ — ГОЛУБОЙ */
 
     if (
 
@@ -120,12 +117,24 @@ function getActivityClass(activity) {
 
     ) {
 
-        return 'activity-chat';
+        return {
+            main: '#4dbfff',
+            glow: 'rgba(77,191,255,.75)',
+            soft: 'rgba(77,191,255,.28)'
+        };
 
     }
 
 
-    return 'activity-default';
+    /* ПО УМОЛЧАНИЮ — ФИОЛЕТОВЫЙ */
+
+    return {
+
+        main: '#9b5cff',
+        glow: 'rgba(155,92,255,.75)',
+        soft: 'rgba(155,92,255,.28)'
+
+    };
 
 }
 
@@ -208,10 +217,6 @@ export async function loadLiveMarkers() {
             }
 
 
-            /* ================================
-               СОЗДАЁМ МАРКЕР
-            ================================= */
-
             const marker =
 
                 createMarker(
@@ -266,32 +271,52 @@ function createMarker(
 
 
     /* ====================================
-       ОПРЕДЕЛЯЕМ АКТИВНОСТЬ
+       ЦВЕТ
     ==================================== */
 
-    const activityClass =
-        getActivityClass(
+    const color =
+        getActivityColor(
             user?.activity
         );
 
 
     /* ====================================
-       HTML МАРКЕРА
+       АВАТАР
+    ==================================== */
+
+    const avatarHTML =
+        UserMarker(user);
+
+
+    /* ====================================
+       MARKER HTML
     ==================================== */
 
     const markerHTML = `
 
         <div
-            class="live-marker-glow ${activityClass}">
+            class="activity-live-marker"
+            style="
+                --activity-color: ${color.main};
+                --activity-glow: ${color.glow};
+                --activity-soft: ${color.soft};
+            "
+        >
 
             <div
-                class="live-marker-glow__pulse">
+                class="activity-live-marker__glow">
             </div>
 
-            <div
-                class="live-marker-glow__user">
 
-                ${UserMarker(user)}
+            <div
+                class="activity-live-marker__pulse">
+            </div>
+
+
+            <div
+                class="activity-live-marker__avatar">
+
+                ${avatarHTML}
 
             </div>
 
@@ -308,19 +333,20 @@ function createMarker(
 
         L.divIcon({
 
-            className: '',
+            className:
+                'activity-live-leaflet-icon',
 
             html:
                 markerHTML,
 
             iconSize: [
-                64,
-                64
+                80,
+                80
             ],
 
             iconAnchor: [
-                32,
-                32
+                40,
+                40
             ]
 
         });
@@ -366,10 +392,6 @@ function createMarker(
         event => {
 
 
-            /* ============================
-               НЕ ПЕРЕДАЁМ КЛИК КАРТЕ
-            ============================ */
-
             if (
                 event.originalEvent
             ) {
@@ -380,10 +402,6 @@ function createMarker(
 
             }
 
-
-            /* ============================
-               ОТКРЫВАЕМ КАРТОЧКУ
-            ============================ */
 
             window.dispatchEvent(
 
@@ -430,13 +448,9 @@ export function updateLiveMarkerPosition(
 
     if (marker) {
 
-
         marker.setLatLng(
-
             position
-
         );
-
 
     }
 
@@ -466,9 +480,7 @@ export function clearLiveMarkers() {
         marker => {
 
             map.removeLayer(
-
                 marker
-
             );
 
         }
@@ -477,7 +489,6 @@ export function clearLiveMarkers() {
 
 
     liveMarkers = [];
-
 
     liveMarkerMap = {};
 
@@ -496,9 +507,7 @@ window.addEventListener(
 
 
         clearTimeout(
-
             refreshTimer
-
         );
 
 
@@ -515,7 +524,6 @@ window.addEventListener(
                 500
 
             );
-
 
     }
 
