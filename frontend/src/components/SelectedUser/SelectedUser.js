@@ -11,6 +11,8 @@ function getRelationshipStatus(user) {
         String(
             user?.relationship_status ||
             user?.relationshipStatus ||
+            user?.marital_status ||
+            user?.status ||
             'single'
         )
         .toLowerCase()
@@ -151,6 +153,30 @@ function getRelationshipStatus(user) {
 
 
     /* ====================================
+       ВСЁ СЛОЖНО
+    ==================================== */
+
+    if (
+        value === 'complicated' ||
+        value === 'its_complicated' ||
+        value === 'сложно' ||
+        value === 'всё сложно'
+    ) {
+
+        return {
+
+            text: 'Всё сложно',
+
+            icon: '◇',
+
+            className: 'status-complicated'
+
+        };
+
+    }
+
+
+    /* ====================================
        ПО УМОЛЧАНИЮ
     ==================================== */
 
@@ -171,11 +197,36 @@ function getRelationshipStatus(user) {
 
 
 /* ========================================
+   ЭКРАНИРОВАНИЕ HTML
+======================================== */
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replace(/&/g, '&amp;')
+
+        .replace(/</g, '&lt;')
+
+        .replace(/>/g, '&gt;')
+
+        .replace(/"/g, '&quot;')
+
+        .replace(/'/g, '&#039;');
+
+}
+
+
+/* ========================================
    КАРТОЧКА ПОЛЬЗОВАТЕЛЯ
 ======================================== */
 
 export function SelectedUser(user = {}) {
 
+
+    /* ====================================
+       ДАННЫЕ
+    ==================================== */
 
     const distance =
         Number(user.distance) || 0;
@@ -210,6 +261,32 @@ export function SelectedUser(user = {}) {
         '';
 
 
+    /* ====================================
+       БЕЗОПАСНЫЕ ДАННЫЕ
+    ==================================== */
+
+    const safeName =
+        escapeHTML(name);
+
+
+    const safeAge =
+        escapeHTML(age);
+
+
+    const safeActivity =
+        escapeHTML(
+            activity || 'Активен сейчас'
+        );
+
+
+    const safePhoto =
+        escapeHTML(photo);
+
+
+    /* ====================================
+       HTML
+    ==================================== */
+
     return `
 
         <div class="selected-user">
@@ -222,47 +299,67 @@ export function SelectedUser(user = {}) {
             <div class="selected-user__header">
 
 
+                <!-- AVATAR -->
+
                 <img
 
                     class="selected-user__avatar"
 
-                    src="${photo}"
+                    src="${safePhoto}"
 
-                    alt="${name}"
+                    alt="${safeName}"
 
                 />
 
 
+                <!-- CONTENT -->
+
                 <div class="selected-user__content">
 
 
+                    <!-- NAME -->
+
                     <div class="selected-user__name">
 
-                        ${name}${age ? `, ${age}` : ''}
+                        ${safeName}${safeAge ? `, ${safeAge}` : ''}
 
                     </div>
 
 
-                    <!-- АКТИВНОСТЬ -->
+                    <!-- ACTIVITY -->
 
                     <div class="selected-user__activity">
 
-                        ${icon}
+                        <span class="selected-user__activity-icon">
 
-                        ${activity || 'Активен сейчас'}
+                            ${icon}
+
+                        </span>
+
+                        <span>
+
+                            ${safeActivity}
+
+                        </span>
 
                     </div>
 
 
-                    <!-- РАССТОЯНИЕ -->
+                    <!-- DISTANCE -->
 
                     <div class="selected-user__distance">
 
                         <span class="selected-user__distance-icon">
+
                             ●
+
                         </span>
 
-                        ${distance} м
+                        <span>
+
+                            ${distance} м
+
+                        </span>
 
                     </div>
 
@@ -280,29 +377,41 @@ export function SelectedUser(user = {}) {
             <div class="selected-user__footer">
 
 
-                <!-- СТАТУС -->
+                <!-- ==================================
+                     STATUS
+                ================================== -->
 
-                <div class="
-                    selected-user__status
-                    ${status.className}
-                ">
+                <div
+                    class="
+                        selected-user__status
+                        ${status.className}
+                    "
+                >
 
 
-                    <span class="
-                        selected-user__status-icon
-                    ">
+                    <span
+                        class="
+                            selected-user__status-icon
+                        "
+                    >
 
                         ${status.icon}
 
                     </span>
 
 
-                    <div class="selected-user__status-content">
+                    <div
+                        class="
+                            selected-user__status-content
+                        "
+                    >
 
 
-                        <span class="
-                            selected-user__status-label
-                        ">
+                        <span
+                            class="
+                                selected-user__status-label
+                            "
+                        >
 
                             Статус
 
@@ -322,7 +431,9 @@ export function SelectedUser(user = {}) {
                 </div>
 
 
-                <!-- КНОПКА -->
+                <!-- ==================================
+                     ROUTE BUTTON
+                ================================== -->
 
                 <button
 
@@ -332,22 +443,29 @@ export function SelectedUser(user = {}) {
 
                 >
 
-                    <span class="
-                        selected-user__button-text
-                    ">
+
+                    <span
+                        class="
+                            selected-user__button-text
+                        "
+                    >
 
                         Построить маршрут
 
                     </span>
 
 
-                    <span class="
-                        selected-user__button-icon
-                    ">
+                    <span
+                        class="
+                            selected-user__button-icon
+                        "
+                        aria-hidden="true"
+                    >
 
                         →
 
                     </span>
+
 
                 </button>
 
