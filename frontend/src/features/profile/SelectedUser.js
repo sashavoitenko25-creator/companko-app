@@ -1,10 +1,7 @@
 import './SelectedUser.css';
 
-import {
-    stopLiveSession
-} from '../../services/supabase/liveService';
-
 let timer = null;
+let ignoreCloseAll = false;
 
 
 /* ========================================
@@ -14,27 +11,17 @@ let timer = null;
 const ACTIVITY_IMAGES = {
 
     male: {
-
         beer: '/activities/alcohol-male.png',
-
         coffee: '/activities/coffee-male.png',
-
         walk: '/activities/walking-male.png',
-
         chat: '/activities/talking-male.png'
-
     },
 
     female: {
-
         beer: '/activities/alcohol-female.png',
-
         coffee: '/activities/coffee-female.png',
-
         walk: '/activities/walking-female.png',
-
         chat: '/activities/talking-female.png'
-
     }
 
 };
@@ -47,11 +34,8 @@ const ACTIVITY_IMAGES = {
 const ACTIVITY_NAMES = {
 
     beer: 'Выпить',
-
     coffee: 'Выпить кофе',
-
     walk: 'Гулять',
-
     chat: 'Общаться'
 
 };
@@ -64,18 +48,15 @@ const ACTIVITY_NAMES = {
 const ACTIVITY_ICONS = {
 
     beer: '🍺',
-
     coffee: '☕',
-
     walk: '🚶',
-
     chat: '💬'
 
 };
 
 
 /* ========================================
-   КОНТЕЙНЕР
+   КОНТЕЙНЕР КАРТОЧКИ
 ======================================== */
 
 export function SelectedUser() {
@@ -98,6 +79,22 @@ export function SelectedUser() {
 
 export function showUserCard(user) {
 
+    /*
+     * Блокируем ui:close-all на короткое время.
+     * Это нужно потому, что при открытии своей
+     * карточки другое событие могло сразу
+     * закрывать её.
+     */
+
+    ignoreCloseAll = true;
+
+    setTimeout(() => {
+
+        ignoreCloseAll = false;
+
+    }, 500);
+
+
     const container =
         document.querySelector(
             '#selected-user'
@@ -109,7 +106,7 @@ export function showUserCard(user) {
     }
 
 
-    /* Останавливаем предыдущий таймер */
+    /* Останавливаем старый таймер */
 
     if (timer) {
 
@@ -121,7 +118,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       СВОЙ / ДРУГОЙ
+       СВОЯ КАРТОЧКА ИЛИ ДРУГОЙ ПОЛЬЗОВАТЕЛЬ
     ==================================== */
 
     const isMine =
@@ -136,7 +133,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       ДАННЫЕ
+       ОСНОВНЫЕ ДАННЫЕ
     ==================================== */
 
     const name =
@@ -160,6 +157,10 @@ export function showUserCard(user) {
         Number(user.distance) || 0;
 
 
+    /* ====================================
+       ПОЛ
+    ==================================== */
+
     const gender =
         user.gender === 'female'
             ? 'female'
@@ -171,6 +172,10 @@ export function showUserCard(user) {
             ? '♀ Женщина'
             : '♂ Мужчина';
 
+
+    /* ====================================
+       АКТИВНОСТЬ
+    ==================================== */
 
     const activity =
         user.activity ||
@@ -199,20 +204,11 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       SESSION ID
-    ==================================== */
-
-    const sessionId =
-        user.session_id ||
-        user.sessionId ||
-        null;
-
-
-    /* ====================================
        РАССТОЯНИЕ
     ==================================== */
 
     let distanceText = '';
+
 
     if (distance < 1000) {
 
@@ -236,7 +232,8 @@ export function showUserCard(user) {
 
             ? `
 
-                <div class="profile-live-activity-image">
+                <div
+                    class="profile-live-activity-image">
 
                     <img
                         src="${activityImage}"
@@ -249,7 +246,8 @@ export function showUserCard(user) {
 
             : `
 
-                <div class="profile-live-activity-icon">
+                <div
+                    class="profile-live-activity-icon">
 
                     ${activityIcon}
 
@@ -266,33 +264,16 @@ export function showUserCard(user) {
 
         ? `
 
-            <div class="profile-live-owner">
+            <div
+                class="profile-live-owner">
 
-                <span class="profile-live-owner-dot"></span>
+                <span
+                    class="profile-live-owner-dot">
+                </span>
 
-                <div class="profile-live-owner-content">
-
-                    <strong>
-                        Ваш LIVE
-                    </strong>
-
-                    <span>
-                        Вы сейчас в LIVE
-                    </span>
-
-                </div>
+                Ваш LIVE
 
             </div>
-
-
-            <button
-                class="profile-live-stop"
-                id="profile-live-stop"
-                type="button">
-
-                Завершить LIVE
-
-            </button>
 
         `
 
@@ -324,21 +305,21 @@ export function showUserCard(user) {
         <div class="profile-live-card">
 
 
-            <!-- =========================
-                 HERO
-            ========================== -->
+            <!-- HERO -->
 
             <div class="profile-live-hero">
 
 
                 <img
                     class="profile-live-avatar"
-                    src="${escapeHTML(photo)}"
+                    src="${photo}"
                     alt="${escapeHTML(name)}"
                 />
 
 
-                <div class="profile-live-hero-gradient"></div>
+                <div
+                    class="profile-live-hero-gradient">
+                </div>
 
 
                 <button
@@ -361,10 +342,14 @@ export function showUserCard(user) {
 
                 <div class="profile-live-hero-name">
 
+
                     <div class="profile-live-name">
 
                         ${escapeHTML(name)}
-                        ${age ? `, ${escapeHTML(age)}` : ''}
+                        ${age
+                            ? `, ${escapeHTML(age)}`
+                            : ''
+                        }
 
                     </div>
 
@@ -375,31 +360,34 @@ export function showUserCard(user) {
 
                     </div>
 
+
                 </div>
 
 
             </div>
 
 
-            <!-- =========================
-                 BODY
-            ========================== -->
+            <!-- BODY -->
 
             <div class="profile-live-body">
 
 
-                <!-- =====================
-                     META
-                ====================== -->
+                <!-- META -->
 
                 <div class="profile-live-meta">
 
 
-                    <div class="profile-live-meta-item">
+                    <div
+                        class="profile-live-meta-item">
 
-                        <span class="profile-live-meta-icon">
+
+                        <span
+                            class="profile-live-meta-icon">
+
                             📍
+
                         </span>
+
 
                         <div>
 
@@ -408,19 +396,31 @@ export function showUserCard(user) {
                             </small>
 
                             <strong>
-                                ${isMine ? 'Вы здесь' : distanceText || 'Рядом'}
+
+                                ${
+                                    distanceText ||
+                                    'Рядом'
+                                }
+
                             </strong>
 
                         </div>
 
+
                     </div>
 
 
-                    <div class="profile-live-meta-item">
+                    <div
+                        class="profile-live-meta-item">
 
-                        <span class="profile-live-meta-icon">
+
+                        <span
+                            class="profile-live-meta-icon">
+
                             ${activityIcon}
+
                         </span>
+
 
                         <div>
 
@@ -429,10 +429,13 @@ export function showUserCard(user) {
                             </small>
 
                             <strong>
+
                                 ${activityName}
+
                             </strong>
 
                         </div>
+
 
                     </div>
 
@@ -440,21 +443,21 @@ export function showUserCard(user) {
                 </div>
 
 
-                <!-- =====================
-                     АКТИВНОСТЬ
-                ====================== -->
+                <!-- ACTIVITY -->
 
-                <div class="profile-live-activity-card">
+                <div
+                    class="profile-live-activity-card">
 
 
                     ${activityImageHTML}
 
 
-                    <div class="profile-live-activity-info">
+                    <div
+                        class="profile-live-activity-info">
 
 
                         <span>
-                            ${isMine ? 'Вы сейчас хотите' : 'Сейчас хочет'}
+                            Сейчас хочет
                         </span>
 
 
@@ -466,9 +469,10 @@ export function showUserCard(user) {
                     </div>
 
 
-                    <div class="profile-live-activity-arrow">
+                    <div
+                        class="profile-live-activity-arrow">
 
-                        › 
+                        ›
 
                     </div>
 
@@ -476,17 +480,20 @@ export function showUserCard(user) {
                 </div>
 
 
-                <!-- =====================
-                     BOTTOM
-                ====================== -->
+                <!-- BOTTOM -->
 
-                <div class="profile-live-bottom">
-
-
-                    <div class="profile-live-time">
+                <div
+                    class="profile-live-bottom">
 
 
-                        <div class="live-circle">
+                    <!-- TIMER -->
+
+                    <div
+                        class="profile-live-time">
+
+
+                        <div
+                            class="live-circle">
 
 
                             <svg
@@ -497,8 +504,8 @@ export function showUserCard(user) {
                                     class="circle-bg"
                                     cx="40"
                                     cy="40"
-                                    r="34"
-                                />
+                                    r="34">
+                                </circle>
 
 
                                 <circle
@@ -506,8 +513,8 @@ export function showUserCard(user) {
                                     class="circle-progress"
                                     cx="40"
                                     cy="40"
-                                    r="34"
-                                />
+                                    r="34">
+                                </circle>
 
 
                             </svg>
@@ -525,7 +532,8 @@ export function showUserCard(user) {
                         </div>
 
 
-                        <div class="profile-live-time-label">
+                        <div
+                            class="profile-live-time-label">
 
                             осталось
 
@@ -535,7 +543,10 @@ export function showUserCard(user) {
                     </div>
 
 
-                    <div class="profile-live-actions">
+                    <!-- ACTION -->
+
+                    <div
+                        class="profile-live-actions">
 
                         ${actionHTML}
 
@@ -554,7 +565,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       ПОКАЗЫВАЕМ КАРТОЧКУ
+       ПОКАЗЫВАЕМ
     ==================================== */
 
     container.classList.remove(
@@ -593,84 +604,6 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       ЗАВЕРШЕНИЕ СВОЕГО LIVE
-    ==================================== */
-
-    if (isMine) {
-
-        const stopButton =
-            container.querySelector(
-                '#profile-live-stop'
-            );
-
-
-        if (stopButton) {
-
-            stopButton.onclick = async () => {
-
-                if (!sessionId) {
-
-                    console.error(
-                        'No live session id'
-                    );
-
-                    return;
-
-                }
-
-
-                const originalText =
-                    stopButton.textContent;
-
-
-                stopButton.disabled = true;
-
-                stopButton.textContent =
-                    'Завершаем...';
-
-
-                try {
-
-                    await stopLiveSession(
-                        sessionId
-                    );
-
-
-                    window.dispatchEvent(
-                        new Event(
-                            'live:stopped'
-                        )
-                    );
-
-
-                    hideUserCard();
-
-
-                } catch (error) {
-
-                    console.error(
-                        'Stop LIVE error:',
-                        error
-                    );
-
-
-                    stopButton.disabled =
-                        false;
-
-
-                    stopButton.textContent =
-                        originalText;
-
-                }
-
-            };
-
-        }
-
-    }
-
-
-    /* ====================================
        ТАЙМЕР
     ==================================== */
 
@@ -683,7 +616,7 @@ export function showUserCard(user) {
 
 
 /* ========================================
-   ОПРЕДЕЛИТЬ АКТИВНОСТЬ
+   ОПРЕДЕЛЕНИЕ АКТИВНОСТИ
 ======================================== */
 
 function getActivityKey(activity) {
@@ -748,7 +681,7 @@ function getActivityKey(activity) {
 
 
 /* ========================================
-   ТАЙМЕР
+   ТАЙМЕР LIVE
 ======================================== */
 
 function startCountdown(
@@ -790,7 +723,7 @@ function startCountdown(
 
     const total =
         duration
-            ? Number(duration) * 60
+            ? duration * 60
             : 3600;
 
 
@@ -805,6 +738,10 @@ function startCountdown(
 
     circle.style.strokeDasharray =
         circumference;
+
+
+    circle.style.strokeDashoffset =
+        0;
 
 
     function update() {
@@ -929,7 +866,32 @@ export function hideUserCard() {
 
 
 /* ========================================
-   HTML ESCAPE
+   ЗАКРЫТИЕ ЧЕРЕЗ ui:close-all
+======================================== */
+
+window.addEventListener(
+    'ui:close-all',
+    () => {
+
+        /*
+         * При открытии своей карточки
+         * некоторое время игнорируем
+         * ui:close-all.
+         */
+
+        if (ignoreCloseAll) {
+            return;
+        }
+
+
+        hideUserCard();
+
+    }
+);
+
+
+/* ========================================
+   ЗАЩИТА HTML
 ======================================== */
 
 function escapeHTML(value) {
@@ -962,17 +924,3 @@ function escapeHTML(value) {
         );
 
 }
-
-
-/* ========================================
-   ЗАКРЫВАТЬ ПРИ ui:close-all
-======================================== */
-
-window.addEventListener(
-    'ui:close-all',
-    () => {
-
-        hideUserCard();
-
-    }
-);
