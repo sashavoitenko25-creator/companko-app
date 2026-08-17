@@ -1,5 +1,9 @@
 import './SelectedUser.css';
 
+import {
+    stopLiveSession
+} from '../../services/supabase/liveService';
+
 let timer = null;
 
 
@@ -71,18 +75,17 @@ const ACTIVITY_ICONS = {
 
 
 /* ========================================
-   КАРТОЧКА
+   КОНТЕЙНЕР
 ======================================== */
 
 export function SelectedUser() {
 
     return `
 
-    <div
-        id="selected-user"
-        class="selected-user hidden">
-
-    </div>
+        <div
+            id="selected-user"
+            class="selected-user hidden">
+        </div>
 
     `;
 
@@ -106,7 +109,7 @@ export function showUserCard(user) {
     }
 
 
-    /* Останавливаем старый таймер */
+    /* Останавливаем предыдущий таймер */
 
     if (timer) {
 
@@ -196,6 +199,16 @@ export function showUserCard(user) {
 
 
     /* ====================================
+       SESSION ID
+    ==================================== */
+
+    const sessionId =
+        user.session_id ||
+        user.sessionId ||
+        null;
+
+
+    /* ====================================
        РАССТОЯНИЕ
     ==================================== */
 
@@ -215,7 +228,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       АКТИВНОСТЬ
+       КАРТИНКА АКТИВНОСТИ
     ==================================== */
 
     const activityImageHTML =
@@ -257,9 +270,29 @@ export function showUserCard(user) {
 
                 <span class="profile-live-owner-dot"></span>
 
-                Ваш LIVE
+                <div class="profile-live-owner-content">
+
+                    <strong>
+                        Ваш LIVE
+                    </strong>
+
+                    <span>
+                        Вы сейчас в LIVE
+                    </span>
+
+                </div>
 
             </div>
+
+
+            <button
+                class="profile-live-stop"
+                id="profile-live-stop"
+                type="button">
+
+                Завершить LIVE
+
+            </button>
 
         `
 
@@ -283,7 +316,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       HTML
+       HTML КАРТОЧКИ
     ==================================== */
 
     container.innerHTML = `
@@ -292,7 +325,7 @@ export function showUserCard(user) {
 
 
             <!-- =========================
-                 ВЕРХ / ФОТО
+                 HERO
             ========================== -->
 
             <div class="profile-live-hero">
@@ -300,8 +333,8 @@ export function showUserCard(user) {
 
                 <img
                     class="profile-live-avatar"
-                    src="${photo}"
-                    alt="${name}"
+                    src="${escapeHTML(photo)}"
+                    alt="${escapeHTML(name)}"
                 />
 
 
@@ -330,7 +363,8 @@ export function showUserCard(user) {
 
                     <div class="profile-live-name">
 
-                        ${escapeHTML(name)}${age ? `, ${escapeHTML(age)}` : ''}
+                        ${escapeHTML(name)}
+                        ${age ? `, ${escapeHTML(age)}` : ''}
 
                     </div>
 
@@ -348,11 +382,15 @@ export function showUserCard(user) {
 
 
             <!-- =========================
-                 ИНФОРМАЦИЯ
+                 BODY
             ========================== -->
 
             <div class="profile-live-body">
 
+
+                <!-- =====================
+                     META
+                ====================== -->
 
                 <div class="profile-live-meta">
 
@@ -370,7 +408,7 @@ export function showUserCard(user) {
                             </small>
 
                             <strong>
-                                ${distanceText || 'Рядом'}
+                                ${isMine ? 'Вы здесь' : distanceText || 'Рядом'}
                             </strong>
 
                         </div>
@@ -402,9 +440,9 @@ export function showUserCard(user) {
                 </div>
 
 
-                <!-- =========================
+                <!-- =====================
                      АКТИВНОСТЬ
-                ========================== -->
+                ====================== -->
 
                 <div class="profile-live-activity-card">
 
@@ -416,7 +454,7 @@ export function showUserCard(user) {
 
 
                         <span>
-                            Сейчас хочет
+                            ${isMine ? 'Вы сейчас хотите' : 'Сейчас хочет'}
                         </span>
 
 
@@ -438,9 +476,9 @@ export function showUserCard(user) {
                 </div>
 
 
-                <!-- =========================
-                     НИЗ
-                ========================== -->
+                <!-- =====================
+                     BOTTOM
+                ====================== -->
 
                 <div class="profile-live-bottom">
 
@@ -515,14 +553,14 @@ export function showUserCard(user) {
     `;
 
 
-    /* Показываем */
+    /* ====================================
+       ПОКАЗЫВАЕМ КАРТОЧКУ
+    ==================================== */
 
     container.classList.remove(
         'hidden'
     );
 
-
-    /* Анимация */
 
     requestAnimationFrame(() => {
 
@@ -555,7 +593,85 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       ЗАПУСК ТАЙМЕРА
+       ЗАВЕРШЕНИЕ СВОЕГО LIVE
+    ==================================== */
+
+    if (isMine) {
+
+        const stopButton =
+            container.querySelector(
+                '#profile-live-stop'
+            );
+
+
+        if (stopButton) {
+
+            stopButton.onclick = async () => {
+
+                if (!sessionId) {
+
+                    console.error(
+                        'No live session id'
+                    );
+
+                    return;
+
+                }
+
+
+                const originalText =
+                    stopButton.textContent;
+
+
+                stopButton.disabled = true;
+
+                stopButton.textContent =
+                    'Завершаем...';
+
+
+                try {
+
+                    await stopLiveSession(
+                        sessionId
+                    );
+
+
+                    window.dispatchEvent(
+                        new Event(
+                            'live:stopped'
+                        )
+                    );
+
+
+                    hideUserCard();
+
+
+                } catch (error) {
+
+                    console.error(
+                        'Stop LIVE error:',
+                        error
+                    );
+
+
+                    stopButton.disabled =
+                        false;
+
+
+                    stopButton.textContent =
+                        originalText;
+
+                }
+
+            };
+
+        }
+
+    }
+
+
+    /* ====================================
+       ТАЙМЕР
     ==================================== */
 
     startCountdown(
@@ -674,7 +790,7 @@ function startCountdown(
 
     const total =
         duration
-            ? duration * 60
+            ? Number(duration) * 60
             : 3600;
 
 
@@ -691,10 +807,6 @@ function startCountdown(
         circumference;
 
 
-    circle.style.strokeDashoffset =
-        0;
-
-
     function update() {
 
         const now =
@@ -708,9 +820,7 @@ function startCountdown(
 
 
         if (left < 0) {
-
             left = 0;
-
         }
 
 
@@ -775,7 +885,7 @@ function startCountdown(
 
 
 /* ========================================
-   ЗАКРЫТЬ
+   ЗАКРЫТЬ КАРТОЧКУ
 ======================================== */
 
 export function hideUserCard() {
@@ -825,22 +935,27 @@ export function hideUserCard() {
 function escapeHTML(value) {
 
     return String(value)
+
         .replace(
             /&/g,
             '&amp;'
         )
+
         .replace(
             /</g,
             '&lt;'
         )
+
         .replace(
             />/g,
             '&gt;'
         )
+
         .replace(
             /"/g,
             '&quot;'
         )
+
         .replace(
             /'/g,
             '&#039;'
@@ -850,7 +965,7 @@ function escapeHTML(value) {
 
 
 /* ========================================
-   ЗАКРЫТЬ ПРИ ui:close-all
+   ЗАКРЫВАТЬ ПРИ ui:close-all
 ======================================== */
 
 window.addEventListener(
