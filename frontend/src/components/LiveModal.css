@@ -1,93 +1,147 @@
-.live-modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.55);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:.3s;
-    z-index:10000;
+.live-modal {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, .55);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: .3s;
+
+    z-index: 10000;
 }
 
-.live-modal.open{
-    opacity:1;
-    pointer-events:auto;
+.live-modal.open {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-.live-modal__box{
-    width:420px;
-    background:#141522;
-    border-radius:32px;
-    padding:26px;
-    color:white;
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
+
+/* ========================================
+   ОКНО
+======================================== */
+
+.live-modal__box {
+    width: 420px;
+
+    background: #141522;
+
+    border-radius: 32px;
+
+    padding: 26px;
+
+    color: white;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, .45);
 }
 
-.live-modal h2{
-    font-size:42px;
-    margin:0 0 25px;
-    font-weight:800;
+
+/* ========================================
+   ЗАГОЛОВОК
+======================================== */
+
+.live-modal h2 {
+    font-size: 42px;
+
+    margin: 0 0 25px;
+
+    font-weight: 800;
+
+    line-height: 1;
 }
 
-.live-modal p{
-    color:#9fa4b5;
-    margin:0 0 15px;
-    font-size:15px;
+
+/* ========================================
+   ТЕКСТ
+======================================== */
+
+.live-modal p {
+    color: #9fa4b5;
+
+    margin: 0 0 15px;
+
+    font-size: 15px;
 }
 
-/* ===== Карточки активности ===== */
 
-.live-options{
+/* ========================================
+   АКТИВНОСТИ
+======================================== */
 
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:16px;
+.live-options {
+    display: grid;
 
-    margin:20px 0 30px;
+    grid-template-columns: 1fr 1fr;
 
+    gap: 16px;
+
+    margin: 20px 0 30px;
 }
 
-.live-option{
 
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
+/* ========================================
+   КАРТОЧКА
+======================================== */
 
-    height:135px;
+.live-option {
+    display: flex;
 
-    padding:18px;
+    flex-direction: column;
 
-    border:none;
+    justify-content: center;
 
-    border-radius:24px;
+    align-items: center;
 
-    background:#202231;
+    height: 160px;
 
-    cursor:pointer;
+    padding: 12px;
 
-    transition:.25s;
+    border: none;
 
-    color:#fff;
+    border-radius: 24px;
+
+    background: #202231;
+
+    cursor: pointer;
+
+    color: #fff;
+
+    transition:
+        transform .25s ease,
+        background .25s ease,
+        box-shadow .25s ease;
 
     box-shadow:
         inset 0 0 0 1px rgba(255,255,255,.05);
-
 }
 
-.live-option:hover{
 
-    transform:translateY(-2px);
+/* ========================================
+   HOVER
+======================================== */
 
-    background:#26283a;
+.live-option:hover {
+    transform: translateY(-3px);
 
+    background: #292b3e;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.25);
 }
 
-.live-option.active{
 
-    background:linear-gradient(
+/* ========================================
+   ACTIVE
+======================================== */
+
+.live-option.active {
+    background: linear-gradient(
         145deg,
         #9f4dff,
         #7a38ff
@@ -95,26 +149,99 @@
 
     box-shadow:
         0 15px 35px rgba(130,60,255,.35);
-
 }
 
-/* ---------- SVG ---------- */
 
-.live-option img{
+/* ========================================
+   ФОТО
+======================================== */
 
-    width:58px;
+.live-option img {
+    width: 78px;
 
-    height:58px;
+    height: 92px;
 
-    object-fit:contain;
+    object-fit: contain;
 
-    margin-bottom:14px;
+    object-position: center;
 
+    border-radius: 18px;
+
+    margin-bottom: 10px;
+
+    display: block;
+
+    box-shadow:
+        0 8px 20px rgba(0,0,0,.35);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
 }
 
-/* ---------- Заголовок ---------- */
 
-.live-option__title{
+/* ========================================
+   ФОТО HOVER
+======================================== */
+
+.live-option:hover img {
+    transform: scale(1.04);
+
+    box-shadow:
+        0 12px 25px rgba(0,0,0,.4);
+}
+
+
+/* ========================================
+   ФОТО ACTIVE
+======================================== */
+
+.live-option.active img {
+    transform: scale(1.04);
+
+    box-shadow:
+        0 10px 25px rgba(255,255,255,.18);
+}
+
+
+/* ========================================
+   ТЕКСТ АКТИВНОСТИ
+======================================== */
+
+.live-option-text {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+}
+
+
+.live-option-text strong {
+    font-family:
+        Inter,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    line-height: 1.15;
+
+    color: #fff;
+
+    text-align: center;
+}
+
+
+.live-option-text span {
+    margin-top: 3px;
 
     font-family:
         Inter,
@@ -122,95 +249,223 @@
         Arial,
         sans-serif;
 
-    font-size:18px;
+    font-size: 13px;
 
-    font-weight:700;
+    font-weight: 500;
 
-    line-height:1;
+    line-height: 1.2;
 
-    letter-spacing:-0.25px;
+    color: rgba(255,255,255,.75);
 
-    color:#ffffff;
-
-    text-align:center;
-
+    text-align: center;
 }
 
-/* ---------- Подзаголовок ---------- */
 
-.live-option__subtitle{
-
-    margin-top:6px;
-
-    font-family:
-        Inter,
-        "Segoe UI",
-        Arial,
-        sans-serif;
-
-    font-size:13px;
-
-    font-weight:500;
-
-    line-height:1.2;
-
-    color:rgba(255,255,255,.75);
-
-    text-align:center;
-
+.live-option.active .live-option-text span {
+    color: rgba(255,255,255,.95);
 }
 
-.live-option.active .live-option__subtitle{
 
-    color:rgba(255,255,255,.95);
+/* ========================================
+   ВРЕМЯ
+======================================== */
 
+.time-options {
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 10px;
 }
 
-/* ===== Время ===== */
 
-.time-options{
-    display:flex;
-    gap:12px;
-    margin-top:10px;
+.time-options button {
+    flex: 1;
+
+    height: 44px;
+
+    border: none;
+
+    border-radius: 16px;
+
+    background: #242741;
+
+    color: white;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease;
 }
 
-.time-options button{
-    flex:1;
-    height:44px;
-    border:none;
-    border-radius:16px;
-    background:#242741;
-    color:white;
-    font-size:15px;
-    font-weight:700;
-    cursor:pointer;
-    transition:.2s;
+
+.time-options button:hover {
+    transform: translateY(-2px);
+
+    background: #2c2f49;
 }
 
-.time-options button.active{
-    background:linear-gradient(135deg,#9b4dff,#7d3cff);
+
+.time-options button.active {
+    background: linear-gradient(
+        135deg,
+        #9b4dff,
+        #7d3cff
+    );
+
+    box-shadow:
+        0 8px 20px rgba(130,60,255,.25);
 }
 
-/* ===== Кнопка ===== */
 
-.start-live{
-    width:100%;
-    margin-top:26px;
-    height:56px;
-    border:none;
-    border-radius:18px;
-    background:linear-gradient(135deg,#9b4dff,#7d3cff);
-    color:white;
-    font-size:21px;
-    font-weight:800;
-    cursor:pointer;
-    transition:.2s;
+/* ========================================
+   КНОПКА LIVE
+======================================== */
+
+.start-live {
+    width: 100%;
+
+    margin-top: 26px;
+
+    height: 56px;
+
+    border: none;
+
+    border-radius: 18px;
+
+    background: linear-gradient(
+        135deg,
+        #9b4dff,
+        #7d3cff
+    );
+
+    color: white;
+
+    font-size: 21px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 }
 
-.start-live:hover{
-    transform:translateY(-2px);
+
+.start-live:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(130,60,255,.3);
 }
 
-.start-live:active{
-    transform:scale(.98);
+
+.start-live:active {
+    transform: scale(.98);
+}
+
+
+/* ========================================
+   МОБИЛЬНЫЕ
+======================================== */
+
+@media (max-width: 480px) {
+
+    .live-modal {
+        align-items: center;
+    }
+
+
+    .live-modal__box {
+        width: calc(100% - 20px);
+
+        padding: 18px;
+
+        border-radius: 28px;
+    }
+
+
+    .live-modal h2 {
+        font-size: 34px;
+
+        margin-bottom: 20px;
+    }
+
+
+    .live-modal p {
+        font-size: 14px;
+    }
+
+
+    .live-options {
+        gap: 12px;
+
+        margin-top: 16px;
+
+        margin-bottom: 24px;
+    }
+
+
+    .live-option {
+        height: 150px;
+
+        padding: 10px;
+
+        border-radius: 20px;
+    }
+
+
+    .live-option img {
+        width: 68px;
+
+        height: 82px;
+
+        object-fit: contain;
+
+        border-radius: 16px;
+
+        margin-bottom: 8px;
+    }
+
+
+    .live-option-text strong {
+        font-size: 14px;
+    }
+
+
+    .live-option-text span {
+        font-size: 12px;
+    }
+
+
+    .time-options {
+        gap: 8px;
+    }
+
+
+    .time-options button {
+        height: 44px;
+
+        border-radius: 14px;
+
+        font-size: 14px;
+    }
+
+
+    .start-live {
+        height: 54px;
+
+        margin-top: 22px;
+
+        font-size: 19px;
+
+        border-radius: 17px;
+    }
+
 }
