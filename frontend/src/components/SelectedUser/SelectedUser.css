@@ -1,5 +1,5 @@
 /* ========================================
-   КАРТОЧКА
+   SELECTED USER CARD
 ======================================== */
 
 .selected-user {
@@ -17,23 +17,22 @@
     background:
         linear-gradient(
             145deg,
-            rgba(25, 28, 47, .97),
-            rgba(12, 15, 27, .98)
+            rgba(25,28,47,.97),
+            rgba(14,17,31,.98)
         );
 
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 
     border: 1px solid rgba(255,255,255,.08);
 
     border-radius: 24px;
 
     box-shadow:
-        0 20px 45px rgba(0,0,0,.42),
+        0 20px 40px rgba(0,0,0,.35),
         0 0 0 1px rgba(139,92,246,.04);
 
     color: #fff;
-
 }
 
 
@@ -47,8 +46,7 @@
 
     align-items: center;
 
-    gap: 15px;
-
+    gap: 16px;
 }
 
 
@@ -67,12 +65,10 @@
 
     object-fit: cover;
 
-    border: 3px solid rgba(255,255,255,.14);
+    border: 3px solid rgba(255,255,255,.15);
 
     box-shadow:
-        0 0 0 1px rgba(139,92,246,.08),
-        0 0 22px rgba(139,92,246,.18);
-
+        0 0 20px rgba(139,92,246,.18);
 }
 
 
@@ -85,7 +81,6 @@
     flex: 1;
 
     min-width: 0;
-
 }
 
 
@@ -103,10 +98,9 @@
 
     line-height: 1.1;
 
-    letter-spacing: -.4px;
-
     margin-bottom: 7px;
 
+    letter-spacing: -.4px;
 }
 
 
@@ -128,10 +122,7 @@
 
     font-weight: 650;
 
-    line-height: 1.2;
-
-    margin-bottom: 8px;
-
+    margin-bottom: 7px;
 }
 
 
@@ -147,12 +138,11 @@
 
     gap: 7px;
 
-    color: rgba(255,255,255,.43);
+    color: rgba(255,255,255,.45);
 
     font-size: 13px;
 
     font-weight: 600;
-
 }
 
 
@@ -163,17 +153,14 @@
 
     flex: 0 0 7px;
 
-    display: block;
-
     border-radius: 50%;
 
     background: #9b5cff;
 
-    color: transparent;
-
     box-shadow:
-        0 0 8px rgba(155,92,255,.75);
+        0 0 8px rgba(155,92,255,.7);
 
+    font-size: 0;
 }
 
 
@@ -183,14 +170,15 @@
 
 .selected-user__footer {
 
+    margin-top: 18px;
+
     display: flex;
 
     align-items: center;
 
+    justify-content: space-between;
+
     gap: 12px;
-
-    margin-top: 18px;
-
 }
 
 
@@ -202,28 +190,24 @@
 
     min-width: 0;
 
-    flex: 1;
-
-    height: 52px;
-
     display: flex;
 
     align-items: center;
 
     gap: 10px;
 
-    padding: 0 12px;
+    padding: 9px 12px;
 
-    border-radius: 16px;
+    border-radius: 15px;
 
-    background:
-        rgba(255,255,255,.045);
+    border: 1px solid rgba(255,255,255,.07);
 
-    border:
-        1px solid rgba(255,255,255,.065);
+    background: rgba(255,255,255,.045);
 
-    box-sizing: border-box;
-
+    transition:
+        background .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
 }
 
 
@@ -233,24 +217,26 @@
 
 .selected-user__status-icon {
 
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
 
-    flex: 0 0 32px;
+    flex: 0 0 36px;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    border-radius: 10px;
+    border-radius: 11px;
 
-    font-size: 14px;
+    font-size: 15px;
 
     font-weight: 900;
 
-    line-height: 1;
-
+    transition:
+        background .25s ease,
+        color .25s ease,
+        box-shadow .25s ease;
 }
 
 
@@ -261,50 +247,32 @@
 .selected-user__status-content {
 
     min-width: 0;
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-
 }
 
-
-/* ========================================
-   STATUS LABEL
-======================================== */
 
 .selected-user__status-label {
 
     display: block;
 
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 
-    color: rgba(255,255,255,.34);
+    color: rgba(255,255,255,.38);
 
-    font-size: 8px;
+    font-size: 9px;
 
-    font-weight: 800;
+    font-weight: 700;
 
     text-transform: uppercase;
 
-    letter-spacing: .8px;
-
-    line-height: 1;
-
+    letter-spacing: .6px;
 }
 
-
-/* ========================================
-   STATUS TEXT
-======================================== */
 
 .selected-user__status strong {
 
     display: block;
 
-    max-width: 140px;
+    max-width: 145px;
 
     overflow: hidden;
 
@@ -312,154 +280,146 @@
 
     white-space: nowrap;
 
-    color: rgba(255,255,255,.94);
+    color: rgba(255,255,255,.92);
 
-    font-size: 12px;
+    font-size: 13px;
 
     font-weight: 750;
-
-    line-height: 1.2;
-
 }
 
 
 /* ========================================
-   СВОБОДЕН / СВОБОДНА
+   🟢 СВОБОДЕН / СВОБОДНА
 ======================================== */
+
+.selected-user__status.status-single {
+
+    border-color: rgba(69,232,121,.16);
+
+    background:
+        rgba(69,232,121,.055);
+}
+
 
 .selected-user__status.status-single
 .selected-user__status-icon {
 
     background:
-        rgba(69,232,121,.12);
+        rgba(69,232,121,.14);
 
     color:
         #45e879;
 
     box-shadow:
-        0 0 14px rgba(69,232,121,.08),
-        inset 0 0 10px rgba(69,232,121,.04);
-
-}
-
-
-.selected-user__status.status-single {
-
-    border-color:
-        rgba(69,232,121,.12);
-
+        0 0 14px rgba(69,232,121,.12);
 }
 
 
 /* ========================================
-   В ОТНОШЕНИЯХ
+   ❤️ В ОТНОШЕНИЯХ
 ======================================== */
+
+.selected-user__status.status-relationship {
+
+    border-color: rgba(255,75,120,.16);
+
+    background:
+        rgba(255,75,120,.055);
+}
+
 
 .selected-user__status.status-relationship
 .selected-user__status-icon {
 
     background:
-        rgba(255,72,112,.12);
+        rgba(255,75,120,.14);
 
     color:
         #ff4f7b;
 
     box-shadow:
-        0 0 14px rgba(255,72,112,.08),
-        inset 0 0 10px rgba(255,72,112,.04);
-
-}
-
-
-.selected-user__status.status-relationship {
-
-    border-color:
-        rgba(255,72,112,.12);
-
+        0 0 14px rgba(255,75,120,.12);
 }
 
 
 /* ========================================
-   В ПОИСКЕ
+   ✦ В ПОИСКЕ
 ======================================== */
+
+.selected-user__status.status-looking {
+
+    border-color: rgba(155,92,255,.18);
+
+    background:
+        rgba(155,92,255,.055);
+}
+
 
 .selected-user__status.status-looking
 .selected-user__status-icon {
 
     background:
-        rgba(155,92,255,.13);
+        rgba(155,92,255,.15);
 
     color:
         #b184ff;
 
     box-shadow:
-        0 0 14px rgba(155,92,255,.10),
-        inset 0 0 10px rgba(155,92,255,.04);
-
-}
-
-
-.selected-user__status.status-looking {
-
-    border-color:
-        rgba(155,92,255,.14);
-
+        0 0 14px rgba(155,92,255,.14);
 }
 
 
 /* ========================================
-   ТОЛЬКО ОБЩЕНИЕ
+   💬 ТОЛЬКО ОБЩЕНИЕ
 ======================================== */
+
+.selected-user__status.status-chat {
+
+    border-color: rgba(77,166,255,.16);
+
+    background:
+        rgba(77,166,255,.055);
+}
+
 
 .selected-user__status.status-chat
 .selected-user__status-icon {
 
     background:
-        rgba(77,166,255,.12);
+        rgba(77,166,255,.14);
 
     color:
         #64b5ff;
 
     box-shadow:
-        0 0 14px rgba(77,166,255,.08),
-        inset 0 0 10px rgba(77,166,255,.04);
-
-}
-
-
-.selected-user__status.status-chat {
-
-    border-color:
-        rgba(77,166,255,.12);
-
+        0 0 14px rgba(77,166,255,.12);
 }
 
 
 /* ========================================
-   ОТКРЫТ К ЗНАКОМСТВАМ
+   ✧ ОТКРЫТ К ЗНАКОМСТВАМ
 ======================================== */
+
+.selected-user__status.status-open {
+
+    border-color: rgba(255,190,70,.17);
+
+    background:
+        rgba(255,190,70,.055);
+}
+
 
 .selected-user__status.status-open
 .selected-user__status-icon {
 
     background:
-        rgba(255,190,70,.12);
+        rgba(255,190,70,.14);
 
     color:
         #ffc14d;
 
     box-shadow:
-        0 0 14px rgba(255,190,70,.08),
-        inset 0 0 10px rgba(255,190,70,.04);
-
-}
-
-
-.selected-user__status.status-open {
-
-    border-color:
-        rgba(255,190,70,.13);
-
+        0 0 14px rgba(255,190,70,.12);
 }
 
 
@@ -471,11 +431,11 @@
 
     position: relative;
 
-    height: 52px;
+    min-height: 52px;
 
-    flex: 0 0 auto;
+    flex: 1;
 
-    min-width: 175px;
+    max-width: 210px;
 
     display: flex;
 
@@ -485,24 +445,23 @@
 
     gap: 9px;
 
-    padding: 0 17px;
+    padding: 0 16px;
 
     border: 1px solid rgba(255,255,255,.13);
 
     border-radius: 16px;
 
     background:
-
         linear-gradient(
             135deg,
-            #a85cff 0%,
-            #8a48ff 48%,
-            #7138ff 100%
+            #a85cff,
+            #8a48ff 50%,
+            #7138ff
         );
 
     color: #fff;
 
-    font-size: 13px;
+    font-size: 14px;
 
     font-weight: 800;
 
@@ -511,19 +470,13 @@
     overflow: hidden;
 
     box-shadow:
-
-        0 10px 25px
-        rgba(139,92,246,.35),
-
-        inset 0 1px 0
-        rgba(255,255,255,.18);
+        0 10px 25px rgba(139,92,246,.35),
+        inset 0 1px 0 rgba(255,255,255,.18);
 
     transition:
-
         transform .2s ease,
         box-shadow .2s ease,
         filter .2s ease;
-
 }
 
 
@@ -544,11 +497,10 @@
     height: 100%;
 
     background:
-
         linear-gradient(
             90deg,
             transparent,
-            rgba(255,255,255,.23),
+            rgba(255,255,255,.22),
             transparent
         );
 
@@ -556,7 +508,6 @@
 
     transition:
         left .55s ease;
-
 }
 
 
@@ -571,7 +522,6 @@
     z-index: 2;
 
     white-space: nowrap;
-
 }
 
 
@@ -585,8 +535,8 @@
 
     z-index: 2;
 
-    width: 24px;
-    height: 24px;
+    width: 25px;
+    height: 25px;
 
     display: flex;
 
@@ -598,13 +548,12 @@
     background:
         rgba(255,255,255,.16);
 
-    font-size: 16px;
+    font-size: 17px;
 
-    line-height: 1;
+    font-weight: 500;
 
     transition:
         transform .2s ease;
-
 }
 
 
@@ -614,27 +563,19 @@
 
 .selected-user__button:hover {
 
-    transform:
-        translateY(-2px);
+    transform: translateY(-2px);
 
-    filter:
-        brightness(1.06);
+    filter: brightness(1.06);
 
     box-shadow:
-
-        0 15px 34px
-        rgba(139,92,246,.48),
-
-        inset 0 1px 0
-        rgba(255,255,255,.23);
-
+        0 15px 32px rgba(139,92,246,.45),
+        inset 0 1px 0 rgba(255,255,255,.22);
 }
 
 
 .selected-user__button:hover::before {
 
     left: 140%;
-
 }
 
 
@@ -642,8 +583,7 @@
 .selected-user__button-icon {
 
     transform:
-        translateX(3px);
-
+        translateX(2px);
 }
 
 
@@ -655,11 +595,6 @@
 
     transform:
         scale(.97);
-
-    box-shadow:
-        0 7px 18px
-        rgba(139,92,246,.30);
-
 }
 
 
@@ -678,14 +613,12 @@
         padding: 15px;
 
         border-radius: 22px;
-
     }
 
 
     .selected-user__header {
 
         gap: 13px;
-
     }
 
 
@@ -695,58 +628,41 @@
         height: 64px;
 
         flex-basis: 64px;
-
     }
 
 
     .selected-user__name {
 
         font-size: 20px;
-
     }
 
 
     .selected-user__activity {
 
         font-size: 14px;
-
     }
 
 
     .selected-user__footer {
 
-        gap: 8px;
-
+        gap: 9px;
     }
 
 
     .selected-user__status {
 
-        height: 50px;
-
-        padding: 0 9px;
+        padding: 8px 9px;
 
         gap: 8px;
-
     }
 
 
     .selected-user__status-icon {
 
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
 
-        flex-basis: 30px;
-
-        border-radius: 9px;
-
-    }
-
-
-    .selected-user__status-label {
-
-        font-size: 7px;
-
+        flex-basis: 32px;
     }
 
 
@@ -754,73 +670,30 @@
 
         max-width: 105px;
 
-        font-size: 11px;
-
+        font-size: 12px;
     }
 
 
     .selected-user__button {
 
-        height: 50px;
+        min-height: 50px;
 
-        min-width: 0;
-
-        flex: 1;
-
-        padding: 0 11px;
-
-        gap: 7px;
-
+        padding: 0 12px;
     }
 
 
     .selected-user__button-text {
 
-        font-size: 11px;
-
+        font-size: 12px;
     }
 
 
     .selected-user__button-icon {
 
-        width: 22px;
-        height: 22px;
+        width: 23px;
+        height: 23px;
 
-        font-size: 14px;
-
-    }
-
-}
-
-
-/* ========================================
-   ОЧЕНЬ УЗКИЕ ЭКРАНЫ
-======================================== */
-
-@media (max-width: 360px) {
-
-    .selected-user__footer {
-
-        flex-direction: column;
-
-        align-items: stretch;
-
-    }
-
-
-    .selected-user__status {
-
-        width: 100%;
-
-    }
-
-
-    .selected-user__button {
-
-        width: 100%;
-
-        flex: none;
-
+        font-size: 15px;
     }
 
 }
