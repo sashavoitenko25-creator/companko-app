@@ -5,7 +5,9 @@ import {
     setDuration
 } from '../store/liveStore';
 
-import { supabase } from '../services/supabase/supabaseClient';
+import {
+    getProfile
+} from '../features/profile/profileStore';
 
 
 let initialized = false;
@@ -18,27 +20,17 @@ let initialized = false;
 const ACTIVITY_IMAGES = {
 
     male: {
-
         beer: '/activities/alcohol-male.png',
-
         coffee: '/activities/coffee-male.png',
-
         walk: '/activities/walking-male.png',
-
         chat: '/activities/talking-male.png'
-
     },
 
     female: {
-
         beer: '/activities/alcohol-female.png',
-
         coffee: '/activities/coffee-female.png',
-
         walk: '/activities/walking-female.png',
-
         chat: '/activities/talking-female.png'
-
     }
 
 };
@@ -48,80 +40,27 @@ const ACTIVITY_IMAGES = {
    ПОЛЬЗОВАТЕЛЯ
 ======================================== */
 
-async function getUserGender() {
+function getUserGender() {
 
-    try {
+    const profile = getProfile();
 
-        const {
-            data: {
-                user
-            }
-        } = await supabase.auth.getUser();
+    console.log(
+        'LIVE PROFILE:',
+        profile
+    );
 
-
-        if (!user) {
-
-            console.log(
-                'LIVE: пользователь не найден'
-            );
-
-            return 'male';
-
-        }
+    console.log(
+        'LIVE GENDER:',
+        profile?.gender
+    );
 
 
-        const {
-            data: profile,
-            error
-        } = await supabase
-            .from('profiles')
-            .select('gender')
-            .eq('id', user.id)
-            .maybeSingle();
+    if (profile?.gender === 'female') {
 
-
-        if (error) {
-
-            console.error(
-                'LIVE: ошибка получения пола:',
-                error
-            );
-
-            return 'male';
-
-        }
-
-
-        console.log(
-            'LIVE PROFILE:',
-            profile
-        );
-
-
-        if (
-            profile?.gender === 'male' ||
-            profile?.gender === 'female'
-        ) {
-
-            return profile.gender;
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            'LIVE: ошибка получения профиля:',
-            error
-        );
+        return 'female';
 
     }
 
-
-    /*
-     * Если пол не удалось получить,
-     * используем мужские картинки.
-     */
 
     return 'male';
 
@@ -134,7 +73,7 @@ async function getUserGender() {
 
 export function LiveModal() {
 
-    setTimeout(async () => {
+    setTimeout(() => {
 
         if (initialized) {
             return;
@@ -142,7 +81,7 @@ export function LiveModal() {
 
         initialized = true;
 
-        await initLiveModal();
+        initLiveModal();
 
     }, 0);
 
@@ -168,9 +107,7 @@ export function LiveModal() {
         <div class="live-options">
 
 
-            <!-- =========================
-                 АЛКОГОЛЬ
-            ========================== -->
+            <!-- АЛКОГОЛЬ -->
 
             <button
                 class="live-option active"
@@ -198,9 +135,7 @@ export function LiveModal() {
             </button>
 
 
-            <!-- =========================
-                 КОФЕ
-            ========================== -->
+            <!-- КОФЕ -->
 
             <button
                 class="live-option"
@@ -228,9 +163,7 @@ export function LiveModal() {
             </button>
 
 
-            <!-- =========================
-                 ГУЛЯТЬ
-            ========================== -->
+            <!-- ГУЛЯТЬ -->
 
             <button
                 class="live-option"
@@ -254,9 +187,7 @@ export function LiveModal() {
             </button>
 
 
-            <!-- =========================
-                 ОБЩАТЬСЯ
-            ========================== -->
+            <!-- ОБЩАТЬСЯ -->
 
             <button
                 class="live-option"
@@ -292,26 +223,20 @@ export function LiveModal() {
 
             <button
                 data-time="15">
-
                 15 мин
-
             </button>
 
 
             <button
                 data-time="30">
-
                 30 мин
-
             </button>
 
 
             <button
                 class="active"
                 data-time="60">
-
                 60 мин
-
             </button>
 
         </div>
@@ -324,6 +249,7 @@ export function LiveModal() {
             Начать LIVE
 
         </button>
+
 
     </div>
 
@@ -338,16 +264,12 @@ export function LiveModal() {
    ИНИЦИАЛИЗАЦИЯ
 ======================================== */
 
-async function initLiveModal() {
+function initLiveModal() {
 
     console.log(
         'LIVE MODAL INIT'
     );
 
-
-    /*
-     * Начальные значения
-     */
 
     setActivity('beer');
 
@@ -355,11 +277,11 @@ async function initLiveModal() {
 
 
     /*
-     * Получаем пол пользователя
+     * Получаем пол из текущего профиля
      */
 
     const gender =
-        await getUserGender();
+        getUserGender();
 
 
     console.log(
@@ -368,90 +290,76 @@ async function initLiveModal() {
     );
 
 
-    /*
-     * Получаем соответствующий
-     * набор фотографий
-     */
-
     const images =
         ACTIVITY_IMAGES[gender];
 
 
-    if (images) {
+    /*
+     * Меняем картинки
+     */
+
+    const beerImage =
+        document.querySelector(
+            '#live-image-beer'
+        );
+
+    const coffeeImage =
+        document.querySelector(
+            '#live-image-coffee'
+        );
+
+    const walkImage =
+        document.querySelector(
+            '#live-image-walk'
+        );
+
+    const chatImage =
+        document.querySelector(
+            '#live-image-chat'
+        );
 
 
-        const beerImage =
-            document.querySelector(
-                '#live-image-beer'
-            );
+    if (beerImage) {
 
-
-        const coffeeImage =
-            document.querySelector(
-                '#live-image-coffee'
-            );
-
-
-        const walkImage =
-            document.querySelector(
-                '#live-image-walk'
-            );
-
-
-        const chatImage =
-            document.querySelector(
-                '#live-image-chat'
-            );
-
-
-        if (beerImage) {
-
-            beerImage.src =
-                images.beer;
-
-        }
-
-
-        if (coffeeImage) {
-
-            coffeeImage.src =
-                images.coffee;
-
-        }
-
-
-        if (walkImage) {
-
-            walkImage.src =
-                images.walk;
-
-        }
-
-
-        if (chatImage) {
-
-            chatImage.src =
-                images.chat;
-
-        }
+        beerImage.src =
+            images.beer;
 
     }
 
 
-    /*
-    ====================================
-    ВЫБОР АКТИВНОСТИ
-    ====================================
-    */
+    if (coffeeImage) {
+
+        coffeeImage.src =
+            images.coffee;
+
+    }
+
+
+    if (walkImage) {
+
+        walkImage.src =
+            images.walk;
+
+    }
+
+
+    if (chatImage) {
+
+        chatImage.src =
+            images.chat;
+
+    }
+
+
+    /* ====================================
+       ВЫБОР АКТИВНОСТИ
+    ==================================== */
 
     document
-        .querySelectorAll(
-            '.live-option'
-        )
+        .querySelectorAll('.live-option')
         .forEach(button => {
 
             button.onclick = () => {
-
 
                 document
                     .querySelectorAll(
@@ -480,11 +388,9 @@ async function initLiveModal() {
         });
 
 
-    /*
-    ====================================
-    ВЫБОР ВРЕМЕНИ
-    ====================================
-    */
+    /* ====================================
+       ВЫБОР ВРЕМЕНИ
+    ==================================== */
 
     document
         .querySelectorAll(
@@ -493,7 +399,6 @@ async function initLiveModal() {
         .forEach(button => {
 
             button.onclick = () => {
-
 
                 document
                     .querySelectorAll(
@@ -524,11 +429,9 @@ async function initLiveModal() {
         });
 
 
-    /*
-    ====================================
-    ЗАКРЫТИЕ ПО КЛИКУ НА ФОН
-    ====================================
-    */
+    /* ====================================
+       ЗАКРЫТИЕ ПО ФОНУ
+    ==================================== */
 
     const modal =
         document.querySelector(
@@ -556,7 +459,7 @@ async function initLiveModal() {
 
 
 /* ========================================
-   ОТКРЫТЬ LIVE
+   ОТКРЫТЬ
 ======================================== */
 
 export function openLiveModal() {
@@ -579,7 +482,7 @@ export function openLiveModal() {
 
 
 /* ========================================
-   ЗАКРЫТЬ LIVE
+   ЗАКРЫТЬ
 ======================================== */
 
 export function closeLiveModal() {
