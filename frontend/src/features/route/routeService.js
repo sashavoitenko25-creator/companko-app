@@ -1,27 +1,25 @@
 import L from 'leaflet';
 import { getMap } from '../../services/map/mapService';
+import { supabase } from '../../services/supabase/supabaseClient';
 
 let routeLine = null;
 let activeUser = null;
 let animationFrame = null;
 let activeMode = 'driving';
 
-const PROFILE = {
-    car: 'driving',
-    bike: 'cycling',
-    foot: 'foot'
-};
-
 export async function startRoute(user, mode = 'driving') {
-
     activeUser = user;
     activeMode = mode;
 
-    if (user.lat == null || user.lng == null) return null;
+    if (user.lat == null || user.lng == null) {
+        return null;
+    }
 
     const position = await getCurrentPosition();
 
-    if (!position) return null;
+    if (!position) {
+        return null;
+    }
 
     return await buildRoute(
         position.latitude,
@@ -29,7 +27,6 @@ export async function startRoute(user, mode = 'driving') {
         user.lat,
         user.lng
     );
-
 }
 
 export function stopRoute() {
@@ -47,49 +44,47 @@ export function stopRoute() {
     routeLine = null;
 }
 
-async function buildRoute(fromLat, fromLng, toLat, toLng) {
-
+async function buildRoute(
+    fromLat,
+    fromLng,
+    toLat,
+    toLng
+) {
     const map = getMap();
-    if (!map) return null;
+
+    if (!map) {
+        return null;
+    }
 
     stopRoute();
 
-    let profile = 'driving';
-
-    switch (activeMode) {
-
-        case 'foot':
-            profile = 'foot';
-            break;
-
-        case 'bike':
-            profile = 'bike';
-            break;
-
-        default:
-            profile = 'driving';
-            break;
-
-    }
-
     try {
-
-        const response = await fetch(
-            `https://router.project-osrm.org/route/v1/${profile}/` +
-            `${fromLng},${fromLat};${toLng},${toLat}` +
-            `?overview=full&geometries=geojson`
+        const { data, error } = await supabase.functions.invoke(
+            'route',
+            {
+                body: {
+                    fromLat,
+                    fromLng,
+                    toLat,
+                    toLng,
+                    mode: activeMode
+                }
+            }
         );
 
-        const json = await response.json();
+        if (error) {
+            console.error('Route function error:', error);
+            return null;
+        }
 
-        if (!json.routes?.length) return null;
+        if (!data?.geometry) {
+            console.error('No route geometry:', data);
+            return null;
+        }
 
-        const route = json.routes[0];
-
-        const fullPath = route.geometry.coordinates.map(item => [
-            item[1],
-            item[0]
-        ]);
+        const fullPath = data.geometry.coordinates.map(
+            ([lng, lat]) => [lat, lng]
+        );
 
         routeLine = L.polyline([], {
             color: '#7c3aed',
@@ -106,27 +101,26 @@ async function buildRoute(fromLat, fromLng, toLat, toLng) {
         animateRoute(fullPath);
 
         return {
-            distance: route.distance,
-            duration: Math.round(route.duration / 60)
+            distance: data.distance,
+            duration: Math.max(
+                1,
+                Math.round(data.duration / 60)
+            )
         };
 
     } catch (error) {
-
-        console.error(error);
-
+        console.error('Route error:', error);
         return null;
-
     }
-
 }
 
 function animateRoute(points) {
-
     let i = 0;
 
     function draw() {
-
-        if (!routeLine) return;
+        if (!routeLine) {
+            return;
+        }
 
         i += 5;
 
@@ -135,10 +129,10 @@ function animateRoute(points) {
         );
 
         if (i < points.length) {
-
             animationFrame =
                 requestAnimationFrame(draw);
-
+        } else {
+            animationFrame = null;
         }
     }
 
@@ -146,24 +140,32 @@ function animateRoute(points) {
 }
 
 function getCurrentPosition() {
-
     return new Promise(resolve => {
+        if (!navigator.geolocation) {
+            resolve(null);
+            return;
+        }
 
         navigator.geolocation.getCurrentPosition(
+            position => {
+                resolve({
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                });
+            },
 
-            pos => resolve({
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude
-            }),
+            error => {
+                console.error(
+                    'Geolocation error:',
+                    error
+                );
 
-            () => resolve(null),
+                resolve(null);
+            },
 
             {
                 enableHighAccuracy: true
             }
-
         );
-
     });
-
 }

@@ -82,9 +82,9 @@ bot.on("callback_query", async (query) => {
                 inline_keyboard: [
                     [
                         {
-                            text: "🚀 Открыть Companko",
+                            text: "🚀 Открыть Я тут",
                             web_app: {
-                                url: "https://companko-qqupoep0s-companko-app.vercel.app/"
+                                url: "https://companko-app.vercel.app"
                             }
                         }
                     ]
