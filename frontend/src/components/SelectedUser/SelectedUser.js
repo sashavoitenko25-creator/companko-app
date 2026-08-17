@@ -1,73 +1,359 @@
 import './SelectedUser.css';
 
-export function SelectedUser(user){
 
-    const distance = user.distance || 0;
+/* ========================================
+   СТАТУС ОТНОШЕНИЙ
+======================================== */
 
-    const activity = user.activity || '';
+function getRelationshipStatus(user) {
 
-    const icon = user.icon || '📍';
+    const value =
+        String(
+            user?.relationship_status ||
+            user?.relationshipStatus ||
+            'single'
+        )
+        .toLowerCase()
+        .trim();
+
+
+    const female =
+        user?.gender === 'female';
+
+
+    /* ====================================
+       СВОБОДЕН / СВОБОДНА
+    ==================================== */
+
+    if (
+        value === 'single' ||
+        value === 'free' ||
+        value === 'available' ||
+        value === 'свободен' ||
+        value === 'свободна'
+    ) {
+
+        return {
+
+            text:
+                female
+                    ? 'Свободна'
+                    : 'Свободен',
+
+            icon: '●',
+
+            className: 'status-single'
+
+        };
+
+    }
+
+
+    /* ====================================
+       В ОТНОШЕНИЯХ
+    ==================================== */
+
+    if (
+        value === 'relationship' ||
+        value === 'in_relationship' ||
+        value === 'in relationship' ||
+        value === 'taken' ||
+        value === 'отношения' ||
+        value === 'в отношениях'
+    ) {
+
+        return {
+
+            text: 'В отношениях',
+
+            icon: '♥',
+
+            className: 'status-relationship'
+
+        };
+
+    }
+
+
+    /* ====================================
+       В ПОИСКЕ
+    ==================================== */
+
+    if (
+        value === 'looking' ||
+        value === 'searching' ||
+        value === 'looking_for_relationship' ||
+        value === 'в поиске'
+    ) {
+
+        return {
+
+            text: 'В поиске',
+
+            icon: '✦',
+
+            className: 'status-looking'
+
+        };
+
+    }
+
+
+    /* ====================================
+       ТОЛЬКО ОБЩЕНИЕ
+    ==================================== */
+
+    if (
+        value === 'chat' ||
+        value === 'communication' ||
+        value === 'only_chat' ||
+        value === 'только общение'
+    ) {
+
+        return {
+
+            text: 'Только общение',
+
+            icon: '•',
+
+            className: 'status-chat'
+
+        };
+
+    }
+
+
+    /* ====================================
+       ОТКРЫТ К ЗНАКОМСТВАМ
+    ==================================== */
+
+    if (
+        value === 'open' ||
+        value === 'open_to_meet' ||
+        value === 'open_to_dating' ||
+        value === 'знакомства'
+    ) {
+
+        return {
+
+            text:
+                female
+                    ? 'Открыта к знакомствам'
+                    : 'Открыт к знакомствам',
+
+            icon: '✧',
+
+            className: 'status-open'
+
+        };
+
+    }
+
+
+    /* ====================================
+       ПО УМОЛЧАНИЮ
+    ==================================== */
+
+    return {
+
+        text:
+            female
+                ? 'Свободна'
+                : 'Свободен',
+
+        icon: '●',
+
+        className: 'status-single'
+
+    };
+
+}
+
+
+/* ========================================
+   КАРТОЧКА ПОЛЬЗОВАТЕЛЯ
+======================================== */
+
+export function SelectedUser(user = {}) {
+
+
+    const distance =
+        Number(user.distance) || 0;
+
+
+    const activity =
+        user.activity || '';
+
+
+    const icon =
+        user.icon || '🔥';
+
+
+    const status =
+        getRelationshipStatus(user);
+
+
+    const photo =
+        user.photo ||
+        user.photo_url ||
+        'https://i.pravatar.cc/150';
+
+
+    const name =
+        user.name ||
+        user.first_name ||
+        'Гость';
+
+
+    const age =
+        user.age ||
+        '';
+
 
     return `
 
         <div class="selected-user">
 
+
+            <!-- ==================================
+                 HEADER
+            ================================== -->
+
             <div class="selected-user__header">
+
 
                 <img
 
                     class="selected-user__avatar"
 
-                    src="${user.photo}"
+                    src="${photo}"
 
-                    alt="${user.name}"
+                    alt="${name}"
 
                 />
 
+
                 <div class="selected-user__content">
+
 
                     <div class="selected-user__name">
 
-                        ${user.name}, ${user.age}
+                        ${name}${age ? `, ${age}` : ''}
 
                     </div>
+
+
+                    <!-- АКТИВНОСТЬ -->
 
                     <div class="selected-user__activity">
 
                         ${icon}
-                        ${activity}
+
+                        ${activity || 'Активен сейчас'}
 
                     </div>
+
+
+                    <!-- РАССТОЯНИЕ -->
 
                     <div class="selected-user__distance">
 
-                        📍 ${distance} м
+                        <span class="selected-user__distance-icon">
+                            ●
+                        </span>
+
+                        ${distance} м
 
                     </div>
 
+
                 </div>
 
+
             </div>
+
+
+            <!-- ==================================
+                 FOOTER
+            ================================== -->
 
             <div class="selected-user__footer">
 
-                <div class="selected-user__status">
 
-                    <span class="selected-user__status-dot"></span>
+                <!-- СТАТУС -->
 
-                    Онлайн
+                <div class="
+                    selected-user__status
+                    ${status.className}
+                ">
+
+
+                    <span class="
+                        selected-user__status-icon
+                    ">
+
+                        ${status.icon}
+
+                    </span>
+
+
+                    <div class="selected-user__status-content">
+
+
+                        <span class="
+                            selected-user__status-label
+                        ">
+
+                            Статус
+
+                        </span>
+
+
+                        <strong>
+
+                            ${status.text}
+
+                        </strong>
+
+
+                    </div>
+
 
                 </div>
 
+
+                <!-- КНОПКА -->
+
                 <button
 
-                    class="selected-user__button">
+                    class="selected-user__button"
 
-                    Построить маршрут
+                    type="button"
+
+                >
+
+                    <span class="
+                        selected-user__button-text
+                    ">
+
+                        Построить маршрут
+
+                    </span>
+
+
+                    <span class="
+                        selected-user__button-icon
+                    ">
+
+                        →
+
+                    </span>
 
                 </button>
 
+
             </div>
+
 
         </div>
 
