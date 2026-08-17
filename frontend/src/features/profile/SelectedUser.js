@@ -1,7 +1,6 @@
 import './SelectedUser.css';
 
 let timer = null;
-let ignoreCloseAll = false;
 
 
 /* ========================================
@@ -56,7 +55,7 @@ const ACTIVITY_ICONS = {
 
 
 /* ========================================
-   КОНТЕЙНЕР КАРТОЧКИ
+   КОНТЕЙНЕР
 ======================================== */
 
 export function SelectedUser() {
@@ -66,6 +65,7 @@ export function SelectedUser() {
         <div
             id="selected-user"
             class="selected-user hidden">
+
         </div>
 
     `;
@@ -74,26 +74,10 @@ export function SelectedUser() {
 
 
 /* ========================================
-   ПОКАЗАТЬ КАРТОЧКУ
+   ПОКАЗ КАРТОЧКИ
 ======================================== */
 
 export function showUserCard(user) {
-
-    /*
-     * Блокируем ui:close-all на короткое время.
-     * Это нужно потому, что при открытии своей
-     * карточки другое событие могло сразу
-     * закрывать её.
-     */
-
-    ignoreCloseAll = true;
-
-    setTimeout(() => {
-
-        ignoreCloseAll = false;
-
-    }, 500);
-
 
     const container =
         document.querySelector(
@@ -118,12 +102,12 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       СВОЯ КАРТОЧКА ИЛИ ДРУГОЙ ПОЛЬЗОВАТЕЛЬ
+       СВОЯ КАРТОЧКА
     ==================================== */
 
     const isMine =
-        user.own === true ||
-        user.isMine === true;
+        user?.own === true ||
+        user?.isMine === true;
 
 
     console.log(
@@ -132,29 +116,48 @@ export function showUserCard(user) {
     );
 
 
+    console.log(
+        'IS MY CARD:',
+        isMine
+    );
+
+
+    /*
+       Запоминаем, чья карточка сейчас открыта.
+
+       true  = моя
+       false = чужая
+    */
+
+    container.dataset.owner =
+        isMine
+            ? 'true'
+            : 'false';
+
+
     /* ====================================
-       ОСНОВНЫЕ ДАННЫЕ
+       ДАННЫЕ
     ==================================== */
 
     const name =
-        user.name ||
-        user.first_name ||
+        user?.name ||
+        user?.first_name ||
         'Гость';
 
 
     const age =
-        user.age ||
+        user?.age ||
         '';
 
 
     const photo =
-        user.photo ||
-        user.photo_url ||
+        user?.photo ||
+        user?.photo_url ||
         'https://i.pravatar.cc/600';
 
 
     const distance =
-        Number(user.distance) || 0;
+        Number(user?.distance) || 0;
 
 
     /* ====================================
@@ -162,7 +165,7 @@ export function showUserCard(user) {
     ==================================== */
 
     const gender =
-        user.gender === 'female'
+        user?.gender === 'female'
             ? 'female'
             : 'male';
 
@@ -178,28 +181,38 @@ export function showUserCard(user) {
     ==================================== */
 
     const activity =
-        user.activity ||
+        user?.activity ||
         '';
 
 
     const activityKey =
-        getActivityKey(activity);
+        getActivityKey(
+            activity
+        );
 
 
     const activityName =
-        ACTIVITY_NAMES[activityKey] ||
+        ACTIVITY_NAMES[
+            activityKey
+        ] ||
         activity ||
         'Активность';
 
 
     const activityIcon =
-        ACTIVITY_ICONS[activityKey] ||
-        user.icon ||
+        ACTIVITY_ICONS[
+            activityKey
+        ] ||
+        user?.icon ||
         '🔥';
 
 
     const activityImage =
-        ACTIVITY_IMAGES[gender]?.[activityKey] ||
+        ACTIVITY_IMAGES[
+            gender
+        ]?.[
+            activityKey
+        ] ||
         null;
 
 
@@ -218,7 +231,9 @@ export function showUserCard(user) {
     } else {
 
         distanceText =
-            `${(distance / 1000).toFixed(1)} км`;
+            `${(
+                distance / 1000
+            ).toFixed(1)} км`;
 
     }
 
@@ -297,7 +312,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       HTML КАРТОЧКИ
+       HTML
     ==================================== */
 
     container.innerHTML = `
@@ -340,21 +355,26 @@ export function showUserCard(user) {
                 </div>
 
 
-                <div class="profile-live-hero-name">
+                <div
+                    class="profile-live-hero-name">
 
 
-                    <div class="profile-live-name">
+                    <div
+                        class="profile-live-name">
 
                         ${escapeHTML(name)}
-                        ${age
-                            ? `, ${escapeHTML(age)}`
-                            : ''
+
+                        ${
+                            age
+                                ? `, ${escapeHTML(age)}`
+                                : ''
                         }
 
                     </div>
 
 
-                    <div class="profile-live-gender">
+                    <div
+                        class="profile-live-gender">
 
                         ${genderText}
 
@@ -565,7 +585,7 @@ export function showUserCard(user) {
 
 
     /* ====================================
-       ПОКАЗЫВАЕМ
+       ПОКАЗ
     ==================================== */
 
     container.classList.remove(
@@ -594,7 +614,11 @@ export function showUserCard(user) {
 
     if (closeButton) {
 
-        closeButton.onclick = () => {
+        closeButton.onclick = (
+            event
+        ) => {
+
+            event.stopPropagation();
 
             hideUserCard();
 
@@ -608,8 +632,8 @@ export function showUserCard(user) {
     ==================================== */
 
     startCountdown(
-        user.expires_at,
-        user.duration
+        user?.expires_at,
+        user?.duration
     );
 
 }
@@ -681,7 +705,7 @@ function getActivityKey(activity) {
 
 
 /* ========================================
-   ТАЙМЕР LIVE
+   ТАЙМЕР
 ======================================== */
 
 function startCountdown(
@@ -708,7 +732,8 @@ function startCountdown(
 
     if (!expiresAt) {
 
-        text.innerHTML = '--:--';
+        text.innerHTML =
+            '--:--';
 
         return;
 
@@ -721,9 +746,19 @@ function startCountdown(
         ).getTime();
 
 
+    if (Number.isNaN(end)) {
+
+        text.innerHTML =
+            '--:--';
+
+        return;
+
+    }
+
+
     const total =
         duration
-            ? duration * 60
+            ? Number(duration) * 60
             : 3600;
 
 
@@ -738,10 +773,6 @@ function startCountdown(
 
     circle.style.strokeDasharray =
         circumference;
-
-
-    circle.style.strokeDashoffset =
-        0;
 
 
     function update() {
@@ -775,7 +806,10 @@ function startCountdown(
             min +
             ':' +
             String(sec)
-                .padStart(2, '0');
+                .padStart(
+                    2,
+                    '0'
+                );
 
 
         const progress =
@@ -798,11 +832,15 @@ function startCountdown(
 
         if (left <= 0) {
 
-            clearInterval(
-                timer
-            );
+            if (timer) {
 
-            timer = null;
+                clearInterval(
+                    timer
+                );
+
+                timer = null;
+
+            }
 
         }
 
@@ -822,7 +860,7 @@ function startCountdown(
 
 
 /* ========================================
-   ЗАКРЫТЬ КАРТОЧКУ
+   ЗАКРЫТЬ
 ======================================== */
 
 export function hideUserCard() {
@@ -856,9 +894,30 @@ export function hideUserCard() {
 
     setTimeout(() => {
 
+        /*
+           Проверяем, что контейнер всё ещё
+           должен быть закрыт.
+
+           Если за это время открыли новую
+           карточку — не прячем её.
+        */
+
+        if (
+            container.classList.contains(
+                'selected-user--visible'
+            )
+        ) {
+            return;
+        }
+
+
         container.classList.add(
             'hidden'
         );
+
+
+        container.dataset.owner =
+            'false';
 
     }, 250);
 
@@ -866,21 +925,49 @@ export function hideUserCard() {
 
 
 /* ========================================
-   ЗАКРЫТИЕ ЧЕРЕЗ ui:close-all
+   UI:CLOSE-ALL
 ======================================== */
+
+/*
+   ВАЖНО:
+
+   ui:close-all НЕ закрывает собственную
+   LIVE-карточку.
+
+   Чужую карточку закрывает.
+*/
 
 window.addEventListener(
     'ui:close-all',
     () => {
 
-        /*
-         * При открытии своей карточки
-         * некоторое время игнорируем
-         * ui:close-all.
-         */
+        const container =
+            document.querySelector(
+                '#selected-user'
+            );
 
-        if (ignoreCloseAll) {
+
+        if (!container) {
             return;
+        }
+
+
+        /*
+           Если сейчас открыта моя карточка,
+           вообще ничего не делаем.
+        */
+
+        if (
+            container.dataset.owner ===
+            'true'
+        ) {
+
+            console.log(
+                'KEEP MY LIVE CARD OPEN'
+            );
+
+            return;
+
         }
 
 
