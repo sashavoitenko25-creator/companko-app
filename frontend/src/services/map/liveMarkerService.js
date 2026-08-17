@@ -15,11 +15,10 @@ import {
     getLiveUsers
 } from '../supabase/liveService';
 
+
 import {
     getProfile
 } from '../../features/profile/profileStore';
-
-
 
 
 
@@ -31,75 +30,153 @@ let liveMarkerMap = {};
 let refreshTimer = null;
 
 
+/* ========================================
+   АКТИВНОСТЬ → ЦВЕТ
+======================================== */
+
+function getActivityClass(activity) {
+
+    if (!activity) {
+
+        return 'activity-default';
+
+    }
 
 
+    const value =
+        String(activity)
+            .toLowerCase()
+            .trim();
 
 
+    /* ====================================
+       ГУЛЯТЬ
+    ==================================== */
+
+    if (
+
+        value === 'walk' ||
+
+        value === 'walking' ||
+
+        value.includes('гуля')
+
+    ) {
+
+        return 'activity-walk';
+
+    }
 
 
+    /* ====================================
+       КОФЕ
+    ==================================== */
 
-export async function loadLiveMarkers(){
+    if (
 
+        value === 'coffee' ||
+
+        value.includes('кофе')
+
+    ) {
+
+        return 'activity-coffee';
+
+    }
+
+
+    /* ====================================
+       ВЫПИТЬ
+    ==================================== */
+
+    if (
+
+        value === 'beer' ||
+
+        value === 'alcohol' ||
+
+        value.includes('алког') ||
+
+        value.includes('выпит')
+
+    ) {
+
+        return 'activity-beer';
+
+    }
+
+
+    /* ====================================
+       ОБЩАТЬСЯ
+    ==================================== */
+
+    if (
+
+        value === 'chat' ||
+
+        value === 'talking' ||
+
+        value.includes('общ')
+
+    ) {
+
+        return 'activity-chat';
+
+    }
+
+
+    return 'activity-default';
+
+}
+
+
+/* ========================================
+   LOAD LIVE MARKERS
+======================================== */
+
+export async function loadLiveMarkers() {
 
 
     const map =
-    getMap();
+        getMap();
 
 
+    if (!map) {
 
-    if(!map)
         return;
 
+    }
 
 
-
-
-
-    try{
-
+    try {
 
 
         clearLiveMarkers();
 
 
-
-
-
         const users =
-        await getLiveUsers();
-
-
-
+            await getLiveUsers();
 
 
         const profile =
-        getProfile();
-
-
-
+            getProfile();
 
 
         const myId =
 
-        profile?.id ||
+            profile?.id ||
 
-        profile?.user_id;
-
-
+            profile?.user_id;
 
 
+        users.forEach(user => {
 
 
+            /* ================================
+               НЕ ПОКАЗЫВАЕМ СЕБЯ
+            ================================= */
 
-        users.forEach(user=>{
-
-
-
-
-
-            // не показываем себя
-
-            if(
+            if (
 
                 String(user.user_id)
 
@@ -107,68 +184,58 @@ export async function loadLiveMarkers(){
 
                 String(myId)
 
-            ){
+            ) {
 
                 return;
 
             }
 
 
+            /* ================================
+               ПРОВЕРКА КООРДИНАТ
+            ================================= */
 
-
-
-
-            if(
+            if (
 
                 user.lat == null ||
 
                 user.lng == null
 
-            ){
+            ) {
 
                 return;
 
             }
 
 
-
-
-
+            /* ================================
+               СОЗДАЁМ МАРКЕР
+            ================================= */
 
             const marker =
 
-            createMarker(
+                createMarker(
 
-                map,
+                    map,
 
-                user
+                    user
 
-            );
-
-
-
-
+                );
 
 
             liveMarkers.push(marker);
 
 
-
-            liveMarkerMap[user.user_id] = marker;
-
-
-
+            liveMarkerMap[user.user_id] =
+                marker;
 
 
         });
 
 
-
-
-
     }
 
-    catch(error){
+    catch (error) {
 
 
         console.error(
@@ -182,18 +249,12 @@ export async function loadLiveMarkers(){
 
     }
 
-
-
-
 }
 
 
-
-
-
-
-
-
+/* ========================================
+   CREATE MARKER
+======================================== */
 
 function createMarker(
 
@@ -201,115 +262,158 @@ function createMarker(
 
     user
 
-){
+) {
 
 
+    /* ====================================
+       ОПРЕДЕЛЯЕМ АКТИВНОСТЬ
+    ==================================== */
+
+    const activityClass =
+        getActivityClass(
+            user?.activity
+        );
+
+
+    /* ====================================
+       HTML МАРКЕРА
+    ==================================== */
+
+    const markerHTML = `
+
+        <div
+            class="live-marker-glow ${activityClass}">
+
+            <div
+                class="live-marker-glow__pulse">
+            </div>
+
+            <div
+                class="live-marker-glow__user">
+
+                ${UserMarker(user)}
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    /* ====================================
+       LEAFLET ICON
+    ==================================== */
 
     const icon =
 
-    L.divIcon({
+        L.divIcon({
+
+            className: '',
+
+            html:
+                markerHTML,
+
+            iconSize: [
+                64,
+                64
+            ],
+
+            iconAnchor: [
+                32,
+                32
+            ]
+
+        });
 
 
-        className:'',
-
-
-        html:
-
-        UserMarker(user),
-
-
-
-        iconSize:[64,64],
-
-
-
-        iconAnchor:[32,32]
-
-
-    });
-
-
-
-
-
+    /* ====================================
+       MARKER
+    ==================================== */
 
     const marker =
 
-    L.marker(
+        L.marker(
 
+            [
 
+                user.lat,
 
-        [
+                user.lng
 
-            user.lat,
+            ],
 
-            user.lng
+            {
 
-        ],
+                icon,
 
+                zIndexOffset: 500
 
-
-        {
-
-            icon,
-
-
-            zIndexOffset:500
-
-
-        }
-
-
-
-    )
-
-    .addTo(map);
-
-
-
-
-
-
-
-    marker.on(
-        'click',
-        event => {
-
-            // Не передаём клик дальше карте
-            if (event.originalEvent) {
-                event.originalEvent.stopPropagation();
             }
 
+        )
+
+        .addTo(map);
+
+
+    /* ====================================
+       CLICK
+    ==================================== */
+
+    marker.on(
+
+        'click',
+
+        event => {
+
+
+            /* ============================
+               НЕ ПЕРЕДАЁМ КЛИК КАРТЕ
+            ============================ */
+
+            if (
+                event.originalEvent
+            ) {
+
+                event
+                    .originalEvent
+                    .stopPropagation();
+
+            }
+
+
+            /* ============================
+               ОТКРЫВАЕМ КАРТОЧКУ
+            ============================ */
+
             window.dispatchEvent(
+
                 new CustomEvent(
+
                     'user:selected',
+
                     {
+
                         detail: user
+
                     }
+
                 )
+
             );
 
         }
+
     );
-
-
-
-
 
 
     return marker;
 
-
-
 }
 
 
-
-
-
-
-
-
+/* ========================================
+   UPDATE POSITION
+======================================== */
 
 export function updateLiveMarkerPosition(
 
@@ -317,19 +421,14 @@ export function updateLiveMarkerPosition(
 
     position
 
-){
-
+) {
 
 
     const marker =
-
-    liveMarkerMap[userId];
-
+        liveMarkerMap[userId];
 
 
-
-
-    if(marker){
+    if (marker) {
 
 
         marker.setLatLng(
@@ -341,81 +440,59 @@ export function updateLiveMarkerPosition(
 
     }
 
-
-
 }
 
 
+/* ========================================
+   CLEAR MARKERS
+======================================== */
 
-
-
-
-
-
-
-export function clearLiveMarkers(){
-
+export function clearLiveMarkers() {
 
 
     const map =
-    getMap();
+        getMap();
 
 
+    if (!map) {
 
-
-
-    if(!map)
         return;
 
+    }
 
 
+    liveMarkers.forEach(
 
+        marker => {
 
+            map.removeLayer(
 
+                marker
 
-    liveMarkers.forEach(marker=>{
+            );
 
+        }
 
-
-        map.removeLayer(
-
-            marker
-
-        );
-
-
-
-    });
-
-
-
-
+    );
 
 
     liveMarkers = [];
 
 
-
     liveMarkerMap = {};
-
-
 
 }
 
 
-
-
-
-
-
-
+/* ========================================
+   LIVE REFRESH
+======================================== */
 
 window.addEventListener(
 
     'live:refresh',
 
-    ()=>{
-
+    () => {
 
 
         clearTimeout(
@@ -425,21 +502,19 @@ window.addEventListener(
         );
 
 
-
-
-
         refreshTimer =
 
-        setTimeout(()=>{
+            setTimeout(
 
+                () => {
 
+                    loadLiveMarkers();
 
-            loadLiveMarkers();
+                },
 
+                500
 
-
-        },500);
-
+            );
 
 
     }

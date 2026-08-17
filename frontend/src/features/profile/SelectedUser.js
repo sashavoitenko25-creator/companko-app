@@ -295,8 +295,43 @@ export function showUserCard(user) {
                 class="user-card__route"
                 type="button">
 
-                <span>
-                    🧭
+                <span class="route-button__icon">
+
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+
+                        <path
+                            d="M5 19L19 5"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M19 5H11"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <path
+                            d="M19 5V13"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                        />
+
+                        <circle
+                            cx="5"
+                            cy="19"
+                            r="2"
+                            fill="currentColor"
+                        />
+
+                    </svg>
+
                 </span>
 
                 <strong>
