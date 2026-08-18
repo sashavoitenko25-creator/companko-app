@@ -145,95 +145,147 @@ function getActivityColor(activity) {
 
 export async function loadLiveMarkers() {
 
-
-    const map =
-        getMap();
-
+    const map = getMap();
 
     if (!map) {
-
         return;
-
     }
-
 
     try {
 
-
         clearLiveMarkers();
 
+        const users = await getLiveUsers();
 
-        const users =
-            await getLiveUsers();
+        const profile = getProfile();
 
+        /*
+        ========================================
+        МОЙ USER ID
+        ========================================
+        */
 
-        const profile =
-            getProfile();
-
-
-        const myId =
-
+        const myUserId =
+            profile?.user_id ||
             profile?.id ||
+            null;
 
-            profile?.user_id;
 
+        /*
+        ========================================
+        МОЙ TELEGRAM ID
+        ========================================
+        */
+
+        const myTelegramId =
+            profile?.telegram_id ||
+            null;
+
+
+        console.log(
+            'MY USER ID:',
+            myUserId
+        );
+
+        console.log(
+            'MY TELEGRAM ID:',
+            myTelegramId
+        );
+
+
+        /*
+        ========================================
+        СОЗДАЁМ ТОЛЬКО ЧУЖИЕ LIVE-МАРКЕРЫ
+        ========================================
+        */
 
         users.forEach(user => {
 
 
-            /* ================================
-               НЕ ПОКАЗЫВАЕМ СЕБЯ
-            ================================= */
+            /*
+            ====================================
+            НЕ ПОКАЗЫВАЕМ СЕБЯ ПО USER ID
+            ====================================
+            */
+
+            const sameUserId =
+                myUserId &&
+                user?.user_id &&
+                String(user.user_id) ===
+                String(myUserId);
+
+
+            /*
+            ====================================
+            НЕ ПОКАЗЫВАЕМ СЕБЯ ПО TELEGRAM ID
+            ====================================
+            */
+
+            const sameTelegramId =
+                myTelegramId &&
+                user?.telegram_id &&
+                String(user.telegram_id) ===
+                String(myTelegramId);
+
+
+            /*
+            ====================================
+            ЕСЛИ ЭТО Я — ПРОПУСКАЕМ
+            ====================================
+            */
 
             if (
-
-                String(user.user_id)
-
-                ===
-
-                String(myId)
-
+                sameUserId ||
+                sameTelegramId
             ) {
+
+                console.log(
+                    'SKIP MY LIVE MARKER:',
+                    user
+                );
 
                 return;
 
             }
 
 
-            /* ================================
-               ПРОВЕРКА КООРДИНАТ
-            ================================= */
+            /*
+            ====================================
+            ПРОВЕРКА КООРДИНАТ
+            ====================================
+            */
 
             if (
-
                 user.lat == null ||
-
                 user.lng == null
-
             ) {
 
                 return;
 
             }
 
+
+            /*
+            ====================================
+            СОЗДАЁМ МАРКЕР ДРУГОГО ПОЛЬЗОВАТЕЛЯ
+            ====================================
+            */
 
             const marker =
-
                 createMarker(
-
                     map,
-
                     user
-
                 );
 
 
-            liveMarkers.push(marker);
+            liveMarkers.push(
+                marker
+            );
 
 
-            liveMarkerMap[user.user_id] =
-                marker;
-
+            liveMarkerMap[
+                user.user_id
+            ] = marker;
 
         });
 
@@ -242,15 +294,10 @@ export async function loadLiveMarkers() {
 
     catch (error) {
 
-
         console.error(
-
             'LIVE MARKERS LOAD ERROR',
-
             error
-
         );
-
 
     }
 
