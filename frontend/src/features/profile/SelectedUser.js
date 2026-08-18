@@ -58,26 +58,34 @@ const ACTIVITY_ICONS = {
    СТАТУСЫ ОТНОШЕНИЙ
 ======================================== */
 
+/* ========================================
+   СТАТУСЫ ОТНОШЕНИЙ
+======================================== */
+
 const RELATIONSHIP_STATUSES = {
 
     relationship: {
         icon: '❤️',
-        text: 'В отношениях'
+        male: 'В отношениях',
+        female: 'В отношениях'
     },
 
     married: {
         icon: '💍',
-        text: 'Женат / замужем'
+        male: 'Женат',
+        female: 'Замужем'
     },
 
     single: {
         icon: '💔',
-        text: 'Свободен / свободна'
+        male: 'Свободен',
+        female: 'Свободна'
     },
 
     not_specified: {
         icon: '🤫',
-        text: 'Не хочу указывать'
+        male: 'Не хочу указывать',
+        female: 'Не хочу указывать'
     }
 
 };
@@ -212,7 +220,9 @@ export function showUserCard(user) {
 
 
     const relationshipText =
-        relationship.text;
+        gender === 'female'
+            ? relationship.female
+            : relationship.male;
 
 
     const relationshipIcon =
