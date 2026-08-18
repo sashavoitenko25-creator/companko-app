@@ -72,14 +72,11 @@ export async function getLiveUsers(){
 
 
 
-
     if(!sessions || sessions.length === 0){
 
         return [];
 
     }
-
-
 
 
 
@@ -121,7 +118,9 @@ export async function getLiveUsers(){
 
             telegram_id,
 
-            photo_url
+            photo_url,
+
+            relationship_status
 
         `)
 
@@ -129,7 +128,6 @@ export async function getLiveUsers(){
             'user_id',
             userIds
         );
-
 
 
 
@@ -195,8 +193,6 @@ export async function getLiveUsers(){
 
 
 
-
-
     if(locationError){
 
         console.error(
@@ -227,7 +223,6 @@ export async function getLiveUsers(){
             p.user_id === session.user_id
 
         );
-
 
 
 
@@ -276,6 +271,29 @@ export async function getLiveUsers(){
 
 
 
+            telegram_id:
+            profile?.telegram_id || null,
+
+
+
+            /*
+            ==========================================
+            СТАТУС ОТНОШЕНИЙ
+            ==========================================
+            */
+
+            relationship_status:
+            profile?.relationship_status ||
+            'not_specified',
+
+
+
+            /*
+            ==========================================
+            АКТИВНОСТЬ
+            ==========================================
+            */
+
             activity:
             session.activity,
 
@@ -291,8 +309,11 @@ export async function getLiveUsers(){
 
 
 
-            // ВАЖНО
-            // теперь берём Telegram фото
+            /*
+            ==========================================
+            ФОТО
+            ==========================================
+            */
 
             photo_url:
             profile?.photo_url || null,
@@ -303,6 +324,12 @@ export async function getLiveUsers(){
             profile?.photo_url || null,
 
 
+
+            /*
+            ==========================================
+            КООРДИНАТЫ
+            ==========================================
+            */
 
             lat:
             location?.latitude ?? null,
@@ -387,7 +414,6 @@ export async function createLiveSession(data){
 
 
 
-
     if(checkError){
 
         console.error(
@@ -403,12 +429,12 @@ export async function createLiveSession(data){
 
 
 
-
     if(existing){
 
         return existing;
 
     }
+
 
 
 
@@ -501,6 +527,7 @@ export async function createLiveSession(data){
 
 
 
+
     if(error){
 
         console.error(
@@ -563,7 +590,6 @@ export async function stopLiveSession(sessionId){
 
 
 
-
     if(error){
 
         console.error(
@@ -601,6 +627,8 @@ async function clearExpiredLiveSessions(){
 
 
 
+
+
     const {
 
         error
@@ -631,6 +659,8 @@ async function clearExpiredLiveSessions(){
             now
 
         );
+
+
 
 
 
@@ -707,7 +737,6 @@ export async function getOnlineCount(){
 
 
 
-
     if(error){
 
         console.error(
@@ -718,7 +747,6 @@ export async function getOnlineCount(){
         return 0;
 
     }
-
 
 
 

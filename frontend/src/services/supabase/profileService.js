@@ -6,7 +6,11 @@ import {
 
 
 
-export async function getProfileByUserId(userId){
+/* ========================================
+   ПОЛУЧИТЬ ПРОФИЛЬ ПО USER ID
+======================================== */
+
+export async function getProfileByUserId(userId) {
 
 
     const {
@@ -29,7 +33,7 @@ export async function getProfileByUserId(userId){
 
 
 
-    if(error){
+    if (error) {
 
 
         console.error(
@@ -60,8 +64,11 @@ export async function getProfileByUserId(userId){
 
 
 
-export async function createProfile(profile){
+/* ========================================
+   СОЗДАТЬ ПРОФИЛЬ
+======================================== */
 
+export async function createProfile(profile) {
 
 
     const {
@@ -73,27 +80,39 @@ export async function createProfile(profile){
 
         .insert({
 
-
             user_id:
-            profile.user_id,
-
+                profile.user_id,
 
             name:
-            profile.name,
-
+                profile.name,
 
             age:
-            profile.age,
-
+                profile.age,
 
             gender:
-            profile.gender,
+                profile.gender,
 
+            city:
+                profile.city || null,
+
+            interests:
+                profile.interests || [],
+
+            favorite_activity:
+                profile.favorite_activity || null,
+
+            about:
+                profile.about || null,
+
+            telegram_id:
+                profile.telegram_id || null,
 
             photo_url:
-            profile.photo_url || null
+                profile.photo_url || null,
 
-
+            relationship_status:
+                profile.relationship_status ||
+                'not_specified'
 
         })
 
@@ -105,8 +124,7 @@ export async function createProfile(profile){
 
 
 
-
-    if(error){
+    if (error) {
 
 
         console.error(
@@ -130,7 +148,6 @@ export async function createProfile(profile){
     );
 
 
-
     return data;
 
 
@@ -144,11 +161,14 @@ export async function createProfile(profile){
 
 
 
+/* ========================================
+   ОБНОВИТЬ ПРОФИЛЬ
+======================================== */
+
 export async function updateProfile(
     profileId,
     profile
-){
-
+) {
 
 
     const {
@@ -160,42 +180,45 @@ export async function updateProfile(
 
         .update({
 
-
-
             name:
-            profile.name,
-
-
+                profile.name,
 
             age:
-            profile.age,
-
-
+                profile.age,
 
             gender:
-            profile.gender,
+                profile.gender,
 
+            city:
+                profile.city || null,
 
+            interests:
+                profile.interests || [],
+
+            favorite_activity:
+                profile.favorite_activity || null,
+
+            about:
+                profile.about || null,
+
+            telegram_id:
+                profile.telegram_id || null,
 
             photo_url:
-            profile.photo_url || null
+                profile.photo_url || null,
 
-
+            relationship_status:
+                profile.relationship_status ||
+                'not_specified'
 
         })
 
-
         .eq(
-
             'id',
-
             profileId
-
         )
 
-
         .select()
-
 
         .single();
 
@@ -203,17 +226,12 @@ export async function updateProfile(
 
 
 
-
-
-    if(error){
+    if (error) {
 
 
         console.error(
-
             'Update profile error:',
-
             error
-
         );
 
 
@@ -225,6 +243,11 @@ export async function updateProfile(
 
 
 
+
+    console.log(
+        'Profile updated:',
+        data
+    );
 
 
     return data;

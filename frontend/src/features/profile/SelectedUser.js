@@ -27,7 +27,7 @@ const ACTIVITY_IMAGES = {
 
 
 /* ========================================
-   НАЗВАНИЯ
+   НАЗВАНИЯ АКТИВНОСТЕЙ
 ======================================== */
 
 const ACTIVITY_NAMES = {
@@ -41,7 +41,7 @@ const ACTIVITY_NAMES = {
 
 
 /* ========================================
-   ИКОНКИ
+   ИКОНКИ АКТИВНОСТЕЙ
 ======================================== */
 
 const ACTIVITY_ICONS = {
@@ -50,6 +50,35 @@ const ACTIVITY_ICONS = {
     coffee: '☕',
     walk: '🚶',
     chat: '💬'
+
+};
+
+
+/* ========================================
+   СТАТУСЫ ОТНОШЕНИЙ
+======================================== */
+
+const RELATIONSHIP_STATUSES = {
+
+    relationship: {
+        icon: '❤️',
+        text: 'В отношениях'
+    },
+
+    married: {
+        icon: '💍',
+        text: 'Женат / замужем'
+    },
+
+    single: {
+        icon: '💔',
+        text: 'Свободен / свободна'
+    },
+
+    not_specified: {
+        icon: '🤫',
+        text: 'Не хочу указывать'
+    }
 
 };
 
@@ -119,13 +148,6 @@ export function showUserCard(user) {
     );
 
 
-    /*
-       Запоминаем тип открытой карточки.
-
-       true  = моя
-       false = чужая
-    */
-
     container.dataset.owner =
         isMine
             ? 'true'
@@ -171,6 +193,30 @@ export function showUserCard(user) {
         gender === 'female'
             ? '♀ Женщина'
             : '♂ Мужчина';
+
+
+    /* ====================================
+       СТАТУС ОТНОШЕНИЙ
+    ==================================== */
+
+    const relationshipStatus =
+        user?.relationship_status ||
+        'not_specified';
+
+
+    const relationship =
+        RELATIONSHIP_STATUSES[
+            relationshipStatus
+        ] ||
+        RELATIONSHIP_STATUSES.not_specified;
+
+
+    const relationshipText =
+        relationship.text;
+
+
+    const relationshipIcon =
+        relationship.icon;
 
 
     /* ====================================
@@ -248,7 +294,7 @@ export function showUserCard(user) {
                     class="profile-live-activity-image">
 
                     <img
-                        src="${activityImage}"
+                        src="${escapeHTML(activityImage)}"
                         alt=""
                     />
 
@@ -359,7 +405,7 @@ export function showUserCard(user) {
 
                 <img
                     class="profile-live-avatar"
-                    src="${photo}"
+                    src="${escapeHTML(photo)}"
                     alt="${escapeHTML(name)}"
                 />
 
@@ -435,6 +481,8 @@ export function showUserCard(user) {
                 <div class="profile-live-meta">
 
 
+                    <!-- РАССТОЯНИЕ -->
+
                     <div
                         class="profile-live-meta-item">
 
@@ -466,6 +514,7 @@ export function showUserCard(user) {
                     </div>
 
 
+                    <!-- СТАТУС ОТНОШЕНИЙ -->
 
                     <div
                         class="profile-live-meta-item">
@@ -473,7 +522,7 @@ export function showUserCard(user) {
                         <span
                             class="profile-live-meta-icon">
 
-                            ${activityIcon}
+                            ${relationshipIcon}
 
                         </span>
 
@@ -481,12 +530,14 @@ export function showUserCard(user) {
                         <div>
 
                             <small>
-                                Сейчас
+                                Статус
                             </small>
 
                             <strong>
 
-                                ${activityName}
+                                ${escapeHTML(
+                                    relationshipText
+                                )}
 
                             </strong>
 
@@ -515,7 +566,9 @@ export function showUserCard(user) {
                         </span>
 
                         <strong>
-                            ${activityName}
+                            ${escapeHTML(
+                                activityName
+                            )}
                         </strong>
 
                     </div>
@@ -824,12 +877,6 @@ function startCountdown(
         '0';
 
 
-    /*
-       Плавное обновление.
-       requestAnimationFrame используется
-       только для визуальной анимации.
-    */
-
     function update() {
 
         const now =
@@ -963,11 +1010,6 @@ export function hideUserCard() {
 
     setTimeout(() => {
 
-        /*
-           Если за это время открыли
-           новую карточку — НЕ скрываем её.
-        */
-
         if (
             container.classList.contains(
                 'selected-user--visible'
@@ -1010,11 +1052,6 @@ window.addEventListener(
             return;
         }
 
-
-        /*
-           МОЯ LIVE-КАРТОЧКА НЕ ЗАКРЫВАЕТСЯ
-           от общего ui:close-all.
-        */
 
         if (
             container.dataset.owner ===

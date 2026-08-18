@@ -24,16 +24,54 @@ import {
 } from '../../services/supabase/profileService';
 
 
-
 let selectedGender = null;
+
+let selectedRelationshipStatus = 'not_specified';
 
 let profileInitialized = false;
 
 
+/* ========================================
+   СТАТУСЫ ОТНОШЕНИЙ
+======================================== */
+
+const RELATIONSHIP_STATUSES = {
+
+    relationship: '❤️ В отношениях',
+
+    married: '💍 Женат / замужем',
+
+    single: '💔 Свободен / свободна',
+
+    not_specified: '🤫 Не хочу указывать'
+
+};
 
 
+/* ========================================
+   PROFILE
+======================================== */
 
-export function Profile(){
+export function Profile() {
+
+    profileInitialized = false;
+
+
+    const tgUser =
+        getTelegramUser();
+
+
+    const oldProfile =
+        getProfile();
+
+
+    selectedGender =
+        oldProfile?.gender || null;
+
+
+    selectedRelationshipStatus =
+        oldProfile?.relationship_status ||
+        'not_specified';
 
 
     setTimeout(
@@ -42,546 +80,620 @@ export function Profile(){
     );
 
 
-
-    const tgUser =
-    getTelegramUser();
-
-
-
-    const oldProfile =
-    getProfile();
-
-
-
-    selectedGender =
-    oldProfile?.gender || null;
-
-
-
-
-
     return `
 
+        <main class="profile-page">
 
+            <div class="profile-card">
 
-<main class="profile-page">
 
+                <!-- HEADER -->
 
+                <div class="profile-header">
 
-<div class="profile-card">
+                    <img
+                        class="profile-avatar"
+                        src="${
+                            tgUser?.photo_url ||
+                            oldProfile?.photo_url ||
+                            'https://i.pravatar.cc/150'
+                        }"
+                        alt=""
+                    >
 
 
+                    <h1>
+                        ${
+                            oldProfile
+                                ? 'Редактирование'
+                                : 'Создание профиля'
+                        }
+                    </h1>
 
 
+                    <p>
+                        Как вас будут видеть другие
+                    </p>
 
-<div class="profile-header">
+                </div>
 
 
-<img
+                <!-- ИМЯ -->
 
-class="profile-avatar"
+                <div class="profile-field">
 
-src="
-${
-tgUser?.photo_url ||
-oldProfile?.photo_url ||
-'https://i.pravatar.cc/150'
-}
-"
+                    <label>
+                        Имя
+                    </label>
 
 
->
+                    <input
+                        id="profile-name"
+                        placeholder="Ваше имя"
+                        value="${
+                            oldProfile?.name ||
+                            tgUser?.first_name ||
+                            ''
+                        }"
+                    >
 
+                </div>
 
-<h1>
 
-${
-oldProfile
-?
-'Редактирование'
-:
-'Создание профиля'
-}
+                <!-- ВОЗРАСТ -->
 
-</h1>
+                <div class="profile-field">
 
+                    <label>
+                        Возраст
+                    </label>
 
-<p>
 
-Как вас будут видеть другие
+                    <input
+                        id="profile-age"
+                        type="number"
+                        placeholder="Возраст"
+                        value="${
+                            oldProfile?.age || ''
+                        }"
+                    >
 
-</p>
+                </div>
 
 
-</div>
+                <!-- ПОЛ -->
 
+                <label class="profile-label">
+                    Пол
+                </label>
 
 
+                <div class="gender-box">
 
 
+                    <button
+                        type="button"
+                        class="gender-choice ${
+                            selectedGender === 'male'
+                                ? 'active'
+                                : ''
+                        }"
+                        data-gender="male"
+                    >
 
+                        👨 Мужчина
 
-<div class="profile-field">
+                    </button>
 
 
-<label>
-Имя
-</label>
+                    <button
+                        type="button"
+                        class="gender-choice ${
+                            selectedGender === 'female'
+                                ? 'active'
+                                : ''
+                        }"
+                        data-gender="female"
+                    >
 
+                        👩 Женщина
 
-<input
+                    </button>
 
-id="profile-name"
 
-placeholder="Ваше имя"
+                </div>
 
-value="
-${
-oldProfile?.name ||
-tgUser?.first_name ||
-''
-}
-"
 
->
+                <!-- СТАТУС ОТНОШЕНИЙ -->
 
+                <div class="profile-field">
 
-</div>
+                    <label>
+                        Статус отношений
+                    </label>
 
 
+                    <div
+                        class="relationship-select"
+                        id="relationship-select"
+                    >
 
 
+                        <button
+                            type="button"
+                            class="relationship-select-button"
+                            id="relationship-select-button"
+                        >
 
+                            <span
+                                id="relationship-selected-text"
+                            >
+                                ${
+                                    RELATIONSHIP_STATUSES[
+                                        selectedRelationshipStatus
+                                    ]
+                                }
+                            </span>
 
 
-<div class="profile-field">
+                            <span class="relationship-arrow">
+                                ▾
+                            </span>
 
+                        </button>
 
-<label>
-Возраст
-</label>
 
+                        <div
+                            class="relationship-options"
+                            id="relationship-options"
+                        >
 
-<input
 
-id="profile-age"
+                            ${
+                                Object.entries(
+                                    RELATIONSHIP_STATUSES
+                                )
+                                .map(
+                                    ([value, label]) => `
 
-type="number"
+                                        <button
+                                            type="button"
+                                            class="relationship-option ${
+                                                selectedRelationshipStatus === value
+                                                    ? 'active'
+                                                    : ''
+                                            }"
+                                            data-relationship="${value}"
+                                        >
 
-placeholder="Возраст"
+                                            ${label}
 
-value="
-${
-oldProfile?.age ||
-''
-}
-"
+                                        </button>
 
->
+                                    `
+                                )
+                                .join('')
+                            }
 
 
-</div>
+                        </div>
 
 
+                    </div>
 
 
+                </div>
 
 
+                <!-- SAVE -->
 
+                <button
+                    id="profile-save"
+                    class="save-button"
+                    type="button"
+                >
 
-<label class="profile-label">
+                    ${
+                        oldProfile
+                            ? 'Сохранить'
+                            : 'Создать профиль'
+                    }
 
-Пол
+                </button>
 
-</label>
 
+            </div>
 
+        </main>
 
-<div class="gender-box">
-
-
-<button
-
-class="gender-choice"
-
-data-gender="male"
-
->
-
-👨 Мужчина
-
-</button>
-
-
-
-
-<button
-
-class="gender-choice"
-
-data-gender="female"
-
->
-
-👩 Женщина
-
-</button>
-
-
-</div>
-
-
-
-
-
-
-
-
-
-<button
-
-id="profile-save"
-
-class="save-button"
-
->
-
-${
-oldProfile
-?
-'Сохранить'
-:
-'Создать профиль'
-}
-
-</button>
-
-
-
-
-
-
-</div>
-
-
-</main>
-
-
-
-`;
-
-}
-
-
-
-
-
-
-
-
-
-function initProfile(){
-
-
-if(profileInitialized)
-
-return;
-
-
-
-profileInitialized=true;
-
-
-
-
-
-
-
-document
-
-.querySelectorAll(
-'[data-gender]'
-)
-
-.forEach(button=>{
-
-
-
-button.onclick=()=>{
-
-
-
-document
-
-.querySelectorAll(
-'[data-gender]'
-)
-
-.forEach(item=>{
-
-
-item.classList.remove(
-'active'
-);
-
-
-});
-
-
-
-button.classList.add(
-'active'
-);
-
-
-
-selectedGender =
-button.dataset.gender;
-
-
-
-};
-
-
-
-});
-
-
-
-
-
-
-
-
-
-document
-
-.querySelector('#profile-save')
-
-?.addEventListener(
-
-'click',
-
-async()=>{
-
-
-try{
-
-
-
-const tgUser =
-getTelegramUser();
-
-
-
-
-if(!tgUser){
-
-alert(
-'Telegram user not found'
-);
-
-return;
-
+    `;
 }
 
 
+/* ========================================
+   ИНИЦИАЛИЗАЦИЯ
+======================================== */
 
+function initProfile() {
 
+    if (profileInitialized) {
+        return;
+    }
 
 
-const user = await createUser({
+    profileInitialized = true;
 
 
-telegram_id:
+    /* ====================================
+       ПОЛ
+    ==================================== */
 
-Number(
-tgUser.telegram_id
-),
+    document
+        .querySelectorAll(
+            '[data-gender]'
+        )
+        .forEach(button => {
 
+            button.onclick = () => {
 
-first_name:
+                document
+                    .querySelectorAll(
+                        '[data-gender]'
+                    )
+                    .forEach(item => {
 
-tgUser.first_name,
+                        item.classList.remove(
+                            'active'
+                        );
 
+                    });
 
-photo_url:
 
-tgUser.photo_url || null,
+                button.classList.add(
+                    'active'
+                );
 
 
-language_code:
+                selectedGender =
+                    button.dataset.gender;
 
-tgUser.language_code || 'ru'
+            };
 
+        });
 
-});
 
+    /* ====================================
+       СТАТУС — ОТКРЫТИЕ СПИСКА
+    ==================================== */
 
+    const relationshipSelect =
+        document.querySelector(
+            '#relationship-select'
+        );
 
 
+    const relationshipButton =
+        document.querySelector(
+            '#relationship-select-button'
+        );
 
 
+    const relationshipOptions =
+        document.querySelector(
+            '#relationship-options'
+        );
 
 
-const profileData = {
+    const relationshipText =
+        document.querySelector(
+            '#relationship-selected-text'
+        );
 
 
-user_id:user.id,
+    if (
+        relationshipButton &&
+        relationshipOptions
+    ) {
 
 
-name:
+        relationshipButton.onclick =
+            event => {
 
-document
+                event.preventDefault();
+                event.stopPropagation();
 
-.querySelector(
-'#profile-name'
-)
 
-.value,
+                relationshipSelect
+                    ?.classList.toggle(
+                        'open'
+                    );
 
+            };
 
 
-age:
+        relationshipOptions
+            .querySelectorAll(
+                '[data-relationship]'
+            )
+            .forEach(option => {
 
-Number(
 
-document
+                option.onclick =
+                    event => {
 
-.querySelector(
-'#profile-age'
-)
+                        event.preventDefault();
+                        event.stopPropagation();
 
-.value
 
-),
+                        selectedRelationshipStatus =
+                            option.dataset.relationship;
 
 
+                        relationshipText.textContent =
+                            RELATIONSHIP_STATUSES[
+                                selectedRelationshipStatus
+                            ];
 
-gender:selectedGender,
 
+                        relationshipOptions
+                            .querySelectorAll(
+                                '[data-relationship]'
+                            )
+                            .forEach(item => {
 
-telegram_id:
+                                item.classList.remove(
+                                    'active'
+                                );
 
-Number(
-tgUser.telegram_id
-),
+                            });
 
 
-photo_url:
+                        option.classList.add(
+                            'active'
+                        );
 
-tgUser.photo_url || null
 
+                        relationshipSelect
+                            .classList.remove(
+                                'open'
+                            );
 
-};
+                    };
 
+            });
 
 
+        document.addEventListener(
+            'click',
+            event => {
 
+                if (
+                    !relationshipSelect.contains(
+                        event.target
+                    )
+                ) {
 
+                    relationshipSelect
+                        .classList.remove(
+                            'open'
+                        );
 
+                }
 
+            }
+        );
 
-const old = await getProfileByUserId(
+    }
 
-user.id
 
-);
+    /* ====================================
+       СОХРАНЕНИЕ
+    ==================================== */
 
-
-
-
-let profile;
-
-
-
-if(old){
-
-
-profile = await updateProfile(
-
-old.id,
-
-profileData
-
-);
-
-
-}
-
-else{
-
-
-profile = await createProfile(
-
-profileData
-
-);
-
+    document
+        .querySelector(
+            '#profile-save'
+        )
+        ?.addEventListener(
+            'click',
+            saveProfileHandler
+        );
 
 }
 
 
+/* ========================================
+   СОХРАНЕНИЕ ПРОФИЛЯ
+======================================== */
+
+async function saveProfileHandler() {
+
+    try {
 
 
+        const tgUser =
+            getTelegramUser();
 
 
-saveProfile({
-    ...profile,
-    id: user.id,
-    user_id: user.id,
-    telegram_id: tgUser.telegram_id,
-    first_name: tgUser.first_name,
-    photo_url: tgUser.photo_url
-});
+        if (!tgUser) {
 
-// после сохранения полностью перезагружаем WebApp
-window.location.reload();
+            alert(
+                'Telegram user not found'
+            );
+
+            return;
+
+        }
 
 
+        /* ====================================
+           USER
+        ==================================== */
+
+        const user =
+            await createUser({
+
+                telegram_id:
+                    Number(
+                        tgUser.telegram_id
+                    ),
+
+                first_name:
+                    tgUser.first_name,
+
+                photo_url:
+                    tgUser.photo_url ||
+                    null,
+
+                language_code:
+                    tgUser.language_code ||
+                    'ru'
+
+            });
 
 
+        /* ====================================
+           ДАННЫЕ ПРОФИЛЯ
+        ==================================== */
+
+        const profileData = {
+
+            user_id:
+                user.id,
+
+            name:
+                document
+                    .querySelector(
+                        '#profile-name'
+                    )
+                    ?.value
+                    ?.trim() || '',
+
+            age:
+                Number(
+                    document
+                        .querySelector(
+                            '#profile-age'
+                        )
+                        ?.value || 0
+                ),
+
+            gender:
+                selectedGender,
+
+            telegram_id:
+                Number(
+                    tgUser.telegram_id
+                ),
+
+            photo_url:
+                tgUser.photo_url ||
+                null,
+
+            relationship_status:
+                selectedRelationshipStatus ||
+                'not_specified'
+
+        };
 
 
+        /* ====================================
+           СУЩЕСТВУЮЩИЙ ПРОФИЛЬ
+        ==================================== */
 
-window.dispatchEvent(
-new CustomEvent(
-'profile:created',
-{
-detail:profile
-}
-)
-);
-
+        const old =
+            await getProfileByUserId(
+                user.id
+            );
 
 
-}
-
-catch(error){
+        let profile;
 
 
-console.error(
+        if (old) {
 
-'PROFILE ERROR',
+            profile =
+                await updateProfile(
+                    old.id,
+                    profileData
+                );
 
-error
+        }
 
-);
+        else {
 
+            profile =
+                await createProfile(
+                    profileData
+                );
 
-alert(
-'Ошибка сохранения'
-);
-
-
-
-}
+        }
 
 
+        /* ====================================
+           LOCAL STORE
+        ==================================== */
 
-}
+        saveProfile({
 
-);
+            ...profile,
 
+            id:
+                user.id,
+
+            user_id:
+                user.id,
+
+            telegram_id:
+                tgUser.telegram_id,
+
+            first_name:
+                tgUser.first_name,
+
+            photo_url:
+                tgUser.photo_url,
+
+            relationship_status:
+                selectedRelationshipStatus
+
+        });
+
+
+        /* ====================================
+           СИГНАЛ
+        ==================================== */
+
+        window.dispatchEvent(
+            new CustomEvent(
+                'profile:created',
+                {
+                    detail: profile
+                }
+            )
+        );
+
+
+        /* ====================================
+           ПЕРЕЗАГРУЗКА
+        ==================================== */
+
+        window.location.reload();
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            'PROFILE ERROR',
+            error
+        );
+
+
+        alert(
+            'Ошибка сохранения'
+        );
+
+    }
 
 }
