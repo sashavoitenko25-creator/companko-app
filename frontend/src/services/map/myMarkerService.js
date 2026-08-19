@@ -70,7 +70,6 @@ export function updateMyMarker(
 
     if(myMarker){
         myMarker.setLatLng(position);
-        updateSectorPosition();
         return;
     }
 
@@ -101,8 +100,6 @@ function refreshMarker(){
     myMarker.setIcon(
         createIcon()
     );
-
-    updateSectorPosition();
 }
 
 function setHeading(heading){
@@ -114,7 +111,6 @@ function setHeading(heading){
     }
 
     currentHeading = heading;
-    updateSectorPosition();
 }
 
 function getMapBearingDeg(){
@@ -123,7 +119,6 @@ function getMapBearingDeg(){
     if(!map)
         return 0;
 
-    // leaflet-rotate: getBearing() возвращает градусы
     if(typeof map.getBearing === 'function'){
         const b = map.getBearing();
         if(typeof b === 'number' && !Number.isNaN(b)){
@@ -131,7 +126,7 @@ function getMapBearingDeg(){
         }
     }
 
-    // fallback: _bearing хранится в радианах
+    // _bearing в радианах
     if(typeof map._bearing === 'number'){
         return map._bearing * (180 / Math.PI);
     }
@@ -153,24 +148,47 @@ function ensureSectorEl(){
     return sectorEl;
 }
 
-function updateSectorPosition(){
+function getMarkerIcon(){
     if(!myMarker)
+        return null;
+
+    return myMarker.getElement
+        ? myMarker.getElement()
+        : myMarker._icon;
+}
+
+/* ========================================
+   Каждый кадр:
+   1) маркер контр-вращаем → не крутится с картой
+   2) сектор fixed → только компас
+======================================== */
+
+function updateFrame(){
+    const map = getMap();
+
+    if(!map || !myMarker)
         return;
 
+    const bearing = getMapBearingDeg();
+    const icon = getMarkerIcon();
+
+    // --- 1. Маркер всегда «стоит» на экране ---
+    if(icon){
+        const pos = L.DomUtil.getPosition(icon);
+
+        if(pos){
+            icon.style.transform =
+                `translate3d(${pos.x}px, ${pos.y}px, 0px) rotate(${-bearing}deg)`;
+        }
+    }
+
+    // --- 2. Сектор ---
     const el = ensureSectorEl();
+
     if(!el)
         return;
 
-    if(currentHeading == null){
-        el.classList.remove('visible');
-        return;
-    }
-
-    const icon = myMarker.getElement
-        ? myMarker.getElement()
-        : myMarker._icon;
-
-    if(!icon){
+    if(currentHeading == null || !icon){
         el.classList.remove('visible');
         return;
     }
@@ -182,15 +200,10 @@ function updateSectorPosition(){
     el.style.left = cx + 'px';
     el.style.top = cy + 'px';
 
-    // Главная формула:
-    // сектор смотрит куда телефон,
-    // минус поворот карты
-    const mapBearing = getMapBearingDeg();
-    let angle = currentHeading - mapBearing;
-    angle = ((angle % 360) + 360) % 360;
-
+    // Только направление телефона.
+    // Карта на сектор не влияет.
     el.style.transform =
-        `translate(-50%, -100%) rotate(${angle}deg)`;
+        `translate(-50%, -100%) rotate(${currentHeading}deg)`;
 
     el.classList.add('visible');
 }
@@ -202,7 +215,7 @@ function startUpdateLoop(){
     loopStarted = true;
 
     const tick = ()=>{
-        updateSectorPosition();
+        updateFrame();
         requestAnimationFrame(tick);
     };
 
