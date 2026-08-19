@@ -6,13 +6,13 @@
 
     left:50%;
 
-    transform:translateX(-50%);
-
-    width:calc(100% - 30px);
+    width:100%;
 
     max-width:430px;
 
     height:60px;
+
+    transform:translateX(-50%);
 
     background:transparent;
 
@@ -25,6 +25,10 @@
     gap:8px;
 
     padding:0;
+
+    margin:0;
+
+    box-sizing:border-box;
 
     z-index:9000;
 
@@ -42,7 +46,11 @@
 
     height:45px;
 
-    flex:none;
+    min-width:45px;
+
+    max-width:45px;
+
+    flex:0 0 45px;
 
     border:none;
 
@@ -55,6 +63,10 @@
     align-items:center;
 
     justify-content:center;
+
+    padding:0;
+
+    margin:0;
 
     cursor:pointer;
 
@@ -101,13 +113,19 @@
 
     height:50px;
 
-    flex:none;
+    min-width:180px;
 
-    margin:0 2px;
+    max-width:180px;
+
+    flex:0 0 180px;
 
     border:none;
 
     border-radius:16px;
+
+    margin:0;
+
+    padding:0;
 
     background:
         linear-gradient(
@@ -165,21 +183,28 @@
 }
 
 
-/* =======================
-      SETTINGS WINDOW
-======================= */
+/* ==================================================
+   НАСТРОЙКИ
+   ПРИНУДИТЕЛЬНО ПО ЦЕНТРУ ЭКРАНА
+================================================== */
 
 .settings-window{
 
-    position:fixed;
+    position:fixed !important;
 
-    left:50%;
+    left:50% !important;
 
-    right:auto;
+    right:auto !important;
 
-    bottom:90px;
+    top:auto !important;
 
-    width:270px;
+    bottom:20px !important;
+
+    width:270px !important;
+
+    max-width:calc(100vw - 30px) !important;
+
+    margin:0 !important;
 
     padding:25px;
 
@@ -197,7 +222,8 @@
     opacity:0;
 
     transform:
-        translate(-50%,20px);
+        translateX(-50%)
+        translateY(30px) !important;
 
     pointer-events:none;
 
@@ -212,10 +238,21 @@
 
 .settings-window.open{
 
+    position:fixed !important;
+
+    left:50% !important;
+
+    right:auto !important;
+
+    top:auto !important;
+
+    bottom:85px !important;
+
     opacity:1;
 
     transform:
-        translate(-50%,0);
+        translateX(-50%)
+        translateY(0) !important;
 
     pointer-events:auto;
 
@@ -321,5 +358,44 @@
 .switch input:checked + .slider:before{
 
     transform:translateX(40px);
+
+}
+
+
+/* =======================
+      МОБИЛЬНЫЙ ЭКРАН
+======================= */
+
+@media (max-width:480px){
+
+    .bottom-bar{
+
+        width:100%;
+
+        max-width:none;
+
+        padding:0 12px;
+
+    }
+
+
+    .live-button{
+
+        width:180px;
+
+        min-width:180px;
+
+        max-width:180px;
+
+    }
+
+
+    .settings-window{
+
+        width:270px !important;
+
+        max-width:calc(100vw - 30px) !important;
+
+    }
 
 }
