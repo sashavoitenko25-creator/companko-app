@@ -507,65 +507,41 @@
 
 
 /* ==================================================
-   СЕКТОР НАПРАВЛЕНИЯ
-   НЕ ЗАВИСИТ ОТ ВРАЩЕНИЯ КАРТЫ
+   СЕКТОР НАПРАВЛЕНИЯ (внутри маркера)
+   Маркер в norotatePane → не крутится с картой
+   Крутится только сектор по компасу телефона
 ================================================== */
 
-.my-heading-sector{
-
-    position:fixed;
-
-    width:42px;
-
-    height:52px;
-
-    left:0;
-
-    top:0;
-
-    margin:0;
-
-    padding:0;
-
-    pointer-events:none;
-
-    z-index:99999;
-
-    opacity:0;
-
-    transform-origin:50% 100%;
-
-    will-change:
-        transform,
-        left,
-        top;
-
+.my-marker-root{
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
 
-
-.my-heading-sector.visible{
-
-    opacity:1;
-
+.my-heading-sector-inner{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 42px;
+    height: 52px;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%);
+    will-change: transform, opacity;
 }
-
 
 .my-heading-sector__fan{
-
-    position:absolute;
-
-    left:0;
-
-    top:0;
-
-    width:100%;
-
-    height:100%;
-
-    margin:0;
-
-    padding:0;
-
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
     background:
         linear-gradient(
             to top,
@@ -574,14 +550,17 @@
             rgba(66,133,244,.12) 70%,
             rgba(66,133,244,0) 100%
         );
-
     clip-path:
         polygon(
             50% 100%,
             0% 0%,
             100% 0%
         );
+    filter: blur(.4px);
+}
 
-    filter:blur(.4px);
-
+.my-location,
+.my-live-marker{
+    position: relative;
+    z-index: 2;
 }
