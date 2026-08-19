@@ -19,7 +19,7 @@ const HEADING_MIN_DELTA = 1.5;
 const HEADING_HISTORY_SIZE = 7;
 
 /* если сектор систематически уходит в сторону — подкрути сюда, например 10 или -15 */
-const HEADING_OFFSET = -75;
+const HEADING_OFFSET = -15;
 
 let headingHistory = [];
 
