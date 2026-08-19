@@ -14,9 +14,9 @@ let loopStarted = false;
 let followMe = true;
 let mapEventsBound = false;
 
-const HEADING_SMOOTH = 0.12;
-const HEADING_MIN_DELTA = 2.5;
-const HEADING_HISTORY_SIZE = 5;
+const HEADING_SMOOTH = 0.10;
+const HEADING_MIN_DELTA = 1.5;
+const HEADING_HISTORY_SIZE = 7;
 
 /* если сектор систематически уходит в сторону — подкрути сюда, например 10 или -15 */
 const HEADING_OFFSET = 0;
@@ -30,7 +30,10 @@ export function initMyMarker() {
 
     updateMyMarker(position.lat, position.lng);
 
-    if (position.heading != null && !Number.isNaN(Number(position.heading))) {
+    if (
+      position.heading != null &&
+      !Number.isNaN(Number(position.heading))
+    ) {
       setHeading(Number(position.heading));
     }
   });
@@ -146,7 +149,9 @@ function refreshMarker() {
 function setHeading(heading) {
   if (heading == null || Number.isNaN(Number(heading))) return;
 
-  heading = (Number(heading) + HEADING_OFFSET + 360) % 360;
+  heading =
+    (Number(heading) + HEADING_OFFSET + 360) % 360;
+
   rawHeading = heading;
 
   headingHistory.push(heading);
@@ -155,24 +160,56 @@ function setHeading(heading) {
     headingHistory.shift();
   }
 
-  const sorted = headingHistory.slice().sort((a, b) => a - b);
-  const median = sorted[Math.floor(sorted.length / 2)];
-
   if (currentHeading == null) {
-    currentHeading = median;
+    currentHeading = heading;
     applyHeadingToSector();
     return;
   }
 
-  let diff = ((median - currentHeading + 540) % 360) - 180;
+  /*
+   * Нормализуем все значения относительно
+   * текущего направления, чтобы 359° и 1°
+   * считались соседними значениями.
+   */
+  const normalized = headingHistory.map((value) => {
+    return (
+      currentHeading +
+      (((value - currentHeading + 540) % 360) - 180)
+    );
+  });
 
-  if (Math.abs(diff) < HEADING_MIN_DELTA) return;
+  normalized.sort((a, b) => a - b);
 
-  /* большие повороты — быстрее, мелкие — плавнее */
-  const smooth = Math.abs(diff) > 25 ? 0.28 : HEADING_SMOOTH;
+  const median =
+    normalized[Math.floor(normalized.length / 2)];
+
+  const diff = median - currentHeading;
+
+  /*
+   * Убираем мелкое дрожание.
+   */
+  if (Math.abs(diff) < HEADING_MIN_DELTA) {
+    return;
+  }
+
+  /*
+   * Большие повороты идут быстрее,
+   * маленькие — максимально плавно.
+   */
+  let smooth;
+
+  if (Math.abs(diff) > 45) {
+    smooth = 0.35;
+  } else if (Math.abs(diff) > 20) {
+    smooth = 0.22;
+  } else {
+    smooth = HEADING_SMOOTH;
+  }
+
+  currentHeading += diff * smooth;
 
   currentHeading =
-    (currentHeading + diff * smooth + 360) % 360;
+    (currentHeading + 360) % 360;
 
   applyHeadingToSector();
 }
@@ -190,7 +227,9 @@ function applyHeadingToSector() {
 
   if (!el) return;
 
-  const sector = el.querySelector('.my-heading-sector-inner');
+  const sector = el.querySelector(
+    '.my-heading-sector-inner'
+  );
 
   if (!sector) return;
 
@@ -236,24 +275,37 @@ function compassHeadingFromOrientation(alpha, beta, gamma) {
   const cG = Math.cos(g);
   const sG = Math.sin(g);
 
-  const rA = -cA * sG - sA * sB * cG;
-  const rB = -sA * sG + cA * sB * cG;
+  const rA =
+    -cA * sG -
+    sA * sB * cG;
+
+  const rB =
+    -sA * sG +
+    cA * sB * cG;
 
   let heading = Math.atan(rA / rB);
 
-  if (rB < 0) heading += Math.PI;
-  else if (rA < 0) heading += 2 * Math.PI;
+  if (rB < 0) {
+    heading += Math.PI;
+  } else if (rA < 0) {
+    heading += 2 * Math.PI;
+  }
 
-  heading = heading * (180 / Math.PI);
+  heading =
+    heading * (180 / Math.PI);
 
   /* учёт ориентации экрана */
   const screenAngle =
-    (screen.orientation &&
-      typeof screen.orientation.angle === 'number')
+    (
+      screen.orientation &&
+      typeof screen.orientation.angle === 'number'
+    )
       ? screen.orientation.angle
-      : (typeof window.orientation === 'number'
-          ? window.orientation
-          : 0);
+      : (
+          typeof window.orientation === 'number'
+            ? window.orientation
+            : 0
+        );
 
   heading =
     (heading + screenAngle + 360) % 360;
@@ -266,43 +318,62 @@ function startDeviceOrientation() {
 
   orientationStarted = true;
 
-  const handleOrientation = (event) => {
+  let absoluteReceived = false;
+
+  const handleOrientation = (
+    event,
+    isAbsolute = false
+  ) => {
     let heading = null;
 
-    /* iOS — самый точный вариант */
+    /*
+     * iOS — самый точный вариант.
+     */
     if (
       event.webkitCompassHeading != null &&
-      !Number.isNaN(Number(event.webkitCompassHeading))
+      !Number.isNaN(
+        Number(event.webkitCompassHeading)
+      )
     ) {
-      heading = Number(event.webkitCompassHeading);
+      heading =
+        Number(event.webkitCompassHeading);
 
       const screenAngle =
-        (screen.orientation &&
-          typeof screen.orientation.angle === 'number')
+        (
+          screen.orientation &&
+          typeof screen.orientation.angle === 'number'
+        )
           ? screen.orientation.angle
-          : (typeof window.orientation === 'number'
-              ? window.orientation
-              : 0);
+          : (
+              typeof window.orientation === 'number'
+                ? window.orientation
+                : 0
+            );
 
       heading =
         (heading + screenAngle + 360) % 360;
     }
 
-    /* Android absolute + beta/gamma */
+    /*
+     * Android absolute + beta/gamma.
+     */
     else if (
       event.alpha != null &&
       event.beta != null &&
       event.gamma != null &&
       !Number.isNaN(Number(event.alpha))
     ) {
-      heading = compassHeadingFromOrientation(
-        Number(event.alpha),
-        Number(event.beta),
-        Number(event.gamma)
-      );
+      heading =
+        compassHeadingFromOrientation(
+          Number(event.alpha),
+          Number(event.beta),
+          Number(event.gamma)
+        );
     }
 
-    /* простой fallback */
+    /*
+     * Простой fallback.
+     */
     else if (
       event.alpha != null &&
       !Number.isNaN(Number(event.alpha))
@@ -311,24 +382,54 @@ function startDeviceOrientation() {
         (360 - Number(event.alpha) + 360) % 360;
     }
 
-    if (heading == null || Number.isNaN(heading)) return;
+    if (
+      heading == null ||
+      Number.isNaN(Number(heading))
+    ) {
+      return;
+    }
+
+    if (isAbsolute) {
+      absoluteReceived = true;
+    }
 
     setHeading(heading);
   };
 
+  /*
+   * Основной источник компаса.
+   */
   window.addEventListener(
     'deviceorientationabsolute',
-    handleOrientation,
+    (event) => {
+      handleOrientation(event, true);
+    },
     true
   );
 
-  window.addEventListener(
-    'deviceorientation',
-    handleOrientation,
-    true
-  );
+  /*
+   * Fallback только если absolute
+   * действительно не дал данных.
+   */
+  setTimeout(() => {
+    if (!absoluteReceived && rawHeading == null) {
+      console.log(
+        '[compass] absolute unavailable → fallback'
+      );
 
-  /* Telegram API — тоже через ту же формулу */
+      window.addEventListener(
+        'deviceorientation',
+        (event) => {
+          handleOrientation(event, false);
+        },
+        true
+      );
+    }
+  }, 1500);
+
+  /*
+   * Telegram API.
+   */
   const tg =
     window.Telegram &&
     window.Telegram.WebApp;
@@ -336,19 +437,24 @@ function startDeviceOrientation() {
   if (tg && tg.DeviceOrientation) {
     try {
       const onTg = (data) => {
-        if (!data || data.alpha == null) return;
+        if (!data || data.alpha == null) {
+          return;
+        }
 
         const alphaDeg =
-          Number(data.alpha) * (180 / Math.PI);
+          Number(data.alpha) *
+          (180 / Math.PI);
 
         const betaDeg =
           data.beta != null
-            ? Number(data.beta) * (180 / Math.PI)
+            ? Number(data.beta) *
+              (180 / Math.PI)
             : 0;
 
         const gammaDeg =
           data.gamma != null
-            ? Number(data.gamma) * (180 / Math.PI)
+            ? Number(data.gamma) *
+              (180 / Math.PI)
             : 0;
 
         const heading =
@@ -372,7 +478,9 @@ function startDeviceOrientation() {
       );
 
       tg.DeviceOrientation.start(
-        { need_absolute: true },
+        {
+          need_absolute: true,
+        },
         (ok) => {
           console.log(
             '[compass] TG start →',
