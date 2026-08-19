@@ -118,35 +118,27 @@ function setHeading(heading){
 }
 
 /* ========================================
-   Сектор ВНЕ поворачиваемой панели карты
+   Сектор ВНЕ карты — position:fixed
+   Не зависит от leaflet-rotate
 ======================================== */
 
 function ensureSectorEl(){
-    if(sectorEl)
+    if(sectorEl && document.body.contains(sectorEl))
         return sectorEl;
-
-    const map = getMap();
-    if(!map)
-        return null;
-
-    const container = map.getContainer();
 
     sectorEl = document.createElement('div');
     sectorEl.className = 'my-heading-sector';
     sectorEl.innerHTML =
         '<div class="my-heading-sector__fan"></div>';
 
-    // Важно: добавляем в leaflet-container,
-    // а НЕ в map-pane (map-pane крутится)
-    container.appendChild(sectorEl);
+    // В body — полностью вне #map и leaflet-map-pane
+    document.body.appendChild(sectorEl);
 
     return sectorEl;
 }
 
 function updateSectorPosition(){
-    const map = getMap();
-
-    if(!map || !myMarker)
+    if(!myMarker)
         return;
 
     const el = ensureSectorEl();
@@ -158,16 +150,26 @@ function updateSectorPosition(){
         return;
     }
 
-    // экранные координаты маркера
-    const latLng = myMarker.getLatLng();
-    const pt = map.latLngToContainerPoint(latLng);
+    // Реальные экранные координаты иконки маркера
+    const icon = myMarker.getElement
+        ? myMarker.getElement()
+        : myMarker._icon;
 
-    el.style.left = pt.x + 'px';
-    el.style.top = pt.y + 'px';
+    if(!icon){
+        el.classList.remove('visible');
+        return;
+    }
 
-    // Только компас. Карта этот элемент НЕ крутит.
+    const rect = icon.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    el.style.left = cx + 'px';
+    el.style.top = cy + 'px';
+
+    // Только компас телефона. Карта НЕ влияет.
     el.style.transform =
-        `rotate(${currentHeading}deg)`;
+        `translate(-50%, -100%) rotate(${currentHeading}deg)`;
 
     el.classList.add('visible');
 }

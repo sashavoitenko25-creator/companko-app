@@ -324,18 +324,17 @@
     }
 }
 
-/* ===== СЕКТОР НАПРАВЛЕНИЯ — поверх карты, вне rotate ===== */
+/* ===== СЕКТОР — fixed, вне карты ===== */
 .my-heading-sector{
-    position:absolute;
+    position:fixed;
     width:42px;
     height:52px;
-    margin-left:-21px;
-    margin-top:-52px;
     pointer-events:none;
-    z-index:1200;
+    z-index:99999;
     opacity:0;
-    transition:opacity .2s ease;
+    transition:opacity .15s ease;
     transform-origin:50% 100%;
+    will-change:transform, left, top;
 }
 
 .my-heading-sector.visible{
