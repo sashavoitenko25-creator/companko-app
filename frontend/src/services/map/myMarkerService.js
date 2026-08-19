@@ -253,6 +253,20 @@ function ensureSector(){
     }
 
 
+    /*
+     * Создаём сектор ВНЕ любого
+     * transformed-контейнера.
+     *
+     * leaflet-rotate вешает transform
+     * на pane карты. Если сектор
+     * окажется внутри такого родителя,
+     * position:fixed ломается и сектор
+     * начинает крутиться вместе с картой.
+     *
+     * Поэтому всегда append в document.body
+     * и принудительно сбрасываем transform.
+     */
+
     sectorEl =
         document.createElement(
             'div'
@@ -273,18 +287,27 @@ function ensureSector(){
 
 
     /*
-     * ВАЖНО:
-     *
-     * Сектор находится
-     * непосредственно в body (position:fixed).
-     *
-     * Он НЕ находится внутри
-     * Leaflet map pane.
-     *
-     * CSS-поворот карты его не затрагивает.
-     * Угол вычисляется как
-     * heading − mapBearing (как в Google Maps).
+     * Жёстко фиксируем стили,
+     * чтобы Telegram WebView / CSS
+     * карты не могли их перебить.
      */
+
+    sectorEl.style.cssText = `
+        position: fixed !important;
+        left: 0;
+        top: 0;
+        width: 42px;
+        height: 52px;
+        margin: 0;
+        padding: 0;
+        pointer-events: none;
+        z-index: 99999;
+        opacity: 0;
+        transform-origin: 50% 100%;
+        will-change: transform, left, top;
+        transform: none;
+    `;
+
 
     document.body.appendChild(
         sectorEl
@@ -333,20 +356,17 @@ function updateScreen(){
 
     /*
      * =====================================
-     * СЕКТОР (как в Google Maps)
+     * СЕКТОР — ТОЛЬКО ТЕЛЕФОН
      * =====================================
      *
+     * Угол = ТОЛЬКО currentHeading компаса.
+     * Bearing карты НЕ учитываем.
+     *
+     * Крутишь карту → сектор НЕ крутится.
+     * Крутишь телефон → сектор крутится.
+     *
      * Сектор живёт в body (position:fixed),
-     * поэтому CSS-поворот карты его не затрагивает.
-     *
-     * Чтобы направление оставалось
-     * географически правильным:
-     *
-     * screenAngle = deviceHeading − mapBearing
-     *
-     * — крутишь карту → сектор крутится вместе с ней
-     * — крутишь телефон → сектор меняет направление
-     * — north-up + телефон на север → сектор вверх
+     * вне transform leaflet-rotate.
      */
 
 
@@ -372,6 +392,8 @@ function updateScreen(){
             'visible'
         );
 
+        sector.style.opacity = '0';
+
         return;
 
     }
@@ -381,6 +403,8 @@ function updateScreen(){
      * Получаем реальное
      * экранное положение
      * Leaflet-маркера.
+     * getBoundingClientRect работает
+     * корректно даже при повороте карты.
      */
 
     const rect =
@@ -399,7 +423,7 @@ function updateScreen(){
 
     /*
      * Сектор следует
-     * за маркером.
+     * за маркером по экрану.
      */
 
     sector.style.left =
@@ -411,41 +435,19 @@ function updateScreen(){
 
 
     /*
-     * Bearing карты (leaflet-rotate).
-     * 0 = north-up.
+     * ТОЛЬКО heading телефона.
+     * Никакого map.getBearing().
      */
-
-    const map = getMap();
-    let mapBearing = 0;
-
-    if(map && typeof map.getBearing === 'function'){
-        mapBearing = map.getBearing() || 0;
-    }
-
-
-    /*
-     * Угол на экране = heading телефона − bearing карты.
-     * Нормализуем в [0, 360).
-     */
-
-    const screenAngle =
-        (
-            (
-                currentHeading - mapBearing
-            ) % 360 + 360
-        ) % 360;
-
 
     sector.style.transform =
-        `
-        translate(-50%, -100%)
-        rotate(${screenAngle}deg)
-        `;
+        `translate(-50%, -100%) rotate(${currentHeading}deg)`;
 
 
     sector.classList.add(
         'visible'
     );
+
+    sector.style.opacity = '1';
 
 }
 
@@ -502,7 +504,7 @@ function startDeviceOrientation(){
 
 
             /*
-             * iPhone / iOS
+             * iPhone / iOS / Telegram iOS
              */
 
             if(
@@ -523,7 +525,8 @@ function startDeviceOrientation(){
 
 
             /*
-             * Android / другие браузеры
+             * Android / Telegram Android
+             * и другие браузеры
              */
 
             else if(
@@ -565,8 +568,10 @@ function startDeviceOrientation(){
 
 
     /*
-     * iPhone требует
+     * iPhone / Telegram iOS требует
      * разрешение на компас.
+     * В Mini App разрешение часто
+     * запрашивается после первого тапа.
      */
 
     if(
@@ -649,11 +654,23 @@ function startDeviceOrientation(){
     else{
 
         /*
-         * Android / другие браузеры
+         * Android / Telegram Android
          */
 
         window.addEventListener(
             'deviceorientation',
+            handleOrientation,
+            true
+        );
+
+        /*
+         * Дополнительно absolute-версия
+         * (на некоторых Android даёт
+         * более стабильный компас)
+         */
+
+        window.addEventListener(
+            'deviceorientationabsolute',
             handleOrientation,
             true
         );
