@@ -14,8 +14,8 @@ let loopStarted = false;
 let followMe = true;
 let mapEventsBound = false;
 
-const HEADING_SMOOTH = 0.2;
-const HEADING_MIN_DELTA = 1.5;
+const HEADING_SMOOTH = 0.08;
+const HEADING_MIN_DELTA = 3;
 
 export function initMyMarker() {
   window.addEventListener('location:updated', (event) => {
