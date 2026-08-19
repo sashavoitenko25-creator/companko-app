@@ -80,11 +80,46 @@ export function Profile() {
     );
 
 
+    const isEditing =
+        !!oldProfile;
+
+
     return `
 
-        <main class="profile-page">
+        <main class="${
+            isEditing
+                ? 'profile-modal'
+                : 'profile-page'
+        }">
+
+            ${
+                isEditing
+                    ? `
+                        <div
+                            class="profile-modal__backdrop"
+                            id="profile-modal-backdrop"
+                        ></div>
+                    `
+                    : ''
+            }
+
 
             <div class="profile-card">
+
+                ${
+                    isEditing
+                        ? `
+                            <button
+                                type="button"
+                                class="profile-close"
+                                id="profile-close"
+                                aria-label="Закрыть"
+                            >
+                                ×
+                            </button>
+                        `
+                        : ''
+                }
 
 
                 <!-- HEADER -->
@@ -322,6 +357,46 @@ function initProfile() {
 
 
     profileInitialized = true;
+
+
+    /* ====================================
+       ЗАКРЫТИЕ РЕДАКТИРОВАНИЯ
+    ==================================== */
+
+    const closeButton =
+        document.querySelector(
+            '#profile-close'
+        );
+
+
+    const backdrop =
+        document.querySelector(
+            '#profile-modal-backdrop'
+        );
+
+
+    const closeProfile =
+        () => {
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    'profile:close'
+                )
+            );
+
+        };
+
+
+    closeButton?.addEventListener(
+        'click',
+        closeProfile
+    );
+
+
+    backdrop?.addEventListener(
+        'click',
+        closeProfile
+    );
 
 
     /* ====================================

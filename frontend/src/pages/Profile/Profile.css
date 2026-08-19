@@ -3,11 +3,15 @@
 ========================================================= */
 
 .profile-page {
+
     min-height: 100%;
+
     width: 100%;
 
     display: flex;
+
     align-items: center;
+
     justify-content: center;
 
     padding: 30px 16px;
@@ -23,6 +27,51 @@
     box-sizing: border-box;
 
     color: #ffffff;
+
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.profile-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 10000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 12px 16px;
+
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+}
+
+
+/* затемнение карты */
+
+.profile-modal__backdrop {
+
+    position: absolute;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, .58);
+
+    backdrop-filter: blur(4px);
+
+    -webkit-backdrop-filter: blur(4px);
+
 }
 
 
@@ -31,7 +80,13 @@
 ========================================================= */
 
 .profile-card {
+
+    position: relative;
+
+    z-index: 1;
+
     width: 100%;
+
     max-width: 430px;
 
     box-sizing: border-box;
@@ -54,6 +109,90 @@
         0 0 40px rgba(124, 60, 255, 0.06);
 
     color: #ffffff;
+
+}
+
+
+/* =========================================================
+   МОДАЛЬНАЯ КАРТОЧКА
+========================================================= */
+
+.profile-modal .profile-card {
+
+    max-height: none;
+
+    height: auto;
+
+    overflow: visible;
+
+    margin: 0;
+
+}
+
+
+/* =========================================================
+   CLOSE
+========================================================= */
+
+.profile-close {
+
+    position: absolute;
+
+    top: 14px;
+
+    right: 14px;
+
+    z-index: 10;
+
+    width: 38px;
+
+    height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: rgba(255,255,255,.08);
+
+    color: rgba(255,255,255,.85);
+
+    font-size: 27px;
+
+    font-weight: 300;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        transform .15s ease,
+        color .2s ease;
+
+}
+
+
+.profile-close:hover {
+
+    background: rgba(255,255,255,.15);
+
+    color: #ffffff;
+
+}
+
+
+.profile-close:active {
+
+    transform: scale(.92);
+
 }
 
 
@@ -62,16 +201,20 @@
 ========================================================= */
 
 .profile-header {
+
     text-align: center;
 
     margin-bottom: 28px;
+
 }
 
 
 .profile-avatar {
+
     display: block;
 
     width: 112px;
+
     height: 112px;
 
     margin: 0 auto;
@@ -85,28 +228,35 @@
     box-shadow:
         0 0 0 5px rgba(124, 60, 255, 0.10),
         0 12px 35px rgba(0, 0, 0, 0.45);
+
 }
 
 
 .profile-header h1 {
+
     margin: 18px 0 6px;
 
     font-size: 25px;
+
     line-height: 1.2;
 
     font-weight: 800;
 
     color: #ffffff;
+
 }
 
 
 .profile-header p {
+
     margin: 0;
 
     color: #8e93a8;
 
     font-size: 14px;
+
     line-height: 1.5;
+
 }
 
 
@@ -115,14 +265,17 @@
 ========================================================= */
 
 .profile-field {
+
     width: 100%;
 
     margin-bottom: 20px;
+
 }
 
 
 .profile-field label,
 .profile-label {
+
     display: block;
 
     margin-bottom: 9px;
@@ -130,7 +283,9 @@
     color: #a9aec0;
 
     font-size: 14px;
+
     font-weight: 600;
+
 }
 
 
@@ -139,6 +294,7 @@
 ========================================================= */
 
 .profile-field input {
+
     display: block;
 
     width: 100%;
@@ -156,6 +312,7 @@
     color: #ffffff;
 
     font-size: 16px;
+
     font-weight: 500;
 
     outline: none;
@@ -164,36 +321,43 @@
         border-color .2s ease,
         box-shadow .2s ease,
         background .2s ease;
+
 }
 
 
 .profile-field input::placeholder {
+
     color: #5f6477;
+
 }
 
 
 .profile-field input:focus {
+
     background: #0a0c17;
 
     border-color: #7c3cff;
 
     box-shadow:
         0 0 0 4px rgba(124, 60, 255, 0.12);
+
 }
 
 
-/* убрать стрелки number */
-
 .profile-field input[type="number"]::-webkit-inner-spin-button,
 .profile-field input[type="number"]::-webkit-outer-spin-button {
+
     margin: 0;
 
     -webkit-appearance: none;
+
 }
 
 
 .profile-field input[type="number"] {
+
     -moz-appearance: textfield;
+
 }
 
 
@@ -202,6 +366,7 @@
 ========================================================= */
 
 .gender-box {
+
     display: flex;
 
     gap: 12px;
@@ -209,10 +374,12 @@
     width: 100%;
 
     margin-bottom: 22px;
+
 }
 
 
 .gender-choice {
+
     flex: 1;
 
     min-width: 0;
@@ -228,6 +395,7 @@
     color: #ffffff;
 
     font-size: 15px;
+
     font-weight: 600;
 
     cursor: pointer;
@@ -239,22 +407,28 @@
         border-color .2s ease,
         transform .15s ease,
         box-shadow .2s ease;
+
 }
 
 
 .gender-choice:hover {
+
     background: #242a42;
 
     border-color: #3b4260;
+
 }
 
 
 .gender-choice:active {
+
     transform: scale(.98);
+
 }
 
 
 .gender-choice.active {
+
     background:
         linear-gradient(
             135deg,
@@ -266,6 +440,7 @@
 
     box-shadow:
         0 10px 25px rgba(124, 60, 255, 0.28);
+
 }
 
 
@@ -274,18 +449,20 @@
 ========================================================= */
 
 .relationship-select {
+
     position: relative;
 
     width: 100%;
+
 }
 
 
-/* главная кнопка */
-
 .relationship-select-button {
+
     display: flex;
 
     align-items: center;
+
     justify-content: space-between;
 
     width: 100%;
@@ -303,6 +480,7 @@
     color: #ffffff;
 
     font-size: 15px;
+
     font-weight: 500;
 
     text-align: left;
@@ -315,39 +493,43 @@
         border-color .2s ease,
         background .2s ease,
         box-shadow .2s ease;
+
 }
 
 
 .relationship-select-button:hover {
+
     background: #0b0d18;
 
     border-color: #3a4059;
+
 }
 
 
 .relationship-select.open
 .relationship-select-button {
+
     border-color: #7c3cff;
 
     box-shadow:
         0 0 0 4px rgba(124, 60, 255, 0.12);
+
 }
 
 
-/* выбранный текст */
-
 #relationship-selected-text {
+
     overflow: hidden;
 
     white-space: nowrap;
 
     text-overflow: ellipsis;
+
 }
 
 
-/* стрелка */
-
 .relationship-arrow {
+
     flex-shrink: 0;
 
     margin-left: 12px;
@@ -361,29 +543,34 @@
     transition:
         transform .2s ease,
         color .2s ease;
+
 }
 
 
 .relationship-select.open
 .relationship-arrow {
+
     color: #9b6cff;
 
     transform: rotate(180deg);
+
 }
 
 
 /* =========================================================
-   RELATIONSHIP OPTIONS
+   RELATIONSHIP OPTIONS — ОТКРЫВАЮТСЯ ВВЕРХ
 ========================================================= */
 
 .relationship-options {
+
     position: absolute;
 
     z-index: 100;
 
-    top: calc(100% + 8px);
+    bottom: calc(100% + 8px);
 
     left: 0;
+
     right: 0;
 
     display: flex;
@@ -415,10 +602,10 @@
     visibility: hidden;
 
     transform:
-        translateY(-6px)
+        translateY(6px)
         scale(.98);
 
-    transform-origin: top;
+    transform-origin: bottom;
 
     pointer-events: none;
 
@@ -426,11 +613,13 @@
         opacity .16s ease,
         transform .16s ease,
         visibility .16s ease;
+
 }
 
 
 .relationship-select.open
 .relationship-options {
+
     opacity: 1;
 
     visibility: visible;
@@ -440,12 +629,12 @@
         scale(1);
 
     pointer-events: auto;
+
 }
 
 
-/* отдельная кнопка */
-
 .relationship-option {
+
     display: flex;
 
     align-items: center;
@@ -465,6 +654,7 @@
     color: #ffffff;
 
     font-size: 14px;
+
     font-weight: 500;
 
     text-align: left;
@@ -476,19 +666,24 @@
     transition:
         background .15s ease,
         color .15s ease;
+
 }
 
 
 .relationship-option:hover {
+
     background: rgba(124, 60, 255, 0.12);
+
 }
 
 
 .relationship-option.active {
+
     background:
         rgba(124, 60, 255, 0.18);
 
     color: #b896ff;
+
 }
 
 
@@ -497,9 +692,11 @@
 ========================================================= */
 
 .save-button {
+
     display: flex;
 
     align-items: center;
+
     justify-content: center;
 
     width: 100%;
@@ -524,6 +721,7 @@
     color: #ffffff;
 
     font-size: 16px;
+
     font-weight: 800;
 
     cursor: pointer;
@@ -537,19 +735,24 @@
         transform .15s ease,
         box-shadow .2s ease,
         filter .2s ease;
+
 }
 
 
 .save-button:hover {
+
     filter: brightness(1.08);
 
     box-shadow:
         0 15px 35px rgba(124, 60, 255, 0.36);
+
 }
 
 
 .save-button:active {
+
     transform: scale(.985);
+
 }
 
 
@@ -560,49 +763,87 @@
 @media (max-width: 480px) {
 
     .profile-page {
+
         align-items: flex-start;
 
-        padding:
-            20px 12px 30px;
+        padding: 20px 12px 30px;
+
     }
 
 
     .profile-card {
+
         max-width: 100%;
+
+        padding: 25px 20px 22px;
+
+        border-radius: 27px;
+
+    }
+
+
+    .profile-modal {
+
+        padding: 12px;
+
+        align-items: center;
+
+    }
+
+
+    .profile-modal .profile-card {
+
+        max-height: none;
+
+        height: auto;
 
         padding:
             25px 20px 22px;
 
         border-radius: 27px;
+
+        overflow: visible;
+
     }
 
 
     .profile-avatar {
+
         width: 100px;
+
         height: 100px;
+
     }
 
 
     .profile-header h1 {
+
         font-size: 23px;
+
     }
 
 
     .gender-choice {
+
         padding: 14px 8px;
 
         font-size: 14px;
+
     }
 
 
     .profile-field input,
     .relationship-select-button {
+
         padding: 14px 15px;
+
     }
 
 
     .save-button {
+
         padding: 15px;
+
     }
 
 }
@@ -615,18 +856,32 @@
 @media (max-width: 350px) {
 
     .profile-card {
+
         padding:
             22px 16px 20px;
+
+    }
+
+
+    .profile-modal .profile-card {
+
+        padding:
+            22px 16px 20px;
+
     }
 
 
     .gender-box {
+
         gap: 8px;
+
     }
 
 
     .gender-choice {
+
         font-size: 13px;
+
     }
 
 }
