@@ -1,14 +1,10 @@
 export function OnlineCounter(count){
 
-
     return `
-
 
         <div class="online-counter">
 
-
             <div class="online-counter__dot"></div>
-
 
             <span class="online-counter__text">
 
@@ -16,11 +12,8 @@ export function OnlineCounter(count){
 
             </span>
 
-
         </div>
 
-
     `;
-
 
 }
