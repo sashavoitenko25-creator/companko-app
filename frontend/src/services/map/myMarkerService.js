@@ -117,10 +117,27 @@ function setHeading(heading){
     updateSectorPosition();
 }
 
-/* ========================================
-   Сектор ВНЕ карты — position:fixed
-   Не зависит от leaflet-rotate
-======================================== */
+function getMapBearingDeg(){
+    const map = getMap();
+
+    if(!map)
+        return 0;
+
+    // leaflet-rotate: getBearing() возвращает градусы
+    if(typeof map.getBearing === 'function'){
+        const b = map.getBearing();
+        if(typeof b === 'number' && !Number.isNaN(b)){
+            return b;
+        }
+    }
+
+    // fallback: _bearing хранится в радианах
+    if(typeof map._bearing === 'number'){
+        return map._bearing * (180 / Math.PI);
+    }
+
+    return 0;
+}
 
 function ensureSectorEl(){
     if(sectorEl && document.body.contains(sectorEl))
@@ -131,7 +148,6 @@ function ensureSectorEl(){
     sectorEl.innerHTML =
         '<div class="my-heading-sector__fan"></div>';
 
-    // В body — полностью вне #map и leaflet-map-pane
     document.body.appendChild(sectorEl);
 
     return sectorEl;
@@ -150,7 +166,6 @@ function updateSectorPosition(){
         return;
     }
 
-    // Реальные экранные координаты иконки маркера
     const icon = myMarker.getElement
         ? myMarker.getElement()
         : myMarker._icon;
@@ -167,9 +182,15 @@ function updateSectorPosition(){
     el.style.left = cx + 'px';
     el.style.top = cy + 'px';
 
-    // Только компас телефона. Карта НЕ влияет.
+    // Главная формула:
+    // сектор смотрит куда телефон,
+    // минус поворот карты
+    const mapBearing = getMapBearingDeg();
+    let angle = currentHeading - mapBearing;
+    angle = ((angle % 360) + 360) % 360;
+
     el.style.transform =
-        `translate(-50%, -100%) rotate(${currentHeading}deg)`;
+        `translate(-50%, -100%) rotate(${angle}deg)`;
 
     el.classList.add('visible');
 }
