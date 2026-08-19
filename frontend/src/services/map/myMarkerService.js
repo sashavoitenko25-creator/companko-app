@@ -10,6 +10,8 @@ let myMarker = null;
 let isLive = false;
 let currentHeading = null;
 let orientationStarted = false;
+let mapRotateBound = false;
+let rafId = null;
 
 export function initMyMarker(){
 
@@ -49,6 +51,7 @@ export function initMyMarker(){
     );
 
     startDeviceOrientation();
+    bindMapRotate();
 }
 
 export function updateMyMarker(
@@ -83,6 +86,8 @@ export function updateMyMarker(
         position,
         15
     );
+
+    bindMapRotate();
 }
 
 function refreshMarker(){
@@ -108,6 +113,33 @@ function setHeading(heading){
     applyHeadingToDom();
 }
 
+function getMapBearing(){
+    const map = getMap();
+
+    if(!map)
+        return 0;
+
+    if(typeof map.getBearing === 'function'){
+        const b = map.getBearing();
+        if(typeof b === 'number' && !Number.isNaN(b)){
+            return b;
+        }
+    }
+
+    if(typeof map._bearing === 'number'){
+        return map._bearing;
+    }
+
+    if(
+        map.options &&
+        typeof map.options.bearing === 'number'
+    ){
+        return map.options.bearing;
+    }
+
+    return 0;
+}
+
 function applyHeadingToDom(){
     if(currentHeading == null)
         return;
@@ -119,12 +151,89 @@ function applyHeadingToDom(){
     if(!direction)
         return;
 
-    // Только компас телефона.
-    // Карта уже крутит маркер сама через leaflet-rotate —
-    // mapBearing вычитать НЕ нужно.
+    const bearing = getMapBearing();
+
+    // Компенсация поворота карты:
+    // маркер крутится вместе с картой, сектор должен
+    // оставаться «привязан» к направлению телефона
+    let angle = currentHeading - bearing;
+    angle = ((angle % 360) + 360) % 360;
+
     direction.classList.add('visible');
     direction.style.transform =
-        `rotate(${currentHeading}deg)`;
+        `rotate(${angle}deg)`;
+}
+
+function startRotateLoop(){
+    if(rafId)
+        return;
+
+    const tick = ()=>{
+        applyHeadingToDom();
+        rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+}
+
+function stopRotateLoop(){
+    if(!rafId)
+        return;
+
+    cancelAnimationFrame(rafId);
+    rafId = null;
+    applyHeadingToDom();
+}
+
+function bindMapRotate(){
+    if(mapRotateBound)
+        return;
+
+    const map = getMap();
+
+    if(!map){
+        setTimeout(bindMapRotate, 200);
+        return;
+    }
+
+    mapRotateBound = true;
+
+    map.on('rotatestart', ()=>{
+        startRotateLoop();
+    });
+
+    map.on('rotate', ()=>{
+        applyHeadingToDom();
+    });
+
+    map.on('rotateend', ()=>{
+        stopRotateLoop();
+    });
+
+    map.on('move', ()=>{
+        applyHeadingToDom();
+    });
+
+    map.on('moveend', ()=>{
+        applyHeadingToDom();
+    });
+
+    // если rotatestart не срабатывает — подстрахуемся
+    map.on('mousedown', ()=>{
+        startRotateLoop();
+    });
+
+    map.on('mouseup', ()=>{
+        stopRotateLoop();
+    });
+
+    map.on('touchstart', ()=>{
+        startRotateLoop();
+    });
+
+    map.on('touchend', ()=>{
+        stopRotateLoop();
+    });
 }
 
 function startDeviceOrientation(){
