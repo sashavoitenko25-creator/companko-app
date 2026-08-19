@@ -45,12 +45,6 @@ export function initMyMarker(){
             );
 
 
-            /*
-             * Если locationService уже
-             * передал heading —
-             * используем его.
-             */
-
             if(
                 position.heading != null &&
                 !Number.isNaN(
@@ -120,9 +114,7 @@ export function updateMyMarker(
         latitude == null ||
         longitude == null
     ){
-
         return;
-
     }
 
 
@@ -133,10 +125,11 @@ export function updateMyMarker(
 
 
     /*
-     * Маркер уже существует —
-     * просто двигаем его.
+     * Если маркер уже существует,
+     * только меняем его координаты.
      *
-     * НИКАКОГО вращения здесь нет.
+     * НЕ меняем transform.
+     * НЕ вращаем Leaflet marker вручную.
      */
 
     if(myMarker){
@@ -160,18 +153,7 @@ export function updateMyMarker(
             {
                 icon: createIcon(),
 
-                zIndexOffset: 1000,
-
-                /*
-                 * Leaflet-маркер
-                 * не должен вращаться
-                 * вместе с картой.
-                 */
-
-                rotationAngle: 0,
-
-                rotationOrigin:
-                    'center center'
+                zIndexOffset: 1000
             }
         )
         .addTo(map);
@@ -179,15 +161,15 @@ export function updateMyMarker(
 
     /*
      * Создаём независимый
-     * DOM-элемент сектора.
+     * экранный сектор.
      */
 
     ensureSector();
 
 
     /*
-     * Только первый раз
-     * центрируем карту.
+     * Центрируем карту
+     * только при первом создании.
      */
 
     if(
@@ -254,7 +236,7 @@ function setHeading(
 
 
 /* ========================================
-   SECTOR
+   CREATE INDEPENDENT SECTOR
 ======================================== */
 
 function ensureSector(){
@@ -291,13 +273,17 @@ function ensureSector(){
 
 
     /*
-     * Очень важно:
+     * ВАЖНО:
      *
-     * Сектор добавляется
-     * прямо в body.
+     * Сектор находится
+     * непосредственно в body (position:fixed).
      *
-     * Поэтому он НЕ находится
-     * внутри Leaflet-карты.
+     * Он НЕ находится внутри
+     * Leaflet map pane.
+     *
+     * CSS-поворот карты его не затрагивает.
+     * Угол вычисляется как
+     * heading − mapBearing (как в Google Maps).
      */
 
     document.body.appendChild(
@@ -311,7 +297,7 @@ function ensureSector(){
 
 
 /* ========================================
-   MARKER ELEMENT
+   GET MARKER ELEMENT
 ======================================== */
 
 function getMarkerElement(){
@@ -347,45 +333,29 @@ function updateScreen(){
 
     /*
      * =====================================
-     * МАРКЕР
+     * СЕКТОР (как в Google Maps)
      * =====================================
      *
-     * Здесь НЕТ:
+     * Сектор живёт в body (position:fixed),
+     * поэтому CSS-поворот карты его не затрагивает.
      *
-     * getMapBearing()
+     * Чтобы направление оставалось
+     * географически правильным:
      *
-     * rotate(-bearing)
+     * screenAngle = deviceHeading − mapBearing
      *
-     *
-     * Leaflet сам отвечает
-     * за положение маркера.
-     *
-     * Поэтому вращение карты
-     * не должно менять rotation
-     * нашего маркера.
+     * — крутишь карту → сектор крутится вместе с ней
+     * — крутишь телефон → сектор меняет направление
+     * — north-up + телефон на север → сектор вверх
      */
 
-
-    /*
-     * =====================================
-     * СЕКТОР
-     * =====================================
-     *
-     * Сектор полностью независим
-     * от карты.
-     */
 
     const sector =
         ensureSector();
 
 
-    if(
-        !sector
-    ){
-
+    if(!sector)
         return;
-
-    }
 
 
     /*
@@ -408,16 +378,9 @@ function updateScreen(){
 
 
     /*
-     * Получаем экранные координаты
-     * маркера.
-     *
-     * Это важно:
-     *
-     * карта может вращаться,
-     * двигаться и масштабироваться,
-     * а сектор просто следует
-     * за текущим положением
-     * маркера на экране.
+     * Получаем реальное
+     * экранное положение
+     * Leaflet-маркера.
      */
 
     const rect =
@@ -435,8 +398,8 @@ function updateScreen(){
 
 
     /*
-     * Сектор ставим ровно
-     * в центр маркера.
+     * Сектор следует
+     * за маркером.
      */
 
     sector.style.left =
@@ -448,32 +411,35 @@ function updateScreen(){
 
 
     /*
-     * ВАЖНО:
-     *
-     * Здесь используется
-     * ТОЛЬКО heading телефона.
-     *
-     * Bearing карты сюда
-     * НЕ добавляется.
-     *
-     * Поэтому:
-     *
-     * карта вращается
-     * ↓
-     * сектор остаётся
-     * направленным туда же
-     *
-     * телефон поворачивается
-     * ↓
-     * heading меняется
-     * ↓
-     * сектор поворачивается.
+     * Bearing карты (leaflet-rotate).
+     * 0 = north-up.
      */
+
+    const map = getMap();
+    let mapBearing = 0;
+
+    if(map && typeof map.getBearing === 'function'){
+        mapBearing = map.getBearing() || 0;
+    }
+
+
+    /*
+     * Угол на экране = heading телефона − bearing карты.
+     * Нормализуем в [0, 360).
+     */
+
+    const screenAngle =
+        (
+            (
+                currentHeading - mapBearing
+            ) % 360 + 360
+        ) % 360;
+
 
     sector.style.transform =
         `
         translate(-50%, -100%)
-        rotate(${currentHeading}deg)
+        rotate(${screenAngle}deg)
         `;
 
 
@@ -600,8 +566,7 @@ function startDeviceOrientation(){
 
     /*
      * iPhone требует
-     * отдельное разрешение
-     * на использование компаса.
+     * разрешение на компас.
      */
 
     if(
@@ -662,16 +627,11 @@ function startDeviceOrientation(){
             };
 
 
-        /*
-         * Нужно действие пользователя,
-         * чтобы iOS разрешил компас.
-         */
-
         window.addEventListener(
             'touchend',
             requestPermission,
             {
-                once: true
+                once:true
             }
         );
 
@@ -680,7 +640,7 @@ function startDeviceOrientation(){
             'click',
             requestPermission,
             {
-                once: true
+                once:true
             }
         );
 
@@ -689,7 +649,7 @@ function startDeviceOrientation(){
     else{
 
         /*
-         * Android / Desktop
+         * Android / другие браузеры
          */
 
         window.addEventListener(
@@ -726,6 +686,7 @@ function createIcon(){
             className:
                 'my-marker-wrapper',
 
+
             html: `
 
                 <div
@@ -753,10 +714,12 @@ function createIcon(){
 
             `,
 
+
             iconSize: [
                 40,
                 40
             ],
+
 
             iconAnchor: [
                 20,
@@ -779,6 +742,7 @@ function createIcon(){
         className:
             'my-marker-wrapper',
 
+
         html: `
 
             <div
@@ -792,10 +756,12 @@ function createIcon(){
 
         `,
 
+
         iconSize: [
             24,
             24
         ],
+
 
         iconAnchor: [
             12,
