@@ -512,25 +512,31 @@
    Крутится только сектор по компасу телефона
 ================================================== */
 
+.my-marker-wrapper{
+    background: transparent !important;
+    border: none !important;
+}
+
 .my-marker-root{
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: visible;
 }
 
 .my-heading-sector-inner{
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 42px;
-    height: 52px;
+    width: 56px;
+    height: 70px;
     margin: 0;
     padding: 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 0;
+    opacity: 1;
     transform-origin: 50% 100%;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, -100%) rotate(0deg);
     will-change: transform, opacity;
 }
 
@@ -556,7 +562,7 @@
             0% 0%,
             100% 0%
         );
-    filter: blur(.4px);
+    filter: blur(.3px);
 }
 
 .my-location,

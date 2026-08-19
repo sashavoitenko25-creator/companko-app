@@ -122,12 +122,6 @@ export function updateMyMarker(
     ];
 
 
-    /*
-     * Если маркер уже существует —
-     * только координаты.
-     * Сектор крутится отдельно через CSS.
-     */
-
     if(myMarker){
 
         myMarker.setLatLng(
@@ -140,11 +134,8 @@ export function updateMyMarker(
 
 
     /*
-     * Создаём маркер.
-     *
-     * В leaflet-rotate маркеры по умолчанию
-     * в norotatePane → НЕ крутятся с картой.
-     * rotateWithView: false — явно.
+     * Маркер в norotatePane (leaflet-rotate).
+     * rotateWithView: false — не крутится с картой.
      */
 
     myMarker =
@@ -155,17 +146,11 @@ export function updateMyMarker(
 
                 zIndexOffset: 1000,
 
-                /* leaflet-rotate: не крутить маркер с картой */
                 rotateWithView: false
             }
         )
         .addTo(map);
 
-
-    /*
-     * Центрируем карту
-     * только при первом создании.
-     */
 
     if(
         !window.__myMarkerMapCentered
@@ -180,6 +165,10 @@ export function updateMyMarker(
         );
 
     }
+
+
+    /* сразу показать сектор (даже без компаса) */
+    applyHeadingToSector();
 
 }
 
@@ -198,7 +187,6 @@ function refreshMarker(){
         createIcon()
     );
 
-    /* после смены иконки сразу применить heading */
     applyHeadingToSector();
 
 }
@@ -237,10 +225,12 @@ function setHeading(
 
 
 /*
- * Крутим ТОЛЬКО внутренний сектор,
- * который лежит внутри маркера.
- * Маркер сам не крутится с картой
- * (norotatePane + rotateWithView: false).
+ * Крутим только внутренний сектор.
+ * Маркер сам не крутится с картой.
+ *
+ * Если компаса ещё нет — сектор всё равно
+ * виден (смотрит «вверх» = 0°), чтобы
+ * было понятно, что он есть.
  */
 function applyHeadingToSector(){
 
@@ -268,25 +258,22 @@ function applyHeadingToSector(){
         return;
 
 
-    if(currentHeading == null){
-
-        sector.style.opacity = '0';
-        return;
-
-    }
+    const angle =
+        currentHeading == null
+            ? 0
+            : currentHeading;
 
 
     sector.style.opacity = '1';
 
     sector.style.transform =
-        `translate(-50%, -100%) rotate(${currentHeading}deg)`;
+        `translate(-50%, -100%) rotate(${angle}deg)`;
 
 }
 
 
 /* ========================================
    ANIMATION LOOP
-   (на случай если иконка пересоздаётся)
 ======================================== */
 
 function startUpdateLoop(){
@@ -318,7 +305,6 @@ function startUpdateLoop(){
 
 /* ========================================
    DEVICE ORIENTATION
-   Telegram Mini App + обычные браузеры
 ======================================== */
 
 function startDeviceOrientation(){
@@ -350,9 +336,11 @@ function startDeviceOrientation(){
 
 
     /*
-     * 1) Официальный API Telegram Mini Apps
-     *    Bot API 8.0+
-     *    https://core.telegram.org/bots/webapps#deviceorientation
+     * ------------------------------------
+     * 1) Telegram Mini App API (Bot API 8+)
+     * Компас — ОТДЕЛЬНОЕ разрешение,
+     * НЕ входит в Location.
+     * ------------------------------------
      */
 
     const tg =
@@ -367,65 +355,93 @@ function startDeviceOrientation(){
 
         try{
 
+            const onTgOrientation =
+                (data) => {
+
+                    if(!data)
+                        return;
+
+                    /*
+                     * alpha в радианах.
+                     * need_absolute: true →
+                     * относительно магнитного севера.
+                     */
+                    if(
+                        data.alpha != null &&
+                        !Number.isNaN(
+                            Number(data.alpha)
+                        )
+                    ){
+
+                        const alphaDeg =
+                            Number(data.alpha) *
+                            (180 / Math.PI);
+
+                        let heading =
+                            (
+                                360 - alphaDeg + 360
+                            ) % 360;
+
+                        handleHeading(
+                            heading
+                        );
+
+                    }
+
+                };
+
+
+            /*
+             * Событие может называться
+             * по-разному в разных версиях клиента.
+             */
+            if(typeof tg.onEvent === 'function'){
+
+                tg.onEvent(
+                    'deviceOrientationChanged',
+                    onTgOrientation
+                );
+
+                tg.onEvent(
+                    'device_orientation_changed',
+                    onTgOrientation
+                );
+
+            }
+
+
             tg.DeviceOrientation.start(
                 {
                     need_absolute: true
                 },
-                (started) => {
+                (ok) => {
 
-                    if(!started){
-                        console.warn(
-                            'TG DeviceOrientation start failed'
-                        );
-                        fallbackOrientation();
-                        return;
-                    }
-
-                    tg.onEvent(
-                        'deviceOrientationChanged',
-                        (data) => {
-
-                            /*
-                             * alpha в радианах.
-                             * absolute=true → относительно севера.
-                             * heading ≈ 360 - alpha° (как в web)
-                             */
-                            if(
-                                data &&
-                                data.alpha != null
-                            ){
-
-                                const alphaDeg =
-                                    Number(data.alpha) *
-                                    (180 / Math.PI);
-
-                                let heading =
-                                    360 - alphaDeg;
-
-                                heading =
-                                    (
-                                        heading +
-                                        360
-                                    ) % 360;
-
-                                handleHeading(
-                                    heading
-                                );
-
-                            }
-
-                        }
+                    console.log(
+                        '[compass] TG DeviceOrientation.start →',
+                        ok
                     );
+
+                    if(!ok){
+                        startWebOrientation();
+                    }
 
                 }
             );
+
+
+            /*
+             * На всякий случай параллельно
+             * поднимаем и web-fallback.
+             * Лишним не будет.
+             */
+            startWebOrientation();
 
             return;
 
         }catch(e){
 
             console.warn(
-                'TG DeviceOrientation error',
+                '[compass] TG DeviceOrientation error',
                 e
             );
 
@@ -435,20 +451,22 @@ function startDeviceOrientation(){
 
 
     /*
-     * 2) Fallback: обычный DeviceOrientationEvent
+     * ------------------------------------
+     * 2) Обычный Web API
+     * ------------------------------------
      */
-    fallbackOrientation();
+    startWebOrientation();
 
 
-    function fallbackOrientation(){
+    function startWebOrientation(){
 
         const handleOrientation =
-            event => {
+            (event) => {
 
                 let heading = null;
 
 
-                /* iOS */
+                /* iOS Safari / Telegram iOS */
                 if(
                     event.webkitCompassHeading != null &&
                     !Number.isNaN(
@@ -465,7 +483,7 @@ function startDeviceOrientation(){
 
                 }
 
-                /* Android */
+                /* Android / остальные */
                 else if(
                     event.alpha != null &&
                     !Number.isNaN(
@@ -502,6 +520,10 @@ function startDeviceOrientation(){
             };
 
 
+        /*
+         * iOS требует явного permission
+         * (это НЕ то же самое, что Location).
+         */
         if(
             typeof DeviceOrientationEvent !==
             'undefined' &&
@@ -511,69 +533,69 @@ function startDeviceOrientation(){
             'function'
         ){
 
-            let permissionRequested =
-                false;
+            let asked = false;
 
 
-            const requestPermission =
-                () => {
+            const ask = () => {
 
-                    if(permissionRequested)
-                        return;
+                if(asked)
+                    return;
 
-
-                    permissionRequested =
-                        true;
+                asked = true;
 
 
-                    DeviceOrientationEvent
-                        .requestPermission()
-                        .then(
-                            state => {
+                DeviceOrientationEvent
+                    .requestPermission()
+                    .then(
+                        (state) => {
 
-                                if(
-                                    state ===
-                                    'granted'
-                                ){
+                            console.log(
+                                '[compass] iOS permission →',
+                                state
+                            );
 
-                                    window.addEventListener(
-                                        'deviceorientation',
-                                        handleOrientation,
-                                        true
-                                    );
+                            if(
+                                state ===
+                                'granted'
+                            ){
 
-                                }
-
-                            }
-                        )
-                        .catch(
-                            error => {
-
-                                console.warn(
-                                    'Device orientation permission:',
-                                    error
+                                window.addEventListener(
+                                    'deviceorientation',
+                                    handleOrientation,
+                                    true
                                 );
 
                             }
-                        );
 
-                };
+                        }
+                    )
+                    .catch(
+                        (err) => {
+
+                            console.warn(
+                                '[compass] iOS permission error',
+                                err
+                            );
+
+                        }
+                    );
+
+            };
 
 
             window.addEventListener(
                 'touchend',
-                requestPermission,
+                ask,
                 {
-                    once:true
+                    once: true
                 }
             );
 
-
             window.addEventListener(
                 'click',
-                requestPermission,
+                ask,
                 {
-                    once:true
+                    once: true
                 }
             );
 
@@ -593,6 +615,10 @@ function startDeviceOrientation(){
                 true
             );
 
+            console.log(
+                '[compass] web DeviceOrientation listeners attached'
+            );
+
         }
 
     }
@@ -601,17 +627,10 @@ function startDeviceOrientation(){
 
 
 /* ========================================
-   ICON
-   Сектор ВНУТРИ маркера
+   ICON — сектор внутри маркера
 ======================================== */
 
 function createIcon(){
-
-    /*
-     * =====================================
-     * LIVE MARKER
-     * =====================================
-     */
 
     if(isLive){
 
@@ -669,12 +688,6 @@ function createIcon(){
 
     }
 
-
-    /*
-     * =====================================
-     * ОБЫЧНЫЙ СИНИЙ МАРКЕР + СЕКТОР
-     * =====================================
-     */
 
     return L.divIcon({
 
