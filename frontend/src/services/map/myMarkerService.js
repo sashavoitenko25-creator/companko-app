@@ -14,8 +14,11 @@ let loopStarted = false;
 let followMe = true;
 let mapEventsBound = false;
 
-const HEADING_SMOOTH = 0.08;
-const HEADING_MIN_DELTA = 3;
+const HEADING_SMOOTH = 0.06;
+const HEADING_MIN_DELTA = 5;
+const HEADING_HISTORY_SIZE = 7;
+
+let headingHistory = [];
 
 export function initMyMarker() {
   window.addEventListener('location:updated', (event) => {
@@ -55,6 +58,7 @@ export function initMyMarker() {
       bearing: map?.getBearing?.() ?? null,
       followMe,
       rotateWithView: myMarker?.options?.rotateWithView,
+      history: headingHistory.slice(),
     });
   };
 }
@@ -76,11 +80,10 @@ export function updateMyMarker(latitude, longitude) {
   }
 
   /*
-   * ВАЖНО:
    * rotateWithView: true
-   * Маркер + сектор внутри крутятся ВМЕСТЕ с картой.
-   * Относительно улиц сектор остаётся на месте.
-   * Heading телефона крутит только внутренний сектор.
+   * → маркер + сектор крутятся вместе с картой
+   * → относительно улиц сектор стоит на месте
+   * → heading крутит только внутренний сектор
    */
   myMarker = L.marker(position, {
     icon: createIcon(),
@@ -88,7 +91,6 @@ export function updateMyMarker(latitude, longitude) {
     rotateWithView: true,
   }).addTo(map);
 
-  // убрать старый сектор из body, если остался
   document.querySelectorAll('.my-heading-sector, #my-heading-overlay').forEach((el) => {
     el.remove();
   });
@@ -133,14 +135,26 @@ function setHeading(heading) {
   heading = (Number(heading) + 360) % 360;
   rawHeading = heading;
 
+  headingHistory.push(heading);
+  if (headingHistory.length > HEADING_HISTORY_SIZE) {
+    headingHistory.shift();
+  }
+
+  const sorted = headingHistory.slice().sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted[mid];
+
   if (currentHeading == null) {
-    currentHeading = heading;
+    currentHeading = median;
     applyHeadingToSector();
     return;
   }
 
-  let diff = ((heading - currentHeading + 540) % 360) - 180;
-  if (Math.abs(diff) < HEADING_MIN_DELTA) return;
+  let diff = ((median - currentHeading + 540) % 360) - 180;
+
+  if (Math.abs(diff) < HEADING_MIN_DELTA) {
+    return;
+  }
 
   currentHeading = (currentHeading + diff * HEADING_SMOOTH + 360) % 360;
   applyHeadingToSector();
@@ -163,8 +177,6 @@ function applyHeadingToSector() {
     return;
   }
 
-  // ТОЛЬКО heading. Bearing НЕ вычитаем —
-  // карту крутит leaflet через rotateWithView.
   sector.style.opacity = '1';
   sector.style.transform =
     `translate(-50%, -100%) rotate(${currentHeading}deg)`;
@@ -190,30 +202,23 @@ function startDeviceOrientation() {
     setHeading(Number(heading));
   };
 
-  const tg = window.Telegram && window.Telegram.WebApp;
-  if (tg && tg.DeviceOrientation) {
-    try {
-      const onTg = (data) => {
-        if (!data || data.alpha == null) return;
-        const alphaDeg = Number(data.alpha) * (180 / Math.PI);
-        handleHeading((360 - alphaDeg + 360) % 360);
-      };
-      tg.onEvent?.('deviceOrientationChanged', onTg);
-      tg.onEvent?.('device_orientation_changed', onTg);
-      tg.DeviceOrientation.start({ need_absolute: true }, (ok) => {
-        console.log('[compass] TG start →', ok);
-      });
-    } catch (e) {
-      console.warn('[compass] TG error', e);
-    }
-  }
-
+  /*
+   * Только один источник компаса — absolute.
+   * Telegram API и обычный deviceorientation отключены,
+   * чтобы не было двух потоков и дрожи влево-вправо.
+   */
   const handleOrientation = (event) => {
     let heading = null;
 
-    if (event.webkitCompassHeading != null && !Number.isNaN(Number(event.webkitCompassHeading))) {
+    if (
+      event.webkitCompassHeading != null &&
+      !Number.isNaN(Number(event.webkitCompassHeading))
+    ) {
       heading = Number(event.webkitCompassHeading);
-    } else if (event.alpha != null && !Number.isNaN(Number(event.alpha))) {
+    } else if (
+      event.alpha != null &&
+      !Number.isNaN(Number(event.alpha))
+    ) {
       heading = (360 - Number(event.alpha) + 360) % 360;
     }
 
@@ -222,7 +227,17 @@ function startDeviceOrientation() {
   };
 
   window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-  window.addEventListener('deviceorientation', handleOrientation, true);
+
+  /*
+   * Fallback, если absolute нет (некоторые Android).
+   * Включается только если за 1.5 сек не было absolute-данных.
+   */
+  setTimeout(() => {
+    if (rawHeading == null) {
+      console.log('[compass] fallback → deviceorientation');
+      window.addEventListener('deviceorientation', handleOrientation, true);
+    }
+  }, 1500);
 }
 
 function createIcon() {
