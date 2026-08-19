@@ -1,3 +1,7 @@
+/* =========================================================
+   BOTTOM BAR
+========================================================= */
+
 .bottom-bar{
 
     position:fixed;
@@ -35,9 +39,10 @@
 }
 
 
-/* =======================
+/* =========================================================
    НАЙТИ СЕБЯ + НАСТРОЙКИ
-======================= */
+   РАЗМЕР НЕ МЕНЯЕМ
+========================================================= */
 
 .bottom-button,
 #settings-button{
@@ -52,11 +57,18 @@
 
     flex:0 0 45px;
 
-    border:none;
+    border:1px solid rgba(255,255,255,.10);
 
     border-radius:50%;
 
-    background:rgba(16,17,26,.94);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28,30,43,.97),
+            rgba(14,16,26,.97)
+        );
+
+    color:rgba(255,255,255,.90);
 
     display:flex;
 
@@ -70,10 +82,18 @@
 
     cursor:pointer;
 
-    transition:.18s;
+    box-sizing:border-box;
 
     box-shadow:
-        0 8px 22px rgba(0,0,0,.4);
+        0 8px 22px rgba(0,0,0,.40),
+        inset 0 1px 0 rgba(255,255,255,.06);
+
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease,
+        color .18s ease;
 
 }
 
@@ -82,6 +102,23 @@
 #settings-button:hover{
 
     transform:translateY(-2px);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(39,41,57,.98),
+            rgba(18,20,32,.98)
+        );
+
+    border-color:
+        rgba(139,92,246,.35);
+
+    color:#ffffff;
+
+    box-shadow:
+        0 10px 26px rgba(0,0,0,.45),
+        0 0 14px rgba(139,92,246,.10),
+        inset 0 1px 0 rgba(255,255,255,.07);
 
 }
 
@@ -94,18 +131,82 @@
 }
 
 
-.location-icon{
+.bottom-button.pressed{
 
-    width:20px;
+    transform:scale(.92);
 
-    height:20px;
+    background:
+        rgba(124,58,237,.25);
+
+    border-color:
+        rgba(139,92,246,.55);
 
 }
 
 
-/* =======================
-        LIVE
-======================= */
+/* =========================================================
+   ИКОНКА НАЙТИ СЕБЯ
+========================================================= */
+
+.location-icon{
+
+    width:21px;
+
+    height:21px;
+
+    color:#ffffff;
+
+    display:block;
+
+    transition:
+        transform .2s ease,
+        color .2s ease;
+
+}
+
+
+.bottom-button:hover .location-icon{
+
+    color:#b994ff;
+
+    transform:scale(1.05);
+
+}
+
+
+/* =========================================================
+   ИКОНКА НАСТРОЕК
+========================================================= */
+
+.settings-icon{
+
+    width:21px;
+
+    height:21px;
+
+    color:#ffffff;
+
+    display:block;
+
+    transition:
+        transform .35s ease,
+        color .2s ease;
+
+}
+
+
+#settings-button:hover .settings-icon{
+
+    color:#b994ff;
+
+    transform:rotate(35deg);
+
+}
+
+
+/* =========================================================
+   LIVE
+========================================================= */
 
 .live-button{
 
@@ -185,7 +286,6 @@
 
 /* ==================================================
    НАСТРОЙКИ
-   ПРИНУДИТЕЛЬНО ПО ЦЕНТРУ ЭКРАНА
 ================================================== */
 
 .settings-window{
@@ -268,9 +368,9 @@
 }
 
 
-/* =======================
-          SWITCH
-======================= */
+/* ==================================================
+   SWITCH
+================================================== */
 
 .theme-switch{
 
@@ -362,9 +462,9 @@
 }
 
 
-/* =======================
-      МОБИЛЬНЫЙ ЭКРАН
-======================= */
+/* ==================================================
+   МОБИЛЬНЫЙ ЭКРАН
+================================================== */
 
 @media (max-width:480px){
 
