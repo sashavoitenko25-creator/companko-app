@@ -28,74 +28,67 @@ let loopStarted = false;
 
 export function initMyMarker(){
 
-
     window.addEventListener(
-
         'location:updated',
-
-        (event)=>{
+        event => {
 
             const position =
                 event.detail;
 
+            if(!position)
+                return;
+
 
             updateMyMarker(
-
                 position.lat,
-
                 position.lng
-
             );
 
 
+            /*
+             * Если locationService уже
+             * передал heading —
+             * используем его.
+             */
+
             if(
-
                 position.heading != null &&
-
                 !Number.isNaN(
-                    position.heading
+                    Number(position.heading)
                 )
-
             ){
 
                 setHeading(
-                    position.heading
+                    Number(position.heading)
                 );
 
             }
 
         }
-
     );
 
 
     window.addEventListener(
-
         'live:started',
-
-        ()=>{
+        () => {
 
             isLive = true;
 
             refreshMarker();
 
         }
-
     );
 
 
     window.addEventListener(
-
         'live:stopped',
-
-        ()=>{
+        () => {
 
             isLive = false;
 
             refreshMarker();
 
         }
-
     );
 
 
@@ -107,15 +100,12 @@ export function initMyMarker(){
 
 
 /* ========================================
-   UPDATE MY MARKER
+   UPDATE MARKER
 ======================================== */
 
 export function updateMyMarker(
-
     latitude,
-
     longitude
-
 ){
 
     const map =
@@ -126,14 +116,28 @@ export function updateMyMarker(
         return;
 
 
+    if(
+        latitude == null ||
+        longitude == null
+    ){
+
+        return;
+
+    }
+
+
     const position = [
-
         latitude,
-
         longitude
-
     ];
 
+
+    /*
+     * Маркер уже существует —
+     * просто двигаем его.
+     *
+     * НИКАКОГО вращения здесь нет.
+     */
 
     if(myMarker){
 
@@ -146,41 +150,59 @@ export function updateMyMarker(
     }
 
 
-    myMarker = L.marker(
+    /*
+     * Создаём маркер.
+     */
 
-        position,
+    myMarker =
+        L.marker(
+            position,
+            {
+                icon: createIcon(),
 
-        {
+                zIndexOffset: 1000,
 
-            icon:
-                createIcon(),
+                /*
+                 * Leaflet-маркер
+                 * не должен вращаться
+                 * вместе с картой.
+                 */
 
-            zIndexOffset:
-                1000,
+                rotationAngle: 0,
 
-            rotateWithView:
-                false
-
-        }
-
-    )
-
-    .addTo(map);
-
-
-    ensureSectorEl();
-
-
-    map.setView(
-
-        position,
-
-        15
-
-    );
+                rotationOrigin:
+                    'center center'
+            }
+        )
+        .addTo(map);
 
 
-    startUpdateLoop();
+    /*
+     * Создаём независимый
+     * DOM-элемент сектора.
+     */
+
+    ensureSector();
+
+
+    /*
+     * Только первый раз
+     * центрируем карту.
+     */
+
+    if(
+        !window.__myMarkerMapCentered
+    ){
+
+        window.__myMarkerMapCentered =
+            true;
+
+        map.setView(
+            position,
+            15
+        );
+
+    }
 
 }
 
@@ -196,9 +218,7 @@ function refreshMarker(){
 
 
     myMarker.setIcon(
-
         createIcon()
-
     );
 
 }
@@ -213,13 +233,10 @@ function setHeading(
 ){
 
     if(
-
         heading == null ||
-
         Number.isNaN(
-            heading
+            Number(heading)
         )
-
     ){
 
         return;
@@ -228,26 +245,25 @@ function setHeading(
 
 
     currentHeading =
-        heading;
-
+        (
+            Number(heading) +
+            360
+        ) % 360;
 
 }
 
 
 /* ========================================
-   SECTOR ELEMENT
+   SECTOR
 ======================================== */
 
-function ensureSectorEl(){
+function ensureSector(){
 
     if(
-
         sectorEl &&
-
         document.body.contains(
             sectorEl
         )
-
     ){
 
         return sectorEl;
@@ -274,6 +290,16 @@ function ensureSectorEl(){
     `;
 
 
+    /*
+     * Очень важно:
+     *
+     * Сектор добавляется
+     * прямо в body.
+     *
+     * Поэтому он НЕ находится
+     * внутри Leaflet-карты.
+     */
+
     document.body.appendChild(
         sectorEl
     );
@@ -285,272 +311,175 @@ function ensureSectorEl(){
 
 
 /* ========================================
-   GET MARKER SCREEN POSITION
+   MARKER ELEMENT
 ======================================== */
 
-function getMyScreenPosition(){
+function getMarkerElement(){
 
-    const map =
-        getMap();
-
-
-    if(
-        !map ||
-        !myMarker
-    ){
-
-        return null;
-
-    }
-
-
-    const latLng =
-        myMarker.getLatLng();
-
-
-    if(!latLng)
+    if(!myMarker)
         return null;
 
 
-    const point =
-        map.latLngToContainerPoint(
-            latLng
-        );
-
-
-    const mapContainer =
-        map.getContainer();
-
-
-    const rect =
-        mapContainer.getBoundingClientRect();
-
-
-    return {
-
-        x:
-            rect.left +
-            point.x,
-
-        y:
-            rect.top +
-            point.y
-
-    };
+    return myMarker.getElement
+        ? myMarker.getElement()
+        : myMarker._icon;
 
 }
 
 
 /* ========================================
-   UPDATE SECTOR
+   UPDATE SCREEN
 ======================================== */
 
-function updateSector(){
-
-    const el =
-        ensureSectorEl();
-
-
-    if(!el)
-        return;
-
-
-    if(
-        currentHeading == null ||
-        !myMarker
-    ){
-
-        el.classList.remove(
-            'visible'
-        );
-
-        return;
-
-    }
-
-
-    const position =
-        getMyScreenPosition();
-
-
-    if(!position){
-
-        el.classList.remove(
-            'visible'
-        );
-
-        return;
-
-    }
-
-
-    /*
-    ========================================
-    ПОЗИЦИЯ
-
-    Сектор всегда находится
-    прямо над моей точкой.
-
-    Он НЕ является частью карты.
-    ========================================
-    */
-
-
-    el.style.left =
-        position.x + 'px';
-
-
-    el.style.top =
-        position.y + 'px';
-
-
-    /*
-    ========================================
-    ВАЖНО
-
-    Здесь НЕТ map bearing.
-
-    Поэтому вращение карты
-    НЕ вращает сектор.
-
-    Сектор меняет направление
-    только когда меняется heading
-    телефона.
-    ========================================
-    */
-
-
-    el.style.transform =
-
-        `translate(-50%, -50%) rotate(${currentHeading}deg)`;
-
-
-    el.classList.add(
-        'visible'
-    );
-
-}
-
-
-/* ========================================
-   UPDATE MARKER
-======================================== */
-
-function updateMarker(){
+function updateScreen(){
 
     if(!myMarker)
         return;
 
 
-    const icon =
-        myMarker.getElement();
+    const marker =
+        getMarkerElement();
 
 
-    if(!icon)
+    if(!marker)
         return;
 
 
     /*
-    Leaflet сам управляет
-    transform у marker.
-
-    Поэтому НЕ трогаем
-    transform самого icon.
-    */
-
-
-    const content =
-        icon.querySelector(
-            '.my-marker-content'
-        );
-
-
-    if(!content)
-        return;
-
-
-    const map =
-        getMap();
+     * =====================================
+     * МАРКЕР
+     * =====================================
+     *
+     * Здесь НЕТ:
+     *
+     * getMapBearing()
+     *
+     * rotate(-bearing)
+     *
+     *
+     * Leaflet сам отвечает
+     * за положение маркера.
+     *
+     * Поэтому вращение карты
+     * не должно менять rotation
+     * нашего маркера.
+     */
 
 
-    if(!map)
-        return;
+    /*
+     * =====================================
+     * СЕКТОР
+     * =====================================
+     *
+     * Сектор полностью независим
+     * от карты.
+     */
 
-
-    let bearing = 0;
+    const sector =
+        ensureSector();
 
 
     if(
-        typeof map.getBearing ===
-        'function'
+        !sector
     ){
 
-        const value =
-            map.getBearing();
-
-
-        if(
-            typeof value === 'number' &&
-            !Number.isNaN(value)
-        ){
-
-            bearing = value;
-
-        }
-
-    }
-
-
-    else if(
-        typeof map._bearing ===
-        'number'
-    ){
-
-        bearing =
-            map._bearing *
-            (180 / Math.PI);
+        return;
 
     }
 
 
     /*
-    ========================================
-    МАРКЕР КОНТР-ВРАЩАЕТСЯ
+     * Если компас ещё
+     * не дал направление —
+     * сектор скрываем.
+     */
 
-    Карта повернулась на +30°
-    → содержимое маркера поворачиваем
-    на -30°.
+    if(
+        currentHeading == null
+    ){
 
-    Сам Leaflet transform
-    НЕ изменяем.
-    ========================================
-    */
+        sector.classList.remove(
+            'visible'
+        );
 
-
-    content.style.transform =
-
-        `rotate(${-bearing}deg)`;
-
-}
-
-
-/* ========================================
-   UPDATE FRAME
-======================================== */
-
-function updateFrame(){
-
-    const map =
-        getMap();
-
-
-    if(!map)
         return;
 
+    }
 
-    updateMarker();
 
-    updateSector();
+    /*
+     * Получаем экранные координаты
+     * маркера.
+     *
+     * Это важно:
+     *
+     * карта может вращаться,
+     * двигаться и масштабироваться,
+     * а сектор просто следует
+     * за текущим положением
+     * маркера на экране.
+     */
+
+    const rect =
+        marker.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width / 2;
+
+
+    const centerY =
+        rect.top +
+        rect.height / 2;
+
+
+    /*
+     * Сектор ставим ровно
+     * в центр маркера.
+     */
+
+    sector.style.left =
+        `${centerX}px`;
+
+
+    sector.style.top =
+        `${centerY}px`;
+
+
+    /*
+     * ВАЖНО:
+     *
+     * Здесь используется
+     * ТОЛЬКО heading телефона.
+     *
+     * Bearing карты сюда
+     * НЕ добавляется.
+     *
+     * Поэтому:
+     *
+     * карта вращается
+     * ↓
+     * сектор остаётся
+     * направленным туда же
+     *
+     * телефон поворачивается
+     * ↓
+     * heading меняется
+     * ↓
+     * сектор поворачивается.
+     */
+
+    sector.style.transform =
+        `
+        translate(-50%, -100%)
+        rotate(${currentHeading}deg)
+        `;
+
+
+    sector.classList.add(
+        'visible'
+    );
 
 }
 
@@ -568,20 +497,20 @@ function startUpdateLoop(){
     loopStarted = true;
 
 
-    const tick = ()=>{
+    const frame = () => {
 
-        updateFrame();
+        updateScreen();
 
 
         requestAnimationFrame(
-            tick
+            frame
         );
 
     };
 
 
     requestAnimationFrame(
-        tick
+        frame
     );
 
 }
@@ -601,48 +530,53 @@ function startDeviceOrientation(){
 
 
     const handleOrientation =
-        (event)=>{
+        event => {
 
             let heading = null;
 
 
             /*
-            iPhone / Safari
-            */
+             * iPhone / iOS
+             */
 
             if(
-                event.webkitCompassHeading != null
+                event.webkitCompassHeading != null &&
+                !Number.isNaN(
+                    Number(
+                        event.webkitCompassHeading
+                    )
+                )
             ){
 
                 heading =
-                    event.webkitCompassHeading;
+                    Number(
+                        event.webkitCompassHeading
+                    );
 
             }
 
 
             /*
-            Android / другие браузеры
-            */
+             * Android / другие браузеры
+             */
 
             else if(
-                event.alpha != null
+                event.alpha != null &&
+                !Number.isNaN(
+                    Number(event.alpha)
+                )
             ){
 
                 heading =
                     360 -
-                    event.alpha;
+                    Number(event.alpha);
 
             }
 
 
             if(
-
                 heading == null ||
-
-                Number.isNaN(
-                    heading
-                )
-
+                Number.isNaN(heading)
             ){
 
                 return;
@@ -651,7 +585,6 @@ function startDeviceOrientation(){
 
 
             heading =
-
                 (
                     heading +
                     360
@@ -666,98 +599,103 @@ function startDeviceOrientation(){
 
 
     /*
-    ========================================
-    IOS PERMISSION
-    ========================================
-    */
+     * iPhone требует
+     * отдельное разрешение
+     * на использование компаса.
+     */
 
     if(
-
         typeof DeviceOrientationEvent !==
         'undefined' &&
 
         typeof DeviceOrientationEvent
             .requestPermission ===
-            'function'
-
+        'function'
     ){
 
-        const request = ()=>{
+        let permissionRequested =
+            false;
 
-            DeviceOrientationEvent
 
-                .requestPermission()
+        const requestPermission =
+            () => {
 
-                .then(
+                if(permissionRequested)
+                    return;
 
-                    state=>{
 
-                        if(
-                            state ===
-                            'granted'
-                        ){
+                permissionRequested =
+                    true;
 
-                            window.addEventListener(
 
-                                'deviceorientation',
+                DeviceOrientationEvent
+                    .requestPermission()
+                    .then(
+                        state => {
 
-                                handleOrientation,
+                            if(
+                                state ===
+                                'granted'
+                            ){
 
-                                true
+                                window.addEventListener(
+                                    'deviceorientation',
+                                    handleOrientation,
+                                    true
+                                );
 
+                            }
+
+                        }
+                    )
+                    .catch(
+                        error => {
+
+                            console.warn(
+                                'Device orientation permission:',
+                                error
                             );
 
                         }
+                    );
 
-                    }
+            };
 
-                )
 
-                .catch(
-                    ()=>{}
-                );
-
-        };
-
+        /*
+         * Нужно действие пользователя,
+         * чтобы iOS разрешил компас.
+         */
 
         window.addEventListener(
-
             'touchend',
-
-            request,
-
+            requestPermission,
             {
-                once:true
+                once: true
             }
-
         );
 
 
         window.addEventListener(
-
             'click',
-
-            request,
-
+            requestPermission,
             {
-                once:true
+                once: true
             }
-
         );
 
     }
 
-
     else{
 
+        /*
+         * Android / Desktop
+         */
+
         window.addEventListener(
-
             'deviceorientation',
-
             handleOrientation,
-
             true
-
         );
 
     }
@@ -766,11 +704,16 @@ function startDeviceOrientation(){
 
 
 /* ========================================
-   CREATE MARKER ICON
+   ICON
 ======================================== */
 
 function createIcon(){
 
+    /*
+     * =====================================
+     * LIVE MARKER
+     * =====================================
+     */
 
     if(isLive){
 
@@ -781,33 +724,28 @@ function createIcon(){
         return L.divIcon({
 
             className:
-                '',
+                'my-marker-wrapper',
 
-            html:`
+            html: `
 
                 <div
-                    class="my-marker-content">
+                    class="my-live-marker">
+
+                    <img
+                        src="${
+                            profile?.photo_url ||
+                            'https://i.pravatar.cc/150'
+                        }"
+                    >
 
                     <div
-                        class="my-live-marker">
+                        class="my-live-marker__badge">
 
-                        <img
-                            src="${
-                                profile?.photo_url ||
-                                'https://i.pravatar.cc/150'
-                            }"
-                        >
+                        <span
+                            class="my-live-marker__badge-dot">
+                        </span>
 
-                        <div
-                            class="my-live-marker__badge">
-
-                            <span
-                                class="my-live-marker__badge-dot">
-                            </span>
-
-                            LIVE
-
-                        </div>
+                        LIVE
 
                     </div>
 
@@ -815,12 +753,12 @@ function createIcon(){
 
             `,
 
-            iconSize:[
+            iconSize: [
                 40,
                 40
             ],
 
-            iconAnchor:[
+            iconAnchor: [
                 20,
                 20
             ]
@@ -830,35 +768,36 @@ function createIcon(){
     }
 
 
+    /*
+     * =====================================
+     * ОБЫЧНЫЙ СИНИЙ МАРКЕР
+     * =====================================
+     */
+
     return L.divIcon({
 
         className:
-            '',
+            'my-marker-wrapper',
 
-        html:`
+        html: `
 
             <div
-                class="my-marker-content">
+                class="my-location">
 
                 <div
-                    class="my-location">
-
-                    <div
-                        class="my-location__pulse">
-                    </div>
-
+                    class="my-location__pulse">
                 </div>
 
             </div>
 
         `,
 
-        iconSize:[
+        iconSize: [
             24,
             24
         ],
 
-        iconAnchor:[
+        iconAnchor: [
             12,
             12
         ]
