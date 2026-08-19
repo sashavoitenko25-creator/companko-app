@@ -5,20 +5,17 @@ import { getProfile } from '../../features/profile/profileStore';
 let myMarker = null;
 let isLive = false;
 
-/** Сырой heading с сенсора */
 let rawHeading = null;
-/** Сглаженный heading — им рисуем */
 let currentHeading = null;
 
 let orientationStarted = false;
 let loopStarted = false;
-let sectorEl = null;
 
 let followMe = true;
 let mapEventsBound = false;
 
-const HEADING_SMOOTH = 0.18; // 0..1, меньше = плавнее
-const HEADING_MIN_DELTA = 1.5; // градусы, игнор мелкого шума
+const HEADING_SMOOTH = 0.2;
+const HEADING_MIN_DELTA = 1.5;
 
 export function initMyMarker() {
   window.addEventListener('location:updated', (event) => {
@@ -52,19 +49,12 @@ export function initMyMarker() {
 
   window.__headingDebug = () => {
     const map = getMap();
-    const bearing = map?.getBearing?.() ?? 0;
-    const heading = currentHeading;
-    const screenAngle =
-      heading == null
-        ? null
-        : ((heading - bearing) % 360 + 360) % 360;
-
     console.log({
       rawHeading,
       heading: currentHeading,
-      bearing,
-      screenAngle,
+      bearing: map?.getBearing?.() ?? null,
       followMe,
+      rotateWithView: myMarker?.options?.rotateWithView,
     });
   };
 }
@@ -81,21 +71,35 @@ export function updateMyMarker(latitude, longitude) {
     if (followMe) {
       map.panTo(position, { animate: false });
     }
+    applyHeadingToSector();
     return;
   }
 
+  /*
+   * ВАЖНО:
+   * rotateWithView: true
+   * Маркер + сектор внутри крутятся ВМЕСТЕ с картой.
+   * Относительно улиц сектор остаётся на месте.
+   * Heading телефона крутит только внутренний сектор.
+   */
   myMarker = L.marker(position, {
     icon: createIcon(),
     zIndexOffset: 1000,
-    rotateWithView: false,
+    rotateWithView: true,
   }).addTo(map);
 
-  ensureSector();
+  // убрать старый сектор из body, если остался
+  document.querySelectorAll('.my-heading-sector, #my-heading-overlay').forEach((el) => {
+    el.remove();
+  });
+
   bindMapEvents(map);
 
   followMe = true;
   map.setView(position, 15);
   window.__myMarkerMapCentered = true;
+
+  applyHeadingToSector();
 }
 
 function bindMapEvents(map) {
@@ -106,7 +110,6 @@ function bindMapEvents(map) {
     followMe = false;
   });
 
-  /* только после конца жеста — без скачков во время rotate */
   map.on('rotateend', () => {
     if (followMe) centerOnMe(false);
   });
@@ -121,6 +124,7 @@ function centerOnMe(animate = false) {
 function refreshMarker() {
   if (!myMarker) return;
   myMarker.setIcon(createIcon());
+  applyHeadingToSector();
 }
 
 function setHeading(heading) {
@@ -131,45 +135,15 @@ function setHeading(heading) {
 
   if (currentHeading == null) {
     currentHeading = heading;
+    applyHeadingToSector();
     return;
   }
 
-  /* кратчайшая разница углов −180..180 */
   let diff = ((heading - currentHeading + 540) % 360) - 180;
-
-  if (Math.abs(diff) < HEADING_MIN_DELTA) {
-    return;
-  }
+  if (Math.abs(diff) < HEADING_MIN_DELTA) return;
 
   currentHeading = (currentHeading + diff * HEADING_SMOOTH + 360) % 360;
-}
-
-function ensureSector() {
-  document.querySelectorAll('.my-heading-sector, #my-heading-overlay').forEach((el) => {
-    el.remove();
-  });
-
-  sectorEl = document.createElement('div');
-  sectorEl.className = 'my-heading-sector';
-  sectorEl.innerHTML = `<div class="my-heading-sector__fan"></div>`;
-
-  sectorEl.style.cssText = `
-    position: fixed !important;
-    left: 0px !important;
-    top: 0px !important;
-    width: 56px !important;
-    height: 70px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    pointer-events: none !important;
-    z-index: 2147483647 !important;
-    opacity: 0;
-    transform-origin: 50% 100% !important;
-    will-change: transform, opacity;
-  `;
-
-  document.body.appendChild(sectorEl);
-  return sectorEl;
+  applyHeadingToSector();
 }
 
 function getMarkerElement() {
@@ -177,47 +151,23 @@ function getMarkerElement() {
   return myMarker.getElement ? myMarker.getElement() : myMarker._icon;
 }
 
-function updateScreen() {
-  if (!myMarker) return;
+function applyHeadingToSector() {
+  const el = getMarkerElement();
+  if (!el) return;
 
-  const marker = getMarkerElement();
-  if (!marker) return;
+  const sector = el.querySelector('.my-heading-sector-inner');
+  if (!sector) return;
 
-  if (!sectorEl || !document.body.contains(sectorEl)) {
-    ensureSector();
-  }
-  if (!sectorEl) return;
-
-  const rect = marker.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top + rect.height / 2;
-
-  const map = getMap();
-  const mapBearing =
-    map && typeof map.getBearing === 'function'
-      ? (map.getBearing() || 0)
-      : 0;
-
-  /*
-   * Пока нет компаса — сектор скрыт.
-   * Не подставляем 0: иначе сектор бешено крутится от bearing.
-   *
-   * Есть компас:
-   * screenAngle = heading − bearing
-   * → относительно улиц сектор стоит на месте при повороте карты
-   * → при повороте телефона — крутится
-   */
   if (currentHeading == null) {
-    sectorEl.style.opacity = '0';
+    sector.style.opacity = '0';
     return;
   }
 
-  const screenAngle =
-    ((currentHeading - mapBearing) % 360 + 360) % 360;
-
-  sectorEl.style.opacity = '1';
-  sectorEl.style.transform =
-    `translate3d(${x}px, ${y}px, 0px) translate(-50%, -100%) rotate(${screenAngle}deg)`;
+  // ТОЛЬКО heading. Bearing НЕ вычитаем —
+  // карту крутит leaflet через rotateWithView.
+  sector.style.opacity = '1';
+  sector.style.transform =
+    `translate(-50%, -100%) rotate(${currentHeading}deg)`;
 }
 
 function startUpdateLoop() {
@@ -225,7 +175,7 @@ function startUpdateLoop() {
   loopStarted = true;
 
   const frame = () => {
-    updateScreen();
+    applyHeadingToSector();
     requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -263,12 +213,6 @@ function startDeviceOrientation() {
 
     if (event.webkitCompassHeading != null && !Number.isNaN(Number(event.webkitCompassHeading))) {
       heading = Number(event.webkitCompassHeading);
-    } else if (
-      event.absolute === true &&
-      event.alpha != null &&
-      !Number.isNaN(Number(event.alpha))
-    ) {
-      heading = (360 - Number(event.alpha) + 360) % 360;
     } else if (event.alpha != null && !Number.isNaN(Number(event.alpha))) {
       heading = (360 - Number(event.alpha) + 360) % 360;
     }
@@ -287,11 +231,16 @@ function createIcon() {
     return L.divIcon({
       className: 'my-marker-wrapper',
       html: `
-        <div class="my-live-marker">
-          <img src="${profile?.photo_url || 'https://i.pravatar.cc/150'}">
-          <div class="my-live-marker__badge">
-            <span class="my-live-marker__badge-dot"></span>
-            LIVE
+        <div class="my-marker-root">
+          <div class="my-heading-sector-inner">
+            <div class="my-heading-sector__fan"></div>
+          </div>
+          <div class="my-live-marker">
+            <img src="${profile?.photo_url || 'https://i.pravatar.cc/150'}">
+            <div class="my-live-marker__badge">
+              <span class="my-live-marker__badge-dot"></span>
+              LIVE
+            </div>
           </div>
         </div>
       `,
@@ -303,8 +252,13 @@ function createIcon() {
   return L.divIcon({
     className: 'my-marker-wrapper',
     html: `
-      <div class="my-location">
-        <div class="my-location__pulse"></div>
+      <div class="my-marker-root">
+        <div class="my-heading-sector-inner">
+          <div class="my-heading-sector__fan"></div>
+        </div>
+        <div class="my-location">
+          <div class="my-location__pulse"></div>
+        </div>
       </div>
     `,
     iconSize: [24, 24],
