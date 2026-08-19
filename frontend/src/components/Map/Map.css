@@ -6,7 +6,8 @@
     z-index:0;
 }
 
-/* ===== СИНИЙ МАРКЕР — Google Maps ===== */
+/* ===== СИНИЙ МАРКЕР ===== */
+
 .my-location{
     width:16px;
     height:16px;
@@ -34,11 +35,15 @@
         transform:scale(.65);
         opacity:.7;
     }
+
     100%{
         transform:scale(1.6);
         opacity:0;
     }
 }
+
+
+/* ===== ONLINE ===== */
 
 .online-counter{
     position:absolute;
@@ -73,6 +78,9 @@
     font-size:22px;
     font-weight:700;
 }
+
+
+/* ===== ACTIVITY TABS ===== */
 
 .activity-tabs{
     position:absolute;
@@ -118,6 +126,9 @@
 .activity-tab:hover{
     transform:translateY(-2px);
 }
+
+
+/* ===== BOTTOM BAR ===== */
 
 .bottom-bar{
     position:absolute;
@@ -173,7 +184,9 @@
     transform:translateY(-2px);
 }
 
+
 /* ===== LIVE МАРКЕР ===== */
+
 .my-live-marker{
     width:40px;
     height:40px;
@@ -243,6 +256,7 @@
         transform:scale(.9);
         opacity:.55;
     }
+
     100%{
         transform:scale(1.45);
         opacity:0;
@@ -250,43 +264,109 @@
 }
 
 @keyframes liveDot{
-    0%, 100%{
+    0%,100%{
         opacity:1;
         transform:scale(1);
     }
+
     50%{
         opacity:.55;
         transform:scale(1.25);
     }
 }
 
-/* ===== СЕКТОР — fixed, вне карты ===== */
+
+/* ==================================================
+   СЕКТОР НАПРАВЛЕНИЯ
+   ПОЛНОСТЬЮ НЕЗАВИСИМ ОТ ВРАЩЕНИЯ КАРТЫ
+================================================== */
+
 .my-heading-sector{
+
     position:fixed;
+
     width:42px;
+
     height:52px;
+
+    left:0;
+
+    top:0;
+
+    margin:0;
+
+    padding:0;
+
     pointer-events:none;
+
     z-index:99999;
+
     opacity:0;
-    transition:opacity .15s ease;
-    transform-origin:50% 100%;
-    will-change:transform, left, top;
+
+    transition:
+        opacity .15s ease;
+
+    transform-origin:
+        50% 50%;
+
+    will-change:
+        transform,
+        left,
+        top;
+
 }
 
 .my-heading-sector.visible{
+
     opacity:1;
+
 }
 
 .my-heading-sector__fan{
+
+    position:absolute;
+
+    left:0;
+
+    top:0;
+
     width:100%;
+
     height:100%;
-    background:linear-gradient(
-        to top,
-        rgba(66,133,244,.55) 0%,
-        rgba(66,133,244,.32) 35%,
-        rgba(66,133,244,.12) 70%,
-        rgba(66,133,244,0) 100%
-    );
-    clip-path:polygon(50% 100%, 0% 0%, 100% 0%);
-    filter:blur(0.4px);
+
+    margin:0;
+
+    padding:0;
+
+    background:
+
+        linear-gradient(
+
+            to top,
+
+            rgba(66,133,244,.55) 0%,
+
+            rgba(66,133,244,.32) 35%,
+
+            rgba(66,133,244,.12) 70%,
+
+            rgba(66,133,244,0) 100%
+
+        );
+
+    clip-path:
+
+        polygon(
+
+            50% 100%,
+
+            0% 0%,
+
+            100% 0%
+
+        );
+
+    filter:
+        blur(.4px);
+
 }

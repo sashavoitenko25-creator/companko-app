@@ -28,21 +28,34 @@ let loopStarted = false;
 
 export function initMyMarker(){
 
+
     window.addEventListener(
+
         'location:updated',
+
         (event)=>{
 
             const position =
                 event.detail;
 
+
             updateMyMarker(
+
                 position.lat,
+
                 position.lng
+
             );
 
+
             if(
+
                 position.heading != null &&
-                !Number.isNaN(position.heading)
+
+                !Number.isNaN(
+                    position.heading
+                )
+
             ){
 
                 setHeading(
@@ -52,11 +65,14 @@ export function initMyMarker(){
             }
 
         }
+
     );
 
 
     window.addEventListener(
+
         'live:started',
+
         ()=>{
 
             isLive = true;
@@ -64,11 +80,14 @@ export function initMyMarker(){
             refreshMarker();
 
         }
+
     );
 
 
     window.addEventListener(
+
         'live:stopped',
+
         ()=>{
 
             isLive = false;
@@ -76,6 +95,7 @@ export function initMyMarker(){
             refreshMarker();
 
         }
+
     );
 
 
@@ -87,24 +107,31 @@ export function initMyMarker(){
 
 
 /* ========================================
-   UPDATE MARKER
+   UPDATE MY MARKER
 ======================================== */
 
 export function updateMyMarker(
+
     latitude,
+
     longitude
+
 ){
 
     const map =
         getMap();
+
 
     if(!map)
         return;
 
 
     const position = [
+
         latitude,
+
         longitude
+
     ];
 
 
@@ -119,36 +146,37 @@ export function updateMyMarker(
     }
 
 
-    myMarker =
-        L.marker(
-            position,
-            {
+    myMarker = L.marker(
 
-                icon:
-                    createIcon(),
+        position,
 
-                zIndexOffset:
-                    1000,
+        {
 
-                /*
-                 * ВАЖНО:
-                 * Leaflet rotate не должен
-                 * вращать наш marker.
-                 */
-                rotateWithView:
-                    false
+            icon:
+                createIcon(),
 
-            }
-        )
-        .addTo(map);
+            zIndexOffset:
+                1000,
+
+            rotateWithView:
+                false
+
+        }
+
+    )
+
+    .addTo(map);
 
 
     ensureSectorEl();
 
 
     map.setView(
+
         position,
+
         15
+
     );
 
 
@@ -158,7 +186,7 @@ export function updateMyMarker(
 
 
 /* ========================================
-   REFRESH ICON
+   REFRESH MARKER
 ======================================== */
 
 function refreshMarker(){
@@ -168,7 +196,9 @@ function refreshMarker(){
 
 
     myMarker.setIcon(
+
         createIcon()
+
     );
 
 }
@@ -183,8 +213,13 @@ function setHeading(
 ){
 
     if(
+
         heading == null ||
-        Number.isNaN(heading)
+
+        Number.isNaN(
+            heading
+        )
+
     ){
 
         return;
@@ -193,75 +228,26 @@ function setHeading(
 
 
     currentHeading =
-        (
-            Number(heading) + 360
-        ) % 360;
+        heading;
+
 
 }
 
 
 /* ========================================
-   MAP BEARING
-======================================== */
-
-function getMapBearingDeg(){
-
-    const map =
-        getMap();
-
-    if(!map)
-        return 0;
-
-
-    if(
-        typeof map.getBearing ===
-        'function'
-    ){
-
-        const bearing =
-            map.getBearing();
-
-        if(
-            typeof bearing === 'number' &&
-            !Number.isNaN(bearing)
-        ){
-
-            return bearing;
-
-        }
-
-    }
-
-
-    if(
-        typeof map._bearing ===
-        'number'
-    ){
-
-        return (
-            map._bearing *
-            (180 / Math.PI)
-        );
-
-    }
-
-
-    return 0;
-
-}
-
-
-/* ========================================
-   SECTOR
+   SECTOR ELEMENT
 ======================================== */
 
 function ensureSectorEl(){
 
     if(
+
         sectorEl &&
+
         document.body.contains(
             sectorEl
         )
+
     ){
 
         return sectorEl;
@@ -280,15 +266,14 @@ function ensureSectorEl(){
 
 
     sectorEl.innerHTML = `
-        <div class="my-heading-sector__fan"></div>
+
+        <div
+            class="my-heading-sector__fan">
+        </div>
+
     `;
 
 
-    /*
-     * Сектор находится поверх карты,
-     * поэтому сам Leaflet rotate
-     * его не вращает.
-     */
     document.body.appendChild(
         sectorEl
     );
@@ -300,18 +285,251 @@ function ensureSectorEl(){
 
 
 /* ========================================
-   GET MARKER ELEMENT
+   GET MARKER SCREEN POSITION
 ======================================== */
 
-function getMarkerIcon(){
+function getMyScreenPosition(){
 
-    if(!myMarker)
+    const map =
+        getMap();
+
+
+    if(
+        !map ||
+        !myMarker
+    ){
+
+        return null;
+
+    }
+
+
+    const latLng =
+        myMarker.getLatLng();
+
+
+    if(!latLng)
         return null;
 
 
-    return myMarker.getElement
-        ? myMarker.getElement()
-        : myMarker._icon;
+    const point =
+        map.latLngToContainerPoint(
+            latLng
+        );
+
+
+    const mapContainer =
+        map.getContainer();
+
+
+    const rect =
+        mapContainer.getBoundingClientRect();
+
+
+    return {
+
+        x:
+            rect.left +
+            point.x,
+
+        y:
+            rect.top +
+            point.y
+
+    };
+
+}
+
+
+/* ========================================
+   UPDATE SECTOR
+======================================== */
+
+function updateSector(){
+
+    const el =
+        ensureSectorEl();
+
+
+    if(!el)
+        return;
+
+
+    if(
+        currentHeading == null ||
+        !myMarker
+    ){
+
+        el.classList.remove(
+            'visible'
+        );
+
+        return;
+
+    }
+
+
+    const position =
+        getMyScreenPosition();
+
+
+    if(!position){
+
+        el.classList.remove(
+            'visible'
+        );
+
+        return;
+
+    }
+
+
+    /*
+    ========================================
+    ПОЗИЦИЯ
+
+    Сектор всегда находится
+    прямо над моей точкой.
+
+    Он НЕ является частью карты.
+    ========================================
+    */
+
+
+    el.style.left =
+        position.x + 'px';
+
+
+    el.style.top =
+        position.y + 'px';
+
+
+    /*
+    ========================================
+    ВАЖНО
+
+    Здесь НЕТ map bearing.
+
+    Поэтому вращение карты
+    НЕ вращает сектор.
+
+    Сектор меняет направление
+    только когда меняется heading
+    телефона.
+    ========================================
+    */
+
+
+    el.style.transform =
+
+        `translate(-50%, -50%) rotate(${currentHeading}deg)`;
+
+
+    el.classList.add(
+        'visible'
+    );
+
+}
+
+
+/* ========================================
+   UPDATE MARKER
+======================================== */
+
+function updateMarker(){
+
+    if(!myMarker)
+        return;
+
+
+    const icon =
+        myMarker.getElement();
+
+
+    if(!icon)
+        return;
+
+
+    /*
+    Leaflet сам управляет
+    transform у marker.
+
+    Поэтому НЕ трогаем
+    transform самого icon.
+    */
+
+
+    const content =
+        icon.querySelector(
+            '.my-marker-content'
+        );
+
+
+    if(!content)
+        return;
+
+
+    const map =
+        getMap();
+
+
+    if(!map)
+        return;
+
+
+    let bearing = 0;
+
+
+    if(
+        typeof map.getBearing ===
+        'function'
+    ){
+
+        const value =
+            map.getBearing();
+
+
+        if(
+            typeof value === 'number' &&
+            !Number.isNaN(value)
+        ){
+
+            bearing = value;
+
+        }
+
+    }
+
+
+    else if(
+        typeof map._bearing ===
+        'number'
+    ){
+
+        bearing =
+            map._bearing *
+            (180 / Math.PI);
+
+    }
+
+
+    /*
+    ========================================
+    МАРКЕР КОНТР-ВРАЩАЕТСЯ
+
+    Карта повернулась на +30°
+    → содержимое маркера поворачиваем
+    на -30°.
+
+    Сам Leaflet transform
+    НЕ изменяем.
+    ========================================
+    */
+
+
+    content.style.transform =
+
+        `rotate(${-bearing}deg)`;
 
 }
 
@@ -325,129 +543,14 @@ function updateFrame(){
     const map =
         getMap();
 
-    if(
-        !map ||
-        !myMarker
-    ){
 
-        return;
-
-    }
-
-
-    const icon =
-        getMarkerIcon();
-
-
-    if(!icon)
+    if(!map)
         return;
 
 
-    const bearing =
-        getMapBearingDeg();
+    updateMarker();
 
-
-    /*
-     * ======================================
-     * MARKER
-     * ======================================
-     *
-     * Leaflet при вращении карты может
-     * передавать transform самому marker.
-     *
-     * Мы НЕ заменяем transform целиком,
-     * потому что это ломает позиционирование
-     * Leaflet.
-     *
-     * Вместо этого компенсируем только
-     * rotation через отдельный внутренний
-     * элемент.
-     */
-
-
-    const markerContent =
-        icon.querySelector(
-            '.my-live-marker, .my-location'
-        );
-
-
-    if(markerContent){
-
-        markerContent.style.transform =
-            `rotate(${-bearing}deg)`;
-
-    }
-
-
-    /*
-     * ======================================
-     * SECTOR
-     * ======================================
-     */
-
-    const el =
-        ensureSectorEl();
-
-
-    if(
-        currentHeading == null
-    ){
-
-        el.classList.remove(
-            'visible'
-        );
-
-        return;
-
-    }
-
-
-    const rect =
-        icon.getBoundingClientRect();
-
-
-    const cx =
-        rect.left +
-        rect.width / 2;
-
-
-    const cy =
-        rect.top +
-        rect.height / 2;
-
-
-    /*
-     * Сектор позиционируется
-     * относительно экрана.
-     *
-     * Поэтому вращение карты
-     * на него не влияет.
-     */
-
-    el.style.left =
-        `${cx}px`;
-
-
-    el.style.top =
-        `${cy}px`;
-
-
-    /*
-     * heading телефона —
-     * единственный источник
-     * направления сектора.
-     */
-
-    el.style.transform =
-        `
-        translate(-50%, -100%)
-        rotate(${currentHeading}deg)
-        `;
-
-
-    el.classList.add(
-        'visible'
-    );
+    updateSector();
 
 }
 
@@ -468,6 +571,7 @@ function startUpdateLoop(){
     const tick = ()=>{
 
         updateFrame();
+
 
         requestAnimationFrame(
             tick
@@ -499,9 +603,12 @@ function startDeviceOrientation(){
     const handleOrientation =
         (event)=>{
 
-            let heading =
-                null;
+            let heading = null;
 
+
+            /*
+            iPhone / Safari
+            */
 
             if(
                 event.webkitCompassHeading != null
@@ -511,6 +618,11 @@ function startDeviceOrientation(){
                     event.webkitCompassHeading;
 
             }
+
+
+            /*
+            Android / другие браузеры
+            */
 
             else if(
                 event.alpha != null
@@ -524,8 +636,13 @@ function startDeviceOrientation(){
 
 
             if(
+
                 heading == null ||
-                Number.isNaN(heading)
+
+                Number.isNaN(
+                    heading
+                )
+
             ){
 
                 return;
@@ -534,6 +651,7 @@ function startDeviceOrientation(){
 
 
             heading =
+
                 (
                     heading +
                     360
@@ -547,70 +665,99 @@ function startDeviceOrientation(){
         };
 
 
+    /*
+    ========================================
+    IOS PERMISSION
+    ========================================
+    */
+
     if(
+
         typeof DeviceOrientationEvent !==
         'undefined' &&
 
         typeof DeviceOrientationEvent
             .requestPermission ===
-        'function'
+            'function'
+
     ){
 
-        const request =
-            ()=>{
+        const request = ()=>{
 
-                DeviceOrientationEvent
-                    .requestPermission()
-                    .then(
-                        state=>{
+            DeviceOrientationEvent
 
-                            if(
-                                state ===
-                                'granted'
-                            ){
+                .requestPermission()
 
-                                window.addEventListener(
-                                    'deviceorientation',
-                                    handleOrientation,
-                                    true
-                                );
+                .then(
 
-                            }
+                    state=>{
+
+                        if(
+                            state ===
+                            'granted'
+                        ){
+
+                            window.addEventListener(
+
+                                'deviceorientation',
+
+                                handleOrientation,
+
+                                true
+
+                            );
 
                         }
-                    )
-                    .catch(
-                        ()=>{}
-                    );
 
-            };
+                    }
+
+                )
+
+                .catch(
+                    ()=>{}
+                );
+
+        };
 
 
         window.addEventListener(
+
             'touchend',
+
             request,
+
             {
                 once:true
             }
+
         );
 
 
         window.addEventListener(
+
             'click',
+
             request,
+
             {
                 once:true
             }
+
         );
 
     }
 
+
     else{
 
         window.addEventListener(
+
             'deviceorientation',
+
             handleOrientation,
+
             true
+
         );
 
     }
@@ -619,10 +766,11 @@ function startDeviceOrientation(){
 
 
 /* ========================================
-   ICON
+   CREATE MARKER ICON
 ======================================== */
 
 function createIcon(){
+
 
     if(isLive){
 
@@ -632,31 +780,34 @@ function createIcon(){
 
         return L.divIcon({
 
-            className:'',
-
+            className:
+                '',
 
             html:`
 
                 <div
-                    class="my-live-marker"
-                >
-
-                    <img
-                        src="${
-                            profile?.photo_url ||
-                            'https://i.pravatar.cc/150'
-                        }"
-                    >
+                    class="my-marker-content">
 
                     <div
-                        class="my-live-marker__badge"
-                    >
+                        class="my-live-marker">
 
-                        <span
-                            class="my-live-marker__badge-dot"
-                        ></span>
+                        <img
+                            src="${
+                                profile?.photo_url ||
+                                'https://i.pravatar.cc/150'
+                            }"
+                        >
 
-                        LIVE
+                        <div
+                            class="my-live-marker__badge">
+
+                            <span
+                                class="my-live-marker__badge-dot">
+                            </span>
+
+                            LIVE
+
+                        </div>
 
                     </div>
 
@@ -664,12 +815,10 @@ function createIcon(){
 
             `,
 
-
             iconSize:[
                 40,
                 40
             ],
-
 
             iconAnchor:[
                 20,
@@ -683,29 +832,31 @@ function createIcon(){
 
     return L.divIcon({
 
-        className:'',
-
+        className:
+            '',
 
         html:`
 
             <div
-                class="my-location"
-            >
+                class="my-marker-content">
 
                 <div
-                    class="my-location__pulse"
-                ></div>
+                    class="my-location">
+
+                    <div
+                        class="my-location__pulse">
+                    </div>
+
+                </div>
 
             </div>
 
         `,
 
-
         iconSize:[
             24,
             24
         ],
-
 
         iconAnchor:[
             12,
