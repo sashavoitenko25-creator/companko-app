@@ -186,7 +186,10 @@ export function watchLocation(callback){
                 position.coords.longitude,
 
                 accuracy:
-                position.coords.accuracy
+                position.coords.accuracy,
+
+                heading:
+                position.coords.heading
 
             });
 
@@ -258,7 +261,10 @@ export function getCurrentPosition(){
                     position.coords.longitude,
 
                     accuracy:
-                    position.coords.accuracy
+                    position.coords.accuracy,
+
+                    heading:
+                    position.coords.heading
 
                 });
 

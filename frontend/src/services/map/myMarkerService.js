@@ -5,9 +5,14 @@ import {
 import {
     getProfile
 } from '../../features/profile/profileStore';
+
 let myMarker = null;
 let isLive = false;
+let currentHeading = null;
+let orientationStarted = false;
+
 export function initMyMarker(){
+
     window.addEventListener(
         'location:updated',
         (event)=>{
@@ -16,8 +21,16 @@ export function initMyMarker(){
                 position.lat,
                 position.lng
             );
+
+            if(
+                position.heading != null &&
+                !Number.isNaN(position.heading)
+            ){
+                setHeading(position.heading);
+            }
         }
     );
+
     window.addEventListener(
         'live:started',
         ()=>{
@@ -25,6 +38,7 @@ export function initMyMarker(){
             refreshMarker();
         }
     );
+
     window.addEventListener(
         'live:stopped',
         ()=>{
@@ -32,7 +46,10 @@ export function initMyMarker(){
             refreshMarker();
         }
     );
+
+    startDeviceOrientation();
 }
+
 export function updateMyMarker(
     latitude,
     longitude
@@ -40,16 +57,19 @@ export function updateMyMarker(
     const map = getMap();
     if(!map)
         return;
+
     const position = [
         latitude,
         longitude
     ];
+
     if(myMarker){
         myMarker.setLatLng(
             position
         );
         return;
     }
+
     myMarker = L.marker(
         position,
         {
@@ -58,25 +78,137 @@ export function updateMyMarker(
         }
     )
     .addTo(map);
+
     map.setView(
         position,
         15
     );
 }
+
 function refreshMarker(){
     if(!myMarker)
         return;
+
     myMarker.setIcon(
         createIcon()
     );
+
+    applyHeadingToDom();
 }
+
+function setHeading(heading){
+    if(
+        heading == null ||
+        Number.isNaN(heading)
+    ){
+        return;
+    }
+
+    currentHeading = heading;
+    applyHeadingToDom();
+}
+
+function applyHeadingToDom(){
+    if(currentHeading == null)
+        return;
+
+    const direction =
+        document.querySelector(
+            '.my-location__direction, .my-live-marker__direction'
+        );
+
+    if(!direction)
+        return;
+
+    direction.classList.add('visible');
+    direction.style.transform =
+        `translateX(-50%) rotate(${currentHeading}deg)`;
+}
+
+function startDeviceOrientation(){
+    if(orientationStarted)
+        return;
+
+    orientationStarted = true;
+
+    const handleOrientation = (event)=>{
+        let heading = null;
+
+        if(
+            event.webkitCompassHeading != null
+        ){
+            heading = event.webkitCompassHeading;
+        }
+        else if(
+            event.alpha != null
+        ){
+            heading = 360 - event.alpha;
+        }
+
+        if(
+            heading == null ||
+            Number.isNaN(heading)
+        ){
+            return;
+        }
+
+        heading = (heading + 360) % 360;
+        setHeading(heading);
+    };
+
+    if(
+        typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function'
+    ){
+        const request = ()=>{
+            DeviceOrientationEvent
+                .requestPermission()
+                .then(state=>{
+                    if(state === 'granted'){
+                        window.addEventListener(
+                            'deviceorientation',
+                            handleOrientation,
+                            true
+                        );
+                    }
+                })
+                .catch(()=>{});
+        };
+
+        window.addEventListener(
+            'touchend',
+            request,
+            { once:true }
+        );
+
+        window.addEventListener(
+            'click',
+            request,
+            { once:true }
+        );
+    }
+    else{
+        window.addEventListener(
+            'deviceorientation',
+            handleOrientation,
+            true
+        );
+    }
+}
+
 function createIcon(){
+
     if(isLive){
         const profile = getProfile();
+
         return L.divIcon({
             className:'',
             html:`
             <div class="my-live-marker">
+                <div class="my-live-marker__direction">
+                    <div class="my-live-marker__direction-cone"></div>
+                    <div class="my-live-marker__direction-arrow"></div>
+                </div>
                 <img
                 src="${
                     profile?.photo_url ||
@@ -89,10 +221,15 @@ function createIcon(){
             iconAnchor:[18,18]
         });
     }
+
     return L.divIcon({
         className:'',
         html:`
         <div class="my-location">
+            <div class="my-location__direction">
+                <div class="my-location__direction-cone"></div>
+                <div class="my-location__direction-arrow"></div>
+            </div>
             <div class="my-location__pulse"></div>
         </div>
         `,
