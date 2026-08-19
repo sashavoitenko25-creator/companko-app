@@ -10,7 +10,8 @@ let myMarker = null;
 let isLive = false;
 let currentHeading = null;
 let orientationStarted = false;
-let compensateRafId = null;
+let sectorEl = null;
+let loopStarted = false;
 
 export function initMyMarker(){
 
@@ -50,7 +51,7 @@ export function initMyMarker(){
     );
 
     startDeviceOrientation();
-    startBearingCompensateLoop();
+    startUpdateLoop();
 }
 
 export function updateMyMarker(
@@ -69,6 +70,7 @@ export function updateMyMarker(
 
     if(myMarker){
         myMarker.setLatLng(position);
+        updateSectorPosition();
         return;
     }
 
@@ -76,17 +78,20 @@ export function updateMyMarker(
         position,
         {
             icon: createIcon(),
-            zIndexOffset: 1000
+            zIndexOffset: 1000,
+            rotateWithView: false
         }
     )
     .addTo(map);
+
+    ensureSectorEl();
 
     map.setView(
         position,
         15
     );
 
-    startBearingCompensateLoop();
+    startUpdateLoop();
 }
 
 function refreshMarker(){
@@ -97,7 +102,7 @@ function refreshMarker(){
         createIcon()
     );
 
-    applyHeadingToDom();
+    updateSectorPosition();
 }
 
 function setHeading(heading){
@@ -109,112 +114,76 @@ function setHeading(heading){
     }
 
     currentHeading = heading;
-    applyHeadingToDom();
+    updateSectorPosition();
 }
 
 /* ========================================
-   Угол поворота карты из DOM (надёжно)
+   Сектор ВНЕ поворачиваемой панели карты
 ======================================== */
 
-function getMapBearingFromDOM(){
+function ensureSectorEl(){
+    if(sectorEl)
+        return sectorEl;
+
+    const map = getMap();
+    if(!map)
+        return null;
+
+    const container = map.getContainer();
+
+    sectorEl = document.createElement('div');
+    sectorEl.className = 'my-heading-sector';
+    sectorEl.innerHTML =
+        '<div class="my-heading-sector__fan"></div>';
+
+    // Важно: добавляем в leaflet-container,
+    // а НЕ в map-pane (map-pane крутится)
+    container.appendChild(sectorEl);
+
+    return sectorEl;
+}
+
+function updateSectorPosition(){
     const map = getMap();
 
-    if(!map)
-        return 0;
+    if(!map || !myMarker)
+        return;
 
-    // разные варианты панели у leaflet-rotate
-    const pane =
-        map.getPane?.('mapPane') ||
-        map._mapPane ||
-        document.querySelector('.leaflet-map-pane') ||
-        document.querySelector('.leaflet-rotate-pane') ||
-        document.querySelector('.leaflet-proxy');
+    const el = ensureSectorEl();
+    if(!el)
+        return;
 
-    if(!pane)
-        return 0;
-
-    const style = window.getComputedStyle(pane);
-    const transform =
-        style.transform ||
-        style.webkitTransform ||
-        '';
-
-    if(!transform || transform === 'none'){
-        // fallback API
-        if(typeof map.getBearing === 'function'){
-            return map.getBearing() || 0;
-        }
-        return map._bearing || 0;
+    if(currentHeading == null){
+        el.classList.remove('visible');
+        return;
     }
 
-    // matrix(a, b, c, d, tx, ty)
-    const m2 = transform.match(/matrix\(([^)]+)\)/);
-    if(m2){
-        const v = m2[1].split(',').map(Number);
-        const angle = Math.atan2(v[1], v[0]) * (180 / Math.PI);
-        return ((angle % 360) + 360) % 360;
-    }
+    // экранные координаты маркера
+    const latLng = myMarker.getLatLng();
+    const pt = map.latLngToContainerPoint(latLng);
 
-    // matrix3d(...)
-    const m3 = transform.match(/matrix3d\(([^)]+)\)/);
-    if(m3){
-        const v = m3[1].split(',').map(Number);
-        const angle = Math.atan2(v[1], v[0]) * (180 / Math.PI);
-        return ((angle % 360) + 360) % 360;
-    }
+    el.style.left = pt.x + 'px';
+    el.style.top = pt.y + 'px';
 
-    // rotate(Xdeg)
-    const r = transform.match(/rotate\((-?[\d.]+)deg\)/);
-    if(r){
-        const angle = Number(r[1]);
-        return ((angle % 360) + 360) % 360;
-    }
+    // Только компас. Карта этот элемент НЕ крутит.
+    el.style.transform =
+        `rotate(${currentHeading}deg)`;
 
-    if(typeof map.getBearing === 'function'){
-        return map.getBearing() || 0;
-    }
-
-    return map._bearing || 0;
+    el.classList.add('visible');
 }
 
-function applyHeadingToDom(){
-    if(currentHeading == null)
+function startUpdateLoop(){
+    if(loopStarted)
         return;
 
-    const direction = document.querySelector(
-        '.my-location__direction, .my-live-marker__direction'
-    );
-
-    if(!direction)
-        return;
-
-    const mapBearing = getMapBearingFromDOM();
-
-    // Маркер крутится с картой на mapBearing.
-    // Сектор контр-вращаем, чтобы он оставался
-    // направленным туда, куда смотрит телефон.
-    let angle = currentHeading - mapBearing;
-    angle = ((angle % 360) + 360) % 360;
-
-    direction.classList.add('visible');
-    direction.style.transform =
-        `rotate(${angle}deg)`;
-}
-
-/* ========================================
-   Постоянная компенсация на каждом кадре
-======================================== */
-
-function startBearingCompensateLoop(){
-    if(compensateRafId)
-        return;
+    loopStarted = true;
 
     const tick = ()=>{
-        applyHeadingToDom();
-        compensateRafId = requestAnimationFrame(tick);
+        updateSectorPosition();
+        requestAnimationFrame(tick);
     };
 
-    compensateRafId = requestAnimationFrame(tick);
+    requestAnimationFrame(tick);
 }
 
 function startDeviceOrientation(){
@@ -293,9 +262,6 @@ function createIcon(){
             className: '',
             html: `
             <div class="my-live-marker">
-                <div class="my-live-marker__direction">
-                    <div class="my-live-marker__direction-fan"></div>
-                </div>
                 <img
                     src="${
                         profile?.photo_url ||
@@ -317,9 +283,6 @@ function createIcon(){
         className: '',
         html: `
         <div class="my-location">
-            <div class="my-location__direction">
-                <div class="my-location__direction-fan"></div>
-            </div>
             <div class="my-location__pulse"></div>
         </div>
         `,
