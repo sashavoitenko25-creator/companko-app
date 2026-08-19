@@ -14,6 +14,7 @@
 
 }
 
+
 .header-brand{
 
     position:absolute;
@@ -28,21 +29,10 @@
 
     gap:12px;
 
-    padding:10px 14px;
-
-    border-radius:18px;
-
-    background:rgba(18,20,35,.88);
-
-    backdrop-filter:blur(18px);
-
-    border:1px solid rgba(255,255,255,.06);
-
-    box-shadow:0 10px 25px rgba(0,0,0,.30);
-
     pointer-events:auto;
 
 }
+
 
 .header-brand__logo{
 
@@ -65,9 +55,10 @@
     );
 
     box-shadow:
-    0 6px 18px rgba(139,92,246,.35);
+        0 6px 18px rgba(139,92,246,.35);
 
 }
+
 
 .header-brand__logo svg{
 
@@ -76,6 +67,7 @@
     height:22px;
 
 }
+
 
 .header-brand__text{
 
@@ -87,17 +79,6 @@
 
 }
 
-.header-brand__title{
-
-    font-size:19px;
-
-    font-weight:800;
-
-    color:white;
-
-    line-height:1;
-
-}
 
 .header-brand__subtitle{
 
@@ -107,37 +88,18 @@
 
     gap:6px;
 
-    margin-top:4px;
-
     font-size:12px;
 
-    color:rgba(255,255,255,.75);
+    color:rgba(255,255,255,.85);
 
 }
 
-.header-online-dot{
 
-    width:7px;
-
-    height:7px;
-
-    border-radius:50%;
-
-    background:#8B5CF6;
-
-}
-
-.header-online-dot.hidden{
-
-    display:none;
-
-}
-
-#header-online-count{
+#header-status{
 
     color:white;
 
-    font-size:12px;
+    font-size:13px;
 
     font-weight:600;
 

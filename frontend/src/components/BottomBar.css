@@ -12,13 +12,9 @@
 
     max-width:430px;
 
-    height:70px;
+    height:60px;
 
-    background:rgba(16,17,26,.94);
-
-    backdrop-filter:blur(20px);
-
-    border-radius:35px;
+    background:transparent;
 
     display:flex;
 
@@ -30,10 +26,8 @@
 
     z-index:9000;
 
-    box-shadow:
-        0 15px 45px rgba(0,0,0,.45);
-
 }
+
 
 /* =======================
    LEFT + RIGHT BUTTON
@@ -42,15 +36,17 @@
 .bottom-button,
 #settings-button{
 
-    width:56px;
+    width:45px;
 
-    height:56px;
+    height:45px;
+
+    flex:none;
 
     border:none;
 
-    border-radius:18px;
+    border-radius:50%;
 
-    background:rgba(28,30,43,.95);
+    background:rgba(16,17,26,.94);
 
     display:flex;
 
@@ -63,45 +59,52 @@
     transition:.18s;
 
     box-shadow:
-        0 6px 20px rgba(0,0,0,.35);
+        0 8px 22px rgba(0,0,0,.4);
 
 }
 
-.bottom-button:hover{
+.bottom-button:hover,
+#settings-button:hover{
 
     transform:translateY(-2px);
 
 }
 
-.bottom-button:active{
+.bottom-button:active,
+#settings-button:active{
 
     transform:scale(.92);
 
 }
 
+
 .location-icon{
 
-    width:24px;
+    width:20px;
 
-    height:24px;
+    height:20px;
 
 }
 
+
 /* =======================
-      LIVE BUTTON
+        LIVE BUTTON
 ======================= */
+
 
 .live-button{
 
-    height:56px;
+    width:180px;
 
-    flex:1;
+    height:50px;
 
-    margin:0 15px;
+    flex:none;
+
+    margin:0 10px;
 
     border:none;
 
-    border-radius:18px;
+    border-radius:16px;
 
     background:
         linear-gradient(
@@ -112,7 +115,7 @@
 
     color:white;
 
-    font-size:22px;
+    font-size:20px;
 
     font-weight:700;
 
@@ -154,8 +157,9 @@
 
 }
 
+
 /* =======================
-      SETTINGS
+      SETTINGS WINDOW
 ======================= */
 
 .settings-window{
@@ -164,7 +168,7 @@
 
     right:20px;
 
-    bottom:105px;
+    bottom:95px;
 
     width:270px;
 
@@ -209,8 +213,9 @@
 
 }
 
+
 /* =======================
-      SWITCH
+          SWITCH
 ======================= */
 
 .theme-switch{
