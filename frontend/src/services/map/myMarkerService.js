@@ -9,7 +9,7 @@ let orientationStarted = false;
 let loopStarted = false;
 let sectorEl = null;
 
-/** Следовать за моей позицией (центр карты = я) */
+/** Следовать за мной (центр карты = я) */
 let followMe = true;
 let mapEventsBound = false;
 
@@ -35,7 +35,6 @@ export function initMyMarker() {
     refreshMarker();
   });
 
-  /* кнопка «моя локация» может слать это событие */
   window.addEventListener('map:follow-me', () => {
     followMe = true;
     centerOnMe(false);
@@ -47,11 +46,15 @@ export function initMyMarker() {
   window.__headingDebug = () => {
     const map = getMap();
     const s = document.querySelector('.my-heading-sector');
+    const bearing = map?.getBearing?.() ?? 0;
+    const heading = currentHeading == null ? 0 : currentHeading;
+    const screenAngle = ((heading - bearing) % 360 + 360) % 360;
+
     console.log({
       heading: currentHeading,
-      bearing: map?.getBearing?.() ?? null,
+      bearing,
+      screenAngle,
       followMe,
-      sector: s,
       parentIsBody: s?.parentElement === document.body,
       sectorTransform: s?.style?.transform,
       computedTransform: s ? getComputedStyle(s).transform : null,
@@ -68,11 +71,9 @@ export function updateMyMarker(latitude, longitude) {
 
   if (myMarker) {
     myMarker.setLatLng(position);
-
     if (followMe) {
       map.panTo(position, { animate: false });
     }
-
     return;
   }
 
@@ -94,35 +95,23 @@ function bindMapEvents(map) {
   if (mapEventsBound) return;
   mapEventsBound = true;
 
-  /* пользователь подвигал карту сам → больше не следуем */
   map.on('dragstart', () => {
     followMe = false;
   });
 
-  /*
-   * Поворот карты идёт вокруг центра экрана.
-   * Если followMe — держим меня в центре,
-   * тогда маркер и сектор не ездят по кругу.
-   */
   map.on('rotate', () => {
-    if (followMe) {
-      centerOnMe(false);
-    }
+    if (followMe) centerOnMe(false);
   });
 
   map.on('rotatestart', () => {
-    if (followMe) {
-      centerOnMe(false);
-    }
+    if (followMe) centerOnMe(false);
   });
 }
 
 function centerOnMe(animate = false) {
   const map = getMap();
   if (!map || !myMarker) return;
-
-  const ll = myMarker.getLatLng();
-  map.panTo(ll, { animate });
+  map.panTo(myMarker.getLatLng(), { animate });
 }
 
 function refreshMarker() {
@@ -183,10 +172,24 @@ function updateScreen() {
   const x = rect.left + rect.width / 2;
   const y = rect.top + rect.height / 2;
 
-  const angle = currentHeading == null ? 0 : currentHeading;
+  const map = getMap();
+  const mapBearing =
+    map && typeof map.getBearing === 'function'
+      ? (map.getBearing() || 0)
+      : 0;
+
+  /*
+   * Как в Google Maps:
+   * — крутишь карту → сектор остаётся «приклеен» к улицам
+   * — крутишь телефон → сектор меняет направление
+   *
+   * screenAngle = heading − bearing
+   */
+  const heading = currentHeading == null ? 0 : currentHeading;
+  const screenAngle = ((heading - mapBearing) % 360 + 360) % 360;
 
   sectorEl.style.transform =
-    `translate3d(${x}px, ${y}px, 0px) translate(-50%, -100%) rotate(${angle}deg)`;
+    `translate3d(${x}px, ${y}px, 0px) translate(-50%, -100%) rotate(${screenAngle}deg)`;
 }
 
 function startUpdateLoop() {
@@ -229,11 +232,13 @@ function startDeviceOrientation() {
 
   const handleOrientation = (event) => {
     let heading = null;
+
     if (event.webkitCompassHeading != null && !Number.isNaN(Number(event.webkitCompassHeading))) {
       heading = Number(event.webkitCompassHeading);
     } else if (event.alpha != null && !Number.isNaN(Number(event.alpha))) {
       heading = 360 - Number(event.alpha);
     }
+
     if (heading == null || Number.isNaN(heading)) return;
     handleHeading((heading + 360) % 360);
   };
