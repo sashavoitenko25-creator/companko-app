@@ -166,6 +166,99 @@ transform:scale(.98);
 
 }
 
+
+/* ========================================
+   УВЕДОМЛЕНИЕ О LIVE
+======================================== */
+
+.route-live-notice{
+
+position:fixed;
+
+top:20px;
+
+left:50%;
+
+transform:
+translateX(-50%)
+translateY(-20px);
+
+display:flex;
+
+align-items:center;
+
+gap:9px;
+
+padding:12px 18px;
+
+background:rgba(17,20,37,.96);
+
+backdrop-filter:blur(18px);
+
+-webkit-backdrop-filter:blur(18px);
+
+border:1px solid rgba(255,255,255,.10);
+
+border-radius:16px;
+
+box-shadow:
+0 10px 30px rgba(0,0,0,.35);
+
+color:white;
+
+font-size:14px;
+
+font-weight:600;
+
+white-space:nowrap;
+
+opacity:0;
+
+pointer-events:none;
+
+z-index:20000;
+
+transition:
+opacity .25s ease,
+transform .25s ease;
+
+}
+
+.route-live-notice--show{
+
+opacity:1;
+
+transform:
+translateX(-50%)
+translateY(0);
+
+}
+
+.route-live-notice--hide{
+
+opacity:0;
+
+transform:
+translateX(-50%)
+translateY(-20px);
+
+}
+
+.route-live-notice__icon{
+
+font-size:13px;
+
+line-height:1;
+
+}
+
+.route-live-notice__text{
+
+line-height:1.2;
+
+}
+
+
 /* ---------- маленькая кнопка ---------- */
 
 .route-open-button{
@@ -273,6 +366,46 @@ font-size:14px;
 right:16px;
 
 bottom:112px;
+
+}
+
+
+/* Уведомление на телефоне */
+
+.route-live-notice{
+
+top:15px;
+
+left:12px;
+
+right:12px;
+
+width:auto;
+
+justify-content:center;
+
+white-space:normal;
+
+text-align:center;
+
+padding:12px 16px;
+
+transform:
+translateY(-20px);
+
+}
+
+.route-live-notice--show{
+
+transform:
+translateY(0);
+
+}
+
+.route-live-notice--hide{
+
+transform:
+translateY(-20px);
 
 }
 
