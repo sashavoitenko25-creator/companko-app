@@ -71,7 +71,6 @@ export function BottomBar(){
     </button>
 
 
-
     <!-- LIVE -->
 
     <button
@@ -83,7 +82,6 @@ export function BottomBar(){
         LIVE
 
     </button>
-
 
 
     <!-- НАСТРОЙКИ -->
@@ -131,7 +129,6 @@ function initBottomBar(){
         );
 
 
-
     /* =======================
        НАЙТИ СЕБЯ
     ======================= */
@@ -171,7 +168,6 @@ function initBottomBar(){
     }
 
 
-
     /* =======================
        НАСТРОЙКИ
     ======================= */
@@ -198,7 +194,6 @@ function initBottomBar(){
     }
 
 
-
     /* =======================
        LIVE
     ======================= */
@@ -206,6 +201,8 @@ function initBottomBar(){
     if(liveButton){
 
         liveButton.onclick = (event)=>{
+
+            event.preventDefault();
 
             event.stopPropagation();
 
@@ -217,7 +214,6 @@ function initBottomBar(){
         };
 
     }
-
 
 
     /* =======================
@@ -249,7 +245,6 @@ function initBottomBar(){
 
         }
     );
-
 
 
     /* =======================
