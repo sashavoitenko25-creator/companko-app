@@ -10,7 +10,6 @@ let myMarker = null;
 let isLive = false;
 let currentHeading = null;
 let orientationStarted = false;
-let mapRotateBound = false;
 
 export function initMyMarker(){
 
@@ -50,7 +49,6 @@ export function initMyMarker(){
     );
 
     startDeviceOrientation();
-    bindMapRotate();
 }
 
 export function updateMyMarker(
@@ -85,8 +83,6 @@ export function updateMyMarker(
         position,
         15
     );
-
-    bindMapRotate();
 }
 
 function refreshMarker(){
@@ -112,19 +108,6 @@ function setHeading(heading){
     applyHeadingToDom();
 }
 
-function getMapBearing(){
-    const map = getMap();
-
-    if(!map)
-        return 0;
-
-    if(typeof map.getBearing === 'function'){
-        return map.getBearing() || 0;
-    }
-
-    return 0;
-}
-
 function applyHeadingToDom(){
     if(currentHeading == null)
         return;
@@ -136,40 +119,12 @@ function applyHeadingToDom(){
     if(!direction)
         return;
 
-    const mapBearing = getMapBearing();
-
-    // направление телефона минус поворот карты
-    const visualHeading =
-        (currentHeading - mapBearing + 360) % 360;
-
+    // Только компас телефона.
+    // Карта уже крутит маркер сама через leaflet-rotate —
+    // mapBearing вычитать НЕ нужно.
     direction.classList.add('visible');
     direction.style.transform =
-        `rotate(${visualHeading}deg)`;
-}
-
-function bindMapRotate(){
-    if(mapRotateBound)
-        return;
-
-    const map = getMap();
-
-    if(!map)
-        return;
-
-    mapRotateBound = true;
-
-    map.on('rotate', ()=>{
-        applyHeadingToDom();
-    });
-
-    map.on('rotateend', ()=>{
-        applyHeadingToDom();
-    });
-
-    // на всякий случай при обычном движении карты
-    map.on('move', ()=>{
-        applyHeadingToDom();
-    });
+        `rotate(${currentHeading}deg)`;
 }
 
 function startDeviceOrientation(){
