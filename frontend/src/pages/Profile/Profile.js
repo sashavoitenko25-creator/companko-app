@@ -1,21 +1,17 @@
 import './Profile.css';
 
-
 import {
     saveProfile,
     getProfile
 } from '../../features/profile/profileStore';
 
-
 import {
     getTelegramUser
 } from '../../services/telegram/telegramService';
 
-
 import {
     createUser
 } from '../../services/supabase/userService';
-
 
 import {
     createProfile,
@@ -216,7 +212,7 @@ export function Profile() {
                         data-gender="male"
                     >
 
-                        👨 Мужчина
+                        👨 Парень
 
                     </button>
 
@@ -231,7 +227,7 @@ export function Profile() {
                         data-gender="female"
                     >
 
-                        👩 Женщина
+                        👩 Девушка
 
                     </button>
 
