@@ -1,5 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-rotate';
 
 
 import {
@@ -80,7 +81,31 @@ export function initMap(){
 
             zoomControl:false,
 
-            attributionControl:false
+            attributionControl:false,
+
+
+            /* =================================
+               ВРАЩЕНИЕ КАРТЫ
+            ================================= */
+
+            rotate:true,
+
+            touchRotate:true,
+
+            bearing:0,
+
+
+            /*
+
+            Кнопку Leaflet для поворота
+            специально не показываем.
+
+            Поворот выполняется
+            двумя пальцами.
+
+            */
+
+            rotateControl:false
 
         }
 
@@ -104,7 +129,6 @@ export function initMap(){
     setMap(
         map
     );
-
 
 
 
@@ -136,35 +160,55 @@ export function initMap(){
 
 
 
-
-
+    /* ========================================
+       КЛИК ПО КАРТЕ
+    ======================================== */
 
     map.on(
+
         'click',
+
         event => {
 
-            window.dispatchEvent(
-                new Event('ui:close-all')
-            );
 
             window.dispatchEvent(
-                new Event('route:collapse')
+
+                new Event(
+                    'ui:close-all'
+                )
+
+            );
+
+
+            window.dispatchEvent(
+
+                new Event(
+                    'route:collapse'
+                )
+
             );
 
         }
+
     );
 
 
 
 
 
-
-
-
+    /* ========================================
+       МОЙ МАРКЕР
+    ======================================== */
 
     initMyMarker();
 
 
+
+
+
+    /* ========================================
+       СОБЫТИЯ ЛОКАЦИИ
+    ======================================== */
 
     initLocationEvents();
 
@@ -172,14 +216,13 @@ export function initMap(){
 
 
 
-
-
-
+    /* ========================================
+       ОТСЛЕЖИВАНИЕ ПОЗИЦИИ
+    ======================================== */
 
     watchLocation(
 
         (position)=>{
-
 
 
             console.log(
@@ -194,12 +237,10 @@ export function initMap(){
 
 
 
-
-            // ==========================
-            // СОХРАНЯЕМ МОЮ ПОЗИЦИЮ
-            // ДЛЯ МАРШРУТА
-            // ==========================
-
+            /* ==============================
+               МОЯ ПОЗИЦИЯ
+               ДЛЯ МАРШРУТА
+            ============================== */
 
             window.myLocation = {
 
@@ -220,7 +261,9 @@ export function initMap(){
 
 
 
-
+            /* ==============================
+               ОБНОВЛЯЕМ МОЙ МАРКЕР
+            ============================== */
 
             updateMyMarker(
 
@@ -234,9 +277,9 @@ export function initMap(){
 
 
 
-
-
-
+            /* ==============================
+               СОБЫТИЕ ОБНОВЛЕНИЯ ЛОКАЦИИ
+            ============================== */
 
             window.dispatchEvent(
 
@@ -266,8 +309,6 @@ export function initMap(){
             );
 
 
-
-
         }
 
     );
@@ -276,29 +317,62 @@ export function initMap(){
 
 
 
+    /* ========================================
+       PROFILE OPEN
+    ======================================== */
+
     window.removeEventListener(
+
         'profile:open',
+
         focusRoutePanel
+
     );
 
+
     window.addEventListener(
+
         'profile:open',
+
         focusRoutePanel
+
     );
+
+
+
+
 
     function focusRoutePanel(){
 
+
         window.dispatchEvent(
-            new Event('route:collapse')
+
+            new Event(
+                'route:collapse'
+            )
+
         );
+
 
     }
 
 
 
+
+
+    /* ========================================
+       LIVE MARKERS
+    ======================================== */
+
     loadLiveMarkers();
 
 
+
+
+
+    /* ========================================
+       LOCATION REALTIME
+    ======================================== */
 
     initLocationRealtime();
 
@@ -306,9 +380,9 @@ export function initMap(){
 
 
 
-
-
-
+    /* ========================================
+       LIVE STARTED
+    ======================================== */
 
     window.addEventListener(
 
@@ -318,7 +392,9 @@ export function initMap(){
 
 
             console.log(
+
                 'LIVE START EVENT'
+
             );
 
 
@@ -330,7 +406,6 @@ export function initMap(){
             loadLiveMarkers();
 
 
-
         }
 
     );
@@ -339,9 +414,9 @@ export function initMap(){
 
 
 
-
-
-
+    /* ========================================
+       LIVE STOPPED
+    ======================================== */
 
     window.addEventListener(
 
@@ -351,7 +426,9 @@ export function initMap(){
 
 
             console.log(
+
                 'LIVE STOP EVENT'
+
             );
 
 
@@ -363,10 +440,10 @@ export function initMap(){
             loadLiveMarkers();
 
 
-
         }
 
     );
+
 
 
 

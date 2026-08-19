@@ -199,8 +199,13 @@ export function showUserCard(user) {
 
     const genderText =
         gender === 'female'
-            ? '♀ Женщина'
-            : '♂ Мужчина';
+            ? '♀'
+            : '♂';
+
+    const genderColor =
+        gender === 'female'
+            ? '#ff5c9a'
+            : '#4da6ff';
 
 
     /* ====================================
@@ -468,7 +473,8 @@ export function showUserCard(user) {
 
 
                     <div
-                        class="profile-live-gender">
+                        class="profile-live-gender"
+						style="color:${genderColor};">
 
                         ${genderText}
 
