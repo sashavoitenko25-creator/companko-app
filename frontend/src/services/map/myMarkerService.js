@@ -14,9 +14,12 @@ let loopStarted = false;
 let followMe = true;
 let mapEventsBound = false;
 
-const HEADING_SMOOTH = 0.06;
-const HEADING_MIN_DELTA = 5;
-const HEADING_HISTORY_SIZE = 7;
+const HEADING_SMOOTH = 0.12;
+const HEADING_MIN_DELTA = 2.5;
+const HEADING_HISTORY_SIZE = 5;
+
+/* если сектор систематически уходит в сторону — подкрути сюда, например 10 или -15 */
+const HEADING_OFFSET = 0;
 
 let headingHistory = [];
 
@@ -52,6 +55,7 @@ export function initMyMarker() {
 
   window.__headingDebug = () => {
     const map = getMap();
+
     console.log({
       rawHeading,
       heading: currentHeading,
@@ -65,6 +69,7 @@ export function initMyMarker() {
 
 export function updateMyMarker(latitude, longitude) {
   const map = getMap();
+
   if (!map) return;
   if (latitude == null || longitude == null) return;
 
@@ -72,9 +77,11 @@ export function updateMyMarker(latitude, longitude) {
 
   if (myMarker) {
     myMarker.setLatLng(position);
+
     if (followMe) {
       map.panTo(position, { animate: false });
     }
+
     applyHeadingToSector();
     return;
   }
@@ -91,14 +98,17 @@ export function updateMyMarker(latitude, longitude) {
     rotateWithView: true,
   }).addTo(map);
 
-  document.querySelectorAll('.my-heading-sector, #my-heading-overlay').forEach((el) => {
-    el.remove();
-  });
+  document
+    .querySelectorAll('.my-heading-sector, #my-heading-overlay')
+    .forEach((el) => {
+      el.remove();
+    });
 
   bindMapEvents(map);
 
   followMe = true;
   map.setView(position, 15);
+
   window.__myMarkerMapCentered = true;
 
   applyHeadingToSector();
@@ -106,6 +116,7 @@ export function updateMyMarker(latitude, longitude) {
 
 function bindMapEvents(map) {
   if (mapEventsBound) return;
+
   mapEventsBound = true;
 
   map.on('dragstart', () => {
@@ -119,12 +130,15 @@ function bindMapEvents(map) {
 
 function centerOnMe(animate = false) {
   const map = getMap();
+
   if (!map || !myMarker) return;
+
   map.panTo(myMarker.getLatLng(), { animate });
 }
 
 function refreshMarker() {
   if (!myMarker) return;
+
   myMarker.setIcon(createIcon());
   applyHeadingToSector();
 }
@@ -132,17 +146,17 @@ function refreshMarker() {
 function setHeading(heading) {
   if (heading == null || Number.isNaN(Number(heading))) return;
 
-  heading = (Number(heading) + 360) % 360;
+  heading = (Number(heading) + HEADING_OFFSET + 360) % 360;
   rawHeading = heading;
 
   headingHistory.push(heading);
+
   if (headingHistory.length > HEADING_HISTORY_SIZE) {
     headingHistory.shift();
   }
 
   const sorted = headingHistory.slice().sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  const median = sorted[mid];
+  const median = sorted[Math.floor(sorted.length / 2)];
 
   if (currentHeading == null) {
     currentHeading = median;
@@ -152,24 +166,32 @@ function setHeading(heading) {
 
   let diff = ((median - currentHeading + 540) % 360) - 180;
 
-  if (Math.abs(diff) < HEADING_MIN_DELTA) {
-    return;
-  }
+  if (Math.abs(diff) < HEADING_MIN_DELTA) return;
 
-  currentHeading = (currentHeading + diff * HEADING_SMOOTH + 360) % 360;
+  /* большие повороты — быстрее, мелкие — плавнее */
+  const smooth = Math.abs(diff) > 25 ? 0.28 : HEADING_SMOOTH;
+
+  currentHeading =
+    (currentHeading + diff * smooth + 360) % 360;
+
   applyHeadingToSector();
 }
 
 function getMarkerElement() {
   if (!myMarker) return null;
-  return myMarker.getElement ? myMarker.getElement() : myMarker._icon;
+
+  return myMarker.getElement
+    ? myMarker.getElement()
+    : myMarker._icon;
 }
 
 function applyHeadingToSector() {
   const el = getMarkerElement();
+
   if (!el) return;
 
   const sector = el.querySelector('.my-heading-sector-inner');
+
   if (!sector) return;
 
   if (currentHeading == null) {
@@ -178,84 +200,214 @@ function applyHeadingToSector() {
   }
 
   sector.style.opacity = '1';
+
   sector.style.transform =
     `translate(-50%, -100%) rotate(${currentHeading}deg)`;
 }
 
 function startUpdateLoop() {
   if (loopStarted) return;
+
   loopStarted = true;
 
   const frame = () => {
     applyHeadingToSector();
     requestAnimationFrame(frame);
   };
+
   requestAnimationFrame(frame);
+}
+
+/*
+ * Нормальный compass heading из alpha/beta/gamma
+ * (когда телефон в руке, не лежа на столе)
+ */
+function compassHeadingFromOrientation(alpha, beta, gamma) {
+  const deg = Math.PI / 180;
+
+  const a = alpha * deg;
+  const b = beta * deg;
+  const g = gamma * deg;
+
+  const cA = Math.cos(a);
+  const sA = Math.sin(a);
+  const cB = Math.cos(b);
+  const sB = Math.sin(b);
+  const cG = Math.cos(g);
+  const sG = Math.sin(g);
+
+  const rA = -cA * sG - sA * sB * cG;
+  const rB = -sA * sG + cA * sB * cG;
+
+  let heading = Math.atan(rA / rB);
+
+  if (rB < 0) heading += Math.PI;
+  else if (rA < 0) heading += 2 * Math.PI;
+
+  heading = heading * (180 / Math.PI);
+
+  /* учёт ориентации экрана */
+  const screenAngle =
+    (screen.orientation &&
+      typeof screen.orientation.angle === 'number')
+      ? screen.orientation.angle
+      : (typeof window.orientation === 'number'
+          ? window.orientation
+          : 0);
+
+  heading =
+    (heading + screenAngle + 360) % 360;
+
+  return heading;
 }
 
 function startDeviceOrientation() {
   if (orientationStarted) return;
+
   orientationStarted = true;
 
-  const handleHeading = (heading) => {
-    if (heading == null || Number.isNaN(Number(heading))) return;
-    setHeading(Number(heading));
-  };
-
-  /*
-   * Только один источник компаса — absolute.
-   * Telegram API и обычный deviceorientation отключены,
-   * чтобы не было двух потоков и дрожи влево-вправо.
-   */
   const handleOrientation = (event) => {
     let heading = null;
 
+    /* iOS — самый точный вариант */
     if (
       event.webkitCompassHeading != null &&
       !Number.isNaN(Number(event.webkitCompassHeading))
     ) {
       heading = Number(event.webkitCompassHeading);
-    } else if (
+
+      const screenAngle =
+        (screen.orientation &&
+          typeof screen.orientation.angle === 'number')
+          ? screen.orientation.angle
+          : (typeof window.orientation === 'number'
+              ? window.orientation
+              : 0);
+
+      heading =
+        (heading + screenAngle + 360) % 360;
+    }
+
+    /* Android absolute + beta/gamma */
+    else if (
+      event.alpha != null &&
+      event.beta != null &&
+      event.gamma != null &&
+      !Number.isNaN(Number(event.alpha))
+    ) {
+      heading = compassHeadingFromOrientation(
+        Number(event.alpha),
+        Number(event.beta),
+        Number(event.gamma)
+      );
+    }
+
+    /* простой fallback */
+    else if (
       event.alpha != null &&
       !Number.isNaN(Number(event.alpha))
     ) {
-      heading = (360 - Number(event.alpha) + 360) % 360;
+      heading =
+        (360 - Number(event.alpha) + 360) % 360;
     }
 
     if (heading == null || Number.isNaN(heading)) return;
-    handleHeading(heading);
+
+    setHeading(heading);
   };
 
-  window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+  window.addEventListener(
+    'deviceorientationabsolute',
+    handleOrientation,
+    true
+  );
 
-  /*
-   * Fallback, если absolute нет (некоторые Android).
-   * Включается только если за 1.5 сек не было absolute-данных.
-   */
-  setTimeout(() => {
-    if (rawHeading == null) {
-      console.log('[compass] fallback → deviceorientation');
-      window.addEventListener('deviceorientation', handleOrientation, true);
+  window.addEventListener(
+    'deviceorientation',
+    handleOrientation,
+    true
+  );
+
+  /* Telegram API — тоже через ту же формулу */
+  const tg =
+    window.Telegram &&
+    window.Telegram.WebApp;
+
+  if (tg && tg.DeviceOrientation) {
+    try {
+      const onTg = (data) => {
+        if (!data || data.alpha == null) return;
+
+        const alphaDeg =
+          Number(data.alpha) * (180 / Math.PI);
+
+        const betaDeg =
+          data.beta != null
+            ? Number(data.beta) * (180 / Math.PI)
+            : 0;
+
+        const gammaDeg =
+          data.gamma != null
+            ? Number(data.gamma) * (180 / Math.PI)
+            : 0;
+
+        const heading =
+          compassHeadingFromOrientation(
+            alphaDeg,
+            betaDeg,
+            gammaDeg
+          );
+
+        setHeading(heading);
+      };
+
+      tg.onEvent?.(
+        'deviceOrientationChanged',
+        onTg
+      );
+
+      tg.onEvent?.(
+        'device_orientation_changed',
+        onTg
+      );
+
+      tg.DeviceOrientation.start(
+        { need_absolute: true },
+        (ok) => {
+          console.log(
+            '[compass] TG start →',
+            ok
+          );
+        }
+      );
+    } catch (e) {
+      console.warn(
+        '[compass] TG error',
+        e
+      );
     }
-  }, 1500);
+  }
 }
 
 function createIcon() {
   if (isLive) {
     const profile = getProfile();
+
     return L.divIcon({
       className: 'my-marker-wrapper',
+
       html: `
         <div class="my-marker-root">
           <div class="my-heading-sector-inner">
             <div class="my-heading-sector__fan"></div>
           </div>
+
           <div class="my-live-marker">
             <img src="${profile?.photo_url || 'https://i.pravatar.cc/150'}">
-            </div>
           </div>
         </div>
       `,
+
       iconSize: [40, 40],
       iconAnchor: [20, 20],
     });
@@ -263,16 +415,19 @@ function createIcon() {
 
   return L.divIcon({
     className: 'my-marker-wrapper',
+
     html: `
       <div class="my-marker-root">
         <div class="my-heading-sector-inner">
           <div class="my-heading-sector__fan"></div>
         </div>
+
         <div class="my-location">
           <div class="my-location__pulse"></div>
         </div>
       </div>
     `,
+
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   });
