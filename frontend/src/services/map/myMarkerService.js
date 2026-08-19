@@ -4,14 +4,21 @@ import { getProfile } from '../../features/profile/profileStore';
 
 let myMarker = null;
 let isLive = false;
+
+/** Сырой heading с сенсора */
+let rawHeading = null;
+/** Сглаженный heading — им рисуем */
 let currentHeading = null;
+
 let orientationStarted = false;
 let loopStarted = false;
 let sectorEl = null;
 
-/** Следовать за мной (центр карты = я) */
 let followMe = true;
 let mapEventsBound = false;
+
+const HEADING_SMOOTH = 0.18; // 0..1, меньше = плавнее
+const HEADING_MIN_DELTA = 1.5; // градусы, игнор мелкого шума
 
 export function initMyMarker() {
   window.addEventListener('location:updated', (event) => {
@@ -45,19 +52,19 @@ export function initMyMarker() {
 
   window.__headingDebug = () => {
     const map = getMap();
-    const s = document.querySelector('.my-heading-sector');
     const bearing = map?.getBearing?.() ?? 0;
-    const heading = currentHeading == null ? 0 : currentHeading;
-    const screenAngle = ((heading - bearing) % 360 + 360) % 360;
+    const heading = currentHeading;
+    const screenAngle =
+      heading == null
+        ? null
+        : ((heading - bearing) % 360 + 360) % 360;
 
     console.log({
+      rawHeading,
       heading: currentHeading,
       bearing,
       screenAngle,
       followMe,
-      parentIsBody: s?.parentElement === document.body,
-      sectorTransform: s?.style?.transform,
-      computedTransform: s ? getComputedStyle(s).transform : null,
     });
   };
 }
@@ -99,11 +106,8 @@ function bindMapEvents(map) {
     followMe = false;
   });
 
-  map.on('rotate', () => {
-    if (followMe) centerOnMe(false);
-  });
-
-  map.on('rotatestart', () => {
+  /* только после конца жеста — без скачков во время rotate */
+  map.on('rotateend', () => {
     if (followMe) centerOnMe(false);
   });
 }
@@ -121,7 +125,23 @@ function refreshMarker() {
 
 function setHeading(heading) {
   if (heading == null || Number.isNaN(Number(heading))) return;
-  currentHeading = (Number(heading) + 360) % 360;
+
+  heading = (Number(heading) + 360) % 360;
+  rawHeading = heading;
+
+  if (currentHeading == null) {
+    currentHeading = heading;
+    return;
+  }
+
+  /* кратчайшая разница углов −180..180 */
+  let diff = ((heading - currentHeading + 540) % 360) - 180;
+
+  if (Math.abs(diff) < HEADING_MIN_DELTA) {
+    return;
+  }
+
+  currentHeading = (currentHeading + diff * HEADING_SMOOTH + 360) % 360;
 }
 
 function ensureSector() {
@@ -143,9 +163,9 @@ function ensureSector() {
     padding: 0 !important;
     pointer-events: none !important;
     z-index: 2147483647 !important;
-    opacity: 1 !important;
+    opacity: 0;
     transform-origin: 50% 100% !important;
-    will-change: transform;
+    will-change: transform, opacity;
   `;
 
   document.body.appendChild(sectorEl);
@@ -179,15 +199,23 @@ function updateScreen() {
       : 0;
 
   /*
-   * Как в Google Maps:
-   * — крутишь карту → сектор остаётся «приклеен» к улицам
-   * — крутишь телефон → сектор меняет направление
+   * Пока нет компаса — сектор скрыт.
+   * Не подставляем 0: иначе сектор бешено крутится от bearing.
    *
+   * Есть компас:
    * screenAngle = heading − bearing
+   * → относительно улиц сектор стоит на месте при повороте карты
+   * → при повороте телефона — крутится
    */
-  const heading = currentHeading == null ? 0 : currentHeading;
-  const screenAngle = ((heading - mapBearing) % 360 + 360) % 360;
+  if (currentHeading == null) {
+    sectorEl.style.opacity = '0';
+    return;
+  }
 
+  const screenAngle =
+    ((currentHeading - mapBearing) % 360 + 360) % 360;
+
+  sectorEl.style.opacity = '1';
   sectorEl.style.transform =
     `translate3d(${x}px, ${y}px, 0px) translate(-50%, -100%) rotate(${screenAngle}deg)`;
 }
@@ -235,16 +263,22 @@ function startDeviceOrientation() {
 
     if (event.webkitCompassHeading != null && !Number.isNaN(Number(event.webkitCompassHeading))) {
       heading = Number(event.webkitCompassHeading);
+    } else if (
+      event.absolute === true &&
+      event.alpha != null &&
+      !Number.isNaN(Number(event.alpha))
+    ) {
+      heading = (360 - Number(event.alpha) + 360) % 360;
     } else if (event.alpha != null && !Number.isNaN(Number(event.alpha))) {
-      heading = 360 - Number(event.alpha);
+      heading = (360 - Number(event.alpha) + 360) % 360;
     }
 
     if (heading == null || Number.isNaN(heading)) return;
-    handleHeading((heading + 360) % 360);
+    handleHeading(heading);
   };
 
-  window.addEventListener('deviceorientation', handleOrientation, true);
   window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+  window.addEventListener('deviceorientation', handleOrientation, true);
 }
 
 function createIcon() {
