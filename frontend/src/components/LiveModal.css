@@ -40,6 +40,8 @@
     box-shadow:
         0 20px 60px rgba(0, 0, 0, .45);
 
+    transform: scale(0.9);
+
     animation: liveModalAppear .35s ease;
 }
 
@@ -47,12 +49,12 @@
 
     from {
         opacity: 0;
-        transform: translateY(15px) scale(.97);
+        transform: translateY(15px) scale(0.87);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0) scale(0.9);
     }
 
 }
