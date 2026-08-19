@@ -10,14 +10,12 @@ import {
 
 
 let myMarker = null;
-
 let isLive = false;
-
 let currentHeading = null;
-
 let orientationStarted = false;
-
 let loopStarted = false;
+let sectorEl = null;
+let overlayEl = null;
 
 
 /* ========================================
@@ -26,66 +24,36 @@ let loopStarted = false;
 
 export function initMyMarker(){
 
-    window.addEventListener(
-        'location:updated',
-        event => {
+    window.addEventListener('location:updated', event => {
 
-            const position =
-                event.detail;
+        const position = event.detail;
+        if(!position) return;
 
-            if(!position)
-                return;
+        updateMyMarker(position.lat, position.lng);
 
-
-            updateMyMarker(
-                position.lat,
-                position.lng
-            );
-
-
-            if(
-                position.heading != null &&
-                !Number.isNaN(
-                    Number(position.heading)
-                )
-            ){
-
-                setHeading(
-                    Number(position.heading)
-                );
-
-            }
-
+        if(
+            position.heading != null &&
+            !Number.isNaN(Number(position.heading))
+        ){
+            setHeading(Number(position.heading));
         }
-    );
+
+    });
 
 
-    window.addEventListener(
-        'live:started',
-        () => {
-
-            isLive = true;
-
-            refreshMarker();
-
-        }
-    );
+    window.addEventListener('live:started', () => {
+        isLive = true;
+        refreshMarker();
+    });
 
 
-    window.addEventListener(
-        'live:stopped',
-        () => {
-
-            isLive = false;
-
-            refreshMarker();
-
-        }
-    );
+    window.addEventListener('live:stopped', () => {
+        isLive = false;
+        refreshMarker();
+    });
 
 
     startDeviceOrientation();
-
     startUpdateLoop();
 
 }
@@ -95,80 +63,36 @@ export function initMyMarker(){
    UPDATE MARKER
 ======================================== */
 
-export function updateMyMarker(
-    latitude,
-    longitude
-){
+export function updateMyMarker(latitude, longitude){
 
-    const map =
-        getMap();
+    const map = getMap();
+    if(!map) return;
 
+    if(latitude == null || longitude == null) return;
 
-    if(!map)
-        return;
-
-
-    if(
-        latitude == null ||
-        longitude == null
-    ){
-        return;
-    }
-
-
-    const position = [
-        latitude,
-        longitude
-    ];
+    const position = [latitude, longitude];
 
 
     if(myMarker){
-
-        myMarker.setLatLng(
-            position
-        );
-
+        myMarker.setLatLng(position);
         return;
-
     }
 
 
-    /*
-     * Маркер в norotatePane (leaflet-rotate).
-     * rotateWithView: false — не крутится с картой.
-     */
-
-    myMarker =
-        L.marker(
-            position,
-            {
-                icon: createIcon(),
-
-                zIndexOffset: 1000,
-
-                rotateWithView: false
-            }
-        )
-        .addTo(map);
+    myMarker = L.marker(position, {
+        icon: createIcon(),
+        zIndexOffset: 1000,
+        rotateWithView: false
+    }).addTo(map);
 
 
-    if(
-        !window.__myMarkerMapCentered
-    ){
+    ensureSectorOverlay();
 
-        window.__myMarkerMapCentered =
-            true;
 
-        map.setView(
-            position,
-            15
-        );
-
+    if(!window.__myMarkerMapCentered){
+        window.__myMarkerMapCentered = true;
+        map.setView(position, 15);
     }
-
-
-    /* сразу показать сектор (даже без компаса) */
-    applyHeadingToSector();
 
 }
 
@@ -179,15 +103,8 @@ export function updateMyMarker(
 
 function refreshMarker(){
 
-    if(!myMarker)
-        return;
-
-
-    myMarker.setIcon(
-        createIcon()
-    );
-
-    applyHeadingToSector();
+    if(!myMarker) return;
+    myMarker.setIcon(createIcon());
 
 }
 
@@ -196,78 +113,140 @@ function refreshMarker(){
    HEADING
 ======================================== */
 
-function setHeading(
-    heading
-){
+function setHeading(heading){
 
-    if(
-        heading == null ||
-        Number.isNaN(
-            Number(heading)
-        )
-    ){
+    if(heading == null || Number.isNaN(Number(heading))) return;
 
-        return;
-
-    }
-
-
-    currentHeading =
-        (
-            Number(heading) +
-            360
-        ) % 360;
-
-
-    applyHeadingToSector();
+    currentHeading = (Number(heading) + 360) % 360;
 
 }
 
 
-/*
- * Крутим только внутренний сектор.
- * Маркер сам не крутится с картой.
- *
- * Если компаса ещё нет — сектор всё равно
- * виден (смотрит «вверх» = 0°), чтобы
- * было понятно, что он есть.
- */
-function applyHeadingToSector(){
+/* ========================================
+   OVERLAY + SECTOR (ВНЕ карты)
+======================================== */
 
-    if(!myMarker)
-        return;
+function ensureSectorOverlay(){
+
+    if(overlayEl && document.body.contains(overlayEl)){
+        return sectorEl;
+    }
 
 
-    const el =
-        myMarker.getElement
-            ? myMarker.getElement()
-            : myMarker._icon;
+    /*
+     * Overlay — sibling карты, НЕ внутри #map.
+     * leaflet-rotate крутит только внутренности #map,
+     * этот слой не затрагивается.
+     */
+
+    const mapEl = document.getElementById('map');
+    const parent = mapEl && mapEl.parentElement
+        ? mapEl.parentElement
+        : document.body;
 
 
-    if(!el)
-        return;
+    overlayEl = document.createElement('div');
+    overlayEl.id = 'my-heading-overlay';
+    overlayEl.style.cssText = `
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        pointer-events: none;
+        z-index: 5000;
+        overflow: visible;
+        transform: none !important;
+    `;
 
 
-    const sector =
-        el.querySelector(
-            '.my-heading-sector-inner'
-        );
+    sectorEl = document.createElement('div');
+    sectorEl.className = 'my-heading-sector';
+    sectorEl.innerHTML = `<div class="my-heading-sector__fan"></div>`;
+
+    sectorEl.style.cssText = `
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 56px;
+        height: 70px;
+        margin: 0;
+        padding: 0;
+        pointer-events: none;
+        opacity: 1;
+        transform-origin: 50% 100%;
+        will-change: transform, left, top;
+        transform: translate(-50%, -100%) rotate(0deg);
+    `;
 
 
-    if(!sector)
-        return;
+    overlayEl.appendChild(sectorEl);
+    parent.appendChild(overlayEl);
 
 
-    const angle =
-        currentHeading == null
-            ? 0
-            : currentHeading;
+    return sectorEl;
+
+}
 
 
-    sector.style.opacity = '1';
+function getMarkerElement(){
+
+    if(!myMarker) return null;
+
+    return myMarker.getElement
+        ? myMarker.getElement()
+        : myMarker._icon;
+
+}
+
+
+/* ========================================
+   UPDATE SCREEN
+   позиция = экранные координаты маркера
+   угол   = ТОЛЬКО компас (без bearing карты)
+======================================== */
+
+function updateScreen(){
+
+    if(!myMarker) return;
+
+    const marker = getMarkerElement();
+    if(!marker) return;
+
+    const sector = ensureSectorOverlay();
+    if(!sector) return;
+
+
+    const rect = marker.getBoundingClientRect();
+    const parentRect = overlayEl.getBoundingClientRect();
+
+
+    /*
+     * Координаты относительно overlay (absolute),
+     * а не fixed — так Telegram WebView
+     * не ломает позицию transform-предками.
+     */
+    const centerX = rect.left + rect.width / 2 - parentRect.left;
+    const centerY = rect.top + rect.height / 2 - parentRect.top;
+
+
+    sector.style.left = `${centerX}px`;
+    sector.style.top = `${centerY}px`;
+
+
+    /*
+     * ВАЖНО: только heading телефона.
+     * map.getBearing() НЕ используем.
+     * Крутишь карту → сектор на экране стоит.
+     * Крутишь телефон → сектор крутится.
+     */
+    const angle = currentHeading == null ? 0 : currentHeading;
 
     sector.style.transform =
         `translate(-50%, -100%) rotate(${angle}deg)`;
+
+    sector.style.opacity = '1';
 
 }
 
@@ -278,451 +257,143 @@ function applyHeadingToSector(){
 
 function startUpdateLoop(){
 
-    if(loopStarted)
-        return;
-
-
+    if(loopStarted) return;
     loopStarted = true;
 
-
     const frame = () => {
-
-        applyHeadingToSector();
-
-        requestAnimationFrame(
-            frame
-        );
-
+        updateScreen();
+        requestAnimationFrame(frame);
     };
 
-
-    requestAnimationFrame(
-        frame
-    );
+    requestAnimationFrame(frame);
 
 }
 
 
 /* ========================================
-   DEVICE ORIENTATION
+   DEVICE ORIENTATION (Android + TG)
 ======================================== */
 
 function startDeviceOrientation(){
 
-    if(orientationStarted)
-        return;
-
-
+    if(orientationStarted) return;
     orientationStarted = true;
 
 
-    const handleHeading =
-        (heading) => {
+    const handleHeading = (heading) => {
 
-            if(
-                heading == null ||
-                Number.isNaN(
-                    Number(heading)
-                )
-            ){
-                return;
-            }
+        if(heading == null || Number.isNaN(Number(heading))) return;
+        setHeading(Number(heading));
 
-            setHeading(
-                Number(heading)
-            );
-
-        };
+    };
 
 
-    /*
-     * ------------------------------------
-     * 1) Telegram Mini App API (Bot API 8+)
-     * Компас — ОТДЕЛЬНОЕ разрешение,
-     * НЕ входит в Location.
-     * ------------------------------------
-     */
+    /* 1) Telegram Mini App API */
+    const tg = window.Telegram && window.Telegram.WebApp;
 
-    const tg =
-        window.Telegram &&
-        window.Telegram.WebApp;
-
-
-    if(
-        tg &&
-        tg.DeviceOrientation
-    ){
+    if(tg && tg.DeviceOrientation){
 
         try{
 
-            const onTgOrientation =
-                (data) => {
+            const onTg = (data) => {
 
-                    if(!data)
-                        return;
+                if(!data || data.alpha == null) return;
 
-                    /*
-                     * alpha в радианах.
-                     * need_absolute: true →
-                     * относительно магнитного севера.
-                     */
-                    if(
-                        data.alpha != null &&
-                        !Number.isNaN(
-                            Number(data.alpha)
-                        )
-                    ){
+                const alphaDeg = Number(data.alpha) * (180 / Math.PI);
+                const heading = (360 - alphaDeg + 360) % 360;
+                handleHeading(heading);
 
-                        const alphaDeg =
-                            Number(data.alpha) *
-                            (180 / Math.PI);
+            };
 
-                        let heading =
-                            (
-                                360 - alphaDeg + 360
-                            ) % 360;
-
-                        handleHeading(
-                            heading
-                        );
-
-                    }
-
-                };
-
-
-            /*
-             * Событие может называться
-             * по-разному в разных версиях клиента.
-             */
             if(typeof tg.onEvent === 'function'){
-
-                tg.onEvent(
-                    'deviceOrientationChanged',
-                    onTgOrientation
-                );
-
-                tg.onEvent(
-                    'device_orientation_changed',
-                    onTgOrientation
-                );
-
+                tg.onEvent('deviceOrientationChanged', onTg);
+                tg.onEvent('device_orientation_changed', onTg);
             }
 
-
             tg.DeviceOrientation.start(
-                {
-                    need_absolute: true
-                },
+                { need_absolute: true },
                 (ok) => {
-
-                    console.log(
-                        '[compass] TG DeviceOrientation.start →',
-                        ok
-                    );
-
-                    if(!ok){
-                        startWebOrientation();
-                    }
-
+                    console.log('[compass] TG start →', ok);
                 }
             );
-
-
-            /*
-             * На всякий случай параллельно
-             * поднимаем и web-fallback.
-             * Лишним не будет.
-             */
-            startWebOrientation();
-
-            return;
 
         }catch(e){
-
-            console.warn(
-                '[compass] TG DeviceOrientation error',
-                e
-            );
-
+            console.warn('[compass] TG error', e);
         }
 
     }
 
 
-    /*
-     * ------------------------------------
-     * 2) Обычный Web API
-     * ------------------------------------
-     */
-    startWebOrientation();
+    /* 2) Web API (Android обычно без permission) */
+    const handleOrientation = (event) => {
 
+        let heading = null;
 
-    function startWebOrientation(){
-
-        const handleOrientation =
-            (event) => {
-
-                let heading = null;
-
-
-                /* iOS Safari / Telegram iOS */
-                if(
-                    event.webkitCompassHeading != null &&
-                    !Number.isNaN(
-                        Number(
-                            event.webkitCompassHeading
-                        )
-                    )
-                ){
-
-                    heading =
-                        Number(
-                            event.webkitCompassHeading
-                        );
-
-                }
-
-                /* Android / остальные */
-                else if(
-                    event.alpha != null &&
-                    !Number.isNaN(
-                        Number(event.alpha)
-                    )
-                ){
-
-                    heading =
-                        360 -
-                        Number(event.alpha);
-
-                }
-
-
-                if(
-                    heading == null ||
-                    Number.isNaN(heading)
-                ){
-                    return;
-                }
-
-
-                heading =
-                    (
-                        heading +
-                        360
-                    ) % 360;
-
-
-                handleHeading(
-                    heading
-                );
-
-            };
-
-
-        /*
-         * iOS требует явного permission
-         * (это НЕ то же самое, что Location).
-         */
         if(
-            typeof DeviceOrientationEvent !==
-            'undefined' &&
-
-            typeof DeviceOrientationEvent
-                .requestPermission ===
-            'function'
+            event.webkitCompassHeading != null &&
+            !Number.isNaN(Number(event.webkitCompassHeading))
         ){
-
-            let asked = false;
-
-
-            const ask = () => {
-
-                if(asked)
-                    return;
-
-                asked = true;
-
-
-                DeviceOrientationEvent
-                    .requestPermission()
-                    .then(
-                        (state) => {
-
-                            console.log(
-                                '[compass] iOS permission →',
-                                state
-                            );
-
-                            if(
-                                state ===
-                                'granted'
-                            ){
-
-                                window.addEventListener(
-                                    'deviceorientation',
-                                    handleOrientation,
-                                    true
-                                );
-
-                            }
-
-                        }
-                    )
-                    .catch(
-                        (err) => {
-
-                            console.warn(
-                                '[compass] iOS permission error',
-                                err
-                            );
-
-                        }
-                    );
-
-            };
-
-
-            window.addEventListener(
-                'touchend',
-                ask,
-                {
-                    once: true
-                }
-            );
-
-            window.addEventListener(
-                'click',
-                ask,
-                {
-                    once: true
-                }
-            );
-
+            heading = Number(event.webkitCompassHeading);
+        }
+        else if(
+            event.alpha != null &&
+            !Number.isNaN(Number(event.alpha))
+        ){
+            heading = 360 - Number(event.alpha);
         }
 
-        else{
+        if(heading == null || Number.isNaN(heading)) return;
 
-            window.addEventListener(
-                'deviceorientation',
-                handleOrientation,
-                true
-            );
+        handleHeading((heading + 360) % 360);
 
-            window.addEventListener(
-                'deviceorientationabsolute',
-                handleOrientation,
-                true
-            );
+    };
 
-            console.log(
-                '[compass] web DeviceOrientation listeners attached'
-            );
 
-        }
+    window.addEventListener('deviceorientation', handleOrientation, true);
+    window.addEventListener('deviceorientationabsolute', handleOrientation, true);
 
-    }
+    console.log('[compass] web listeners attached');
 
 }
 
 
 /* ========================================
-   ICON — сектор внутри маркера
+   ICON (без сектора — сектор снаружи)
 ======================================== */
 
 function createIcon(){
 
     if(isLive){
 
-        const profile =
-            getProfile();
-
+        const profile = getProfile();
 
         return L.divIcon({
-
-            className:
-                'my-marker-wrapper',
-
-
+            className: 'my-marker-wrapper',
             html: `
-
-                <div class="my-marker-root">
-
-                    <div class="my-heading-sector-inner">
-                        <div class="my-heading-sector__fan"></div>
+                <div class="my-live-marker">
+                    <img src="${profile?.photo_url || 'https://i.pravatar.cc/150'}">
+                    <div class="my-live-marker__badge">
+                        <span class="my-live-marker__badge-dot"></span>
+                        LIVE
                     </div>
-
-                    <div class="my-live-marker">
-
-                        <img
-                            src="${
-                                profile?.photo_url ||
-                                'https://i.pravatar.cc/150'
-                            }"
-                        >
-
-                        <div class="my-live-marker__badge">
-                            <span class="my-live-marker__badge-dot"></span>
-                            LIVE
-                        </div>
-
-                    </div>
-
                 </div>
-
             `,
-
-
-            iconSize: [
-                40,
-                40
-            ],
-
-
-            iconAnchor: [
-                20,
-                20
-            ]
-
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
         });
 
     }
 
 
     return L.divIcon({
-
-        className:
-            'my-marker-wrapper',
-
-
+        className: 'my-marker-wrapper',
         html: `
-
-            <div class="my-marker-root">
-
-                <div class="my-heading-sector-inner">
-                    <div class="my-heading-sector__fan"></div>
-                </div>
-
-                <div class="my-location">
-                    <div class="my-location__pulse"></div>
-                </div>
-
+            <div class="my-location">
+                <div class="my-location__pulse"></div>
             </div>
-
         `,
-
-
-        iconSize: [
-            24,
-            24
-        ],
-
-
-        iconAnchor: [
-            12,
-            12
-        ]
-
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
     });
 
 }
