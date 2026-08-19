@@ -280,22 +280,16 @@ function createIcon(){
     if(isLive){
 
 
-
         const profile = getProfile();
-
-
 
 
         return L.divIcon({
 
 
-
             className:'',
 
 
-
             html:`
-
 
 
             <div class="my-live-marker">
@@ -320,17 +314,13 @@ function createIcon(){
             `,
 
 
-
-            iconSize:[60,60],
-
+            iconSize:[39,39],
 
 
-            iconAnchor:[30,30]
-
+            iconAnchor:[19.5,19.5]
 
 
         });
-
 
 
     }
