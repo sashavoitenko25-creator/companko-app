@@ -201,18 +201,15 @@ function initBottomBar(){
             );
 
 
-            locationButton.classList.add(
+            /*
+             * Свечение кнопки
+             * убираем сразу после
+             * нажатия.
+             */
+
+            locationButton.classList.remove(
                 'pressed'
             );
-
-
-            setTimeout(()=>{
-
-                locationButton.classList.remove(
-                    'pressed'
-                );
-
-            },180);
 
 
             centerOnMyLocation();
@@ -240,27 +237,53 @@ function initBottomBar(){
 
 
             /*
-             * Эффект нажатия такой же,
-             * как у "Найти себя"
+             * Проверяем текущее состояние.
              */
 
-            settingsButton.classList.add(
-                'pressed'
-            );
+            const isOpen =
+                settings.classList.contains(
+                    'open'
+                );
 
 
-            setTimeout(()=>{
+            /*
+             * НАСТРОЙКИ ЗАКРЫТЫ
+             *
+             * Открываем:
+             * окно + свечение кнопки.
+             */
+
+            if(!isOpen){
+
+                settings.classList.add(
+                    'open'
+                );
+
+                settingsButton.classList.add(
+                    'pressed'
+                );
+
+            }
+
+
+            /*
+             * НАСТРОЙКИ ОТКРЫТЫ
+             *
+             * Закрываем:
+             * окно + убираем свечение.
+             */
+
+            else{
+
+                settings.classList.remove(
+                    'open'
+                );
 
                 settingsButton.classList.remove(
                     'pressed'
                 );
 
-            },180);
-
-
-            settings.classList.toggle(
-                'open'
-            );
+            }
 
         };
 
@@ -282,6 +305,18 @@ function initBottomBar(){
 
             settings?.classList.remove(
                 'open'
+            );
+
+
+            /*
+             * Если нажали LIVE,
+             * настройки закрываются
+             * и свечение кнопки
+             * настроек тоже убирается.
+             */
+
+            settingsButton?.classList.remove(
+                'pressed'
             );
 
         };
@@ -312,6 +347,11 @@ function initBottomBar(){
 
                 settings.classList.remove(
                     'open'
+                );
+
+
+                settingsButton?.classList.remove(
+                    'pressed'
                 );
 
             }
@@ -347,6 +387,11 @@ function initBottomBar(){
 
                 settings?.classList.remove(
                     'open'
+                );
+
+
+                settingsButton?.classList.remove(
+                    'pressed'
                 );
 
             }
