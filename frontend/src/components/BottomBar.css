@@ -20,9 +20,11 @@
 
     align-items:center;
 
-    justify-content:space-between;
+    justify-content:center;
 
-    padding:0 12px;
+    gap:8px;
+
+    padding:0;
 
     z-index:9000;
 
@@ -30,7 +32,7 @@
 
 
 /* =======================
-   LEFT + RIGHT BUTTON
+   НАЙТИ СЕБЯ + НАСТРОЙКИ
 ======================= */
 
 .bottom-button,
@@ -63,12 +65,14 @@
 
 }
 
+
 .bottom-button:hover,
 #settings-button:hover{
 
     transform:translateY(-2px);
 
 }
+
 
 .bottom-button:active,
 #settings-button:active{
@@ -88,9 +92,8 @@
 
 
 /* =======================
-        LIVE BUTTON
+        LIVE
 ======================= */
-
 
 .live-button{
 
@@ -100,7 +103,7 @@
 
     flex:none;
 
-    margin:0 10px;
+    margin:0;
 
     border:none;
 
@@ -121,6 +124,12 @@
 
     cursor:pointer;
 
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
     transition:.18s;
 
     box-shadow:
@@ -128,17 +137,20 @@
 
 }
 
+
 .live-button:hover{
 
     transform:translateY(-2px);
 
 }
 
+
 .live-button:active{
 
     transform:scale(.97);
 
 }
+
 
 .live-button.stop-live{
 
@@ -150,6 +162,7 @@
         );
 
 }
+
 
 .live-dot{
 
@@ -166,13 +179,15 @@
 
     position:fixed;
 
-    right:20px;
+    left:50%;
 
-    bottom:95px;
+    bottom:20px;
 
     width:270px;
 
     padding:25px;
+
+    box-sizing:border-box;
 
     background:#11121b;
 
@@ -185,25 +200,31 @@
 
     opacity:0;
 
-    transform:translateY(30px);
+    transform:
+        translate(-50%, 20px);
 
     pointer-events:none;
 
-    transition:.3s;
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
 
     z-index:9500;
 
 }
 
+
 .settings-window.open{
 
     opacity:1;
 
-    transform:translateY(0);
+    transform:
+        translate(-50%, 0);
 
     pointer-events:auto;
 
 }
+
 
 .settings-window h2{
 
@@ -230,11 +251,13 @@
 
 }
 
+
 .theme-icon{
 
     font-size:28px;
 
 }
+
 
 .switch{
 
@@ -246,11 +269,13 @@
 
 }
 
+
 .switch input{
 
     display:none;
 
 }
+
 
 .slider{
 
@@ -265,6 +290,7 @@
     cursor:pointer;
 
 }
+
 
 .slider:before{
 
@@ -288,11 +314,13 @@
 
 }
 
+
 .switch input:checked + .slider{
 
     background:#8b45ff;
 
 }
+
 
 .switch input:checked + .slider:before{
 
