@@ -209,10 +209,14 @@ function createIcon(){
                         'https://i.pravatar.cc/150'
                     }"
                 >
+                <div class="my-live-marker__badge">
+                    <span class="my-live-marker__badge-dot"></span>
+                    LIVE
+                </div>
             </div>
             `,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
         });
     }
 
