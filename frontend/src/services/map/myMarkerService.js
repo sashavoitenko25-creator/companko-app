@@ -15,7 +15,6 @@ let currentHeading = null;
 let orientationStarted = false;
 let loopStarted = false;
 let sectorEl = null;
-let overlayEl = null;
 
 
 /* ========================================
@@ -56,6 +55,25 @@ export function initMyMarker(){
     startDeviceOrientation();
     startUpdateLoop();
 
+
+    /* отладка из консоли: window.__headingDebug() */
+    window.__headingDebug = () => {
+
+        const map = getMap();
+        const sector = sectorEl;
+
+        console.log({
+            heading: currentHeading,
+            bearing: map && map.getBearing ? map.getBearing() : null,
+            sectorInBody: !!(sector && sector.parentElement === document.body),
+            sectorTransform: sector ? sector.style.transform : null,
+            parentTransform: sector && sector.parentElement
+                ? getComputedStyle(sector.parentElement).transform
+                : null
+        });
+
+    };
+
 }
 
 
@@ -67,17 +85,14 @@ export function updateMyMarker(latitude, longitude){
 
     const map = getMap();
     if(!map) return;
-
     if(latitude == null || longitude == null) return;
 
     const position = [latitude, longitude];
-
 
     if(myMarker){
         myMarker.setLatLng(position);
         return;
     }
-
 
     myMarker = L.marker(position, {
         icon: createIcon(),
@@ -85,9 +100,7 @@ export function updateMyMarker(latitude, longitude){
         rotateWithView: false
     }).addTo(map);
 
-
-    ensureSectorOverlay();
-
+    ensureSector();
 
     if(!window.__myMarkerMapCentered){
         window.__myMarkerMapCentered = true;
@@ -97,10 +110,6 @@ export function updateMyMarker(latitude, longitude){
 }
 
 
-/* ========================================
-   REFRESH MARKER
-======================================== */
-
 function refreshMarker(){
 
     if(!myMarker) return;
@@ -109,82 +118,52 @@ function refreshMarker(){
 }
 
 
-/* ========================================
-   HEADING
-======================================== */
-
 function setHeading(heading){
 
     if(heading == null || Number.isNaN(Number(heading))) return;
-
     currentHeading = (Number(heading) + 360) % 360;
 
 }
 
 
 /* ========================================
-   OVERLAY + SECTOR (ВНЕ карты)
+   SECTOR — только document.body + fixed
 ======================================== */
 
-function ensureSectorOverlay(){
+function ensureSector(){
 
-    if(overlayEl && document.body.contains(overlayEl)){
+    if(sectorEl && document.body.contains(sectorEl)){
         return sectorEl;
     }
-
-
-    /*
-     * Overlay — sibling карты, НЕ внутри #map.
-     * leaflet-rotate крутит только внутренности #map,
-     * этот слой не затрагивается.
-     */
-
-    const mapEl = document.getElementById('map');
-    const parent = mapEl && mapEl.parentElement
-        ? mapEl.parentElement
-        : document.body;
-
-
-    overlayEl = document.createElement('div');
-    overlayEl.id = 'my-heading-overlay';
-    overlayEl.style.cssText = `
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        pointer-events: none;
-        z-index: 5000;
-        overflow: visible;
-        transform: none !important;
-    `;
-
 
     sectorEl = document.createElement('div');
     sectorEl.className = 'my-heading-sector';
     sectorEl.innerHTML = `<div class="my-heading-sector__fan"></div>`;
 
+    /*
+     * КРИТИЧНО:
+     * только body + position:fixed
+     * иначе любой transform у родителя
+     * (Telegram WebView / leaflet)
+     * крутит сектор вместе с картой
+     */
     sectorEl.style.cssText = `
-        position: absolute;
-        left: 0;
-        top: 0;
+        position: fixed !important;
+        left: 0px;
+        top: 0px;
         width: 56px;
         height: 70px;
         margin: 0;
         padding: 0;
         pointer-events: none;
+        z-index: 2147483647;
         opacity: 1;
         transform-origin: 50% 100%;
-        will-change: transform, left, top;
-        transform: translate(-50%, -100%) rotate(0deg);
+        will-change: transform;
+        transform: translate3d(0px, 0px, 0px) rotate(0deg);
     `;
 
-
-    overlayEl.appendChild(sectorEl);
-    parent.appendChild(overlayEl);
-
-
+    document.body.appendChild(sectorEl);
     return sectorEl;
 
 }
@@ -193,19 +172,10 @@ function ensureSectorOverlay(){
 function getMarkerElement(){
 
     if(!myMarker) return null;
-
-    return myMarker.getElement
-        ? myMarker.getElement()
-        : myMarker._icon;
+    return myMarker.getElement ? myMarker.getElement() : myMarker._icon;
 
 }
 
-
-/* ========================================
-   UPDATE SCREEN
-   позиция = экранные координаты маркера
-   угол   = ТОЛЬКО компас (без bearing карты)
-======================================== */
 
 function updateScreen(){
 
@@ -214,46 +184,24 @@ function updateScreen(){
     const marker = getMarkerElement();
     if(!marker) return;
 
-    const sector = ensureSectorOverlay();
+    const sector = ensureSector();
     if(!sector) return;
 
-
     const rect = marker.getBoundingClientRect();
-    const parentRect = overlayEl.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
 
-
-    /*
-     * Координаты относительно overlay (absolute),
-     * а не fixed — так Telegram WebView
-     * не ломает позицию transform-предками.
-     */
-    const centerX = rect.left + rect.width / 2 - parentRect.left;
-    const centerY = rect.top + rect.height / 2 - parentRect.top;
-
-
-    sector.style.left = `${centerX}px`;
-    sector.style.top = `${centerY}px`;
-
-
-    /*
-     * ВАЖНО: только heading телефона.
-     * map.getBearing() НЕ используем.
-     * Крутишь карту → сектор на экране стоит.
-     * Крутишь телефон → сектор крутится.
-     */
     const angle = currentHeading == null ? 0 : currentHeading;
 
+    /*
+     * Угол = ТОЛЬКО компас.
+     * bearing карты НЕ используем.
+     */
     sector.style.transform =
-        `translate(-50%, -100%) rotate(${angle}deg)`;
-
-    sector.style.opacity = '1';
+        `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) rotate(${angle}deg)`;
 
 }
 
-
-/* ========================================
-   ANIMATION LOOP
-======================================== */
 
 function startUpdateLoop(){
 
@@ -271,7 +219,7 @@ function startUpdateLoop(){
 
 
 /* ========================================
-   DEVICE ORIENTATION (Android + TG)
+   COMPASS
 ======================================== */
 
 function startDeviceOrientation(){
@@ -279,16 +227,12 @@ function startDeviceOrientation(){
     if(orientationStarted) return;
     orientationStarted = true;
 
-
     const handleHeading = (heading) => {
-
         if(heading == null || Number.isNaN(Number(heading))) return;
         setHeading(Number(heading));
-
     };
 
 
-    /* 1) Telegram Mini App API */
     const tg = window.Telegram && window.Telegram.WebApp;
 
     if(tg && tg.DeviceOrientation){
@@ -296,13 +240,9 @@ function startDeviceOrientation(){
         try{
 
             const onTg = (data) => {
-
                 if(!data || data.alpha == null) return;
-
                 const alphaDeg = Number(data.alpha) * (180 / Math.PI);
-                const heading = (360 - alphaDeg + 360) % 360;
-                handleHeading(heading);
-
+                handleHeading((360 - alphaDeg + 360) % 360);
             };
 
             if(typeof tg.onEvent === 'function'){
@@ -310,12 +250,9 @@ function startDeviceOrientation(){
                 tg.onEvent('device_orientation_changed', onTg);
             }
 
-            tg.DeviceOrientation.start(
-                { need_absolute: true },
-                (ok) => {
-                    console.log('[compass] TG start →', ok);
-                }
-            );
+            tg.DeviceOrientation.start({ need_absolute: true }, (ok) => {
+                console.log('[compass] TG start →', ok);
+            });
 
         }catch(e){
             console.warn('[compass] TG error', e);
@@ -324,7 +261,6 @@ function startDeviceOrientation(){
     }
 
 
-    /* 2) Web API (Android обычно без permission) */
     const handleOrientation = (event) => {
 
         let heading = null;
@@ -343,11 +279,9 @@ function startDeviceOrientation(){
         }
 
         if(heading == null || Number.isNaN(heading)) return;
-
         handleHeading((heading + 360) % 360);
 
     };
-
 
     window.addEventListener('deviceorientation', handleOrientation, true);
     window.addEventListener('deviceorientationabsolute', handleOrientation, true);
@@ -358,7 +292,7 @@ function startDeviceOrientation(){
 
 
 /* ========================================
-   ICON (без сектора — сектор снаружи)
+   ICON
 ======================================== */
 
 function createIcon(){
@@ -383,7 +317,6 @@ function createIcon(){
         });
 
     }
-
 
     return L.divIcon({
         className: 'my-marker-wrapper',
