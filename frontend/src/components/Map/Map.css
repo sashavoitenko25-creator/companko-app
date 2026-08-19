@@ -5,70 +5,96 @@
     height:100%;
     z-index:0;
 }
+
+/* ===== СИНИЙ МАРКЕР ===== */
 .my-location{
     width:18px;
     height:18px;
     border-radius:50%;
-    background:#4DA3FF;
-    border:3px solid white;
+    background:linear-gradient(145deg, #5BB4FF, #2E8CFF);
+    border:3px solid #ffffff;
     position:relative;
+    box-shadow:
+        0 0 0 2px rgba(77,163,255,.25),
+        0 2px 8px rgba(0,0,0,.25),
+        0 0 12px rgba(77,163,255,.45);
+    z-index:2;
 }
+
 .my-location__pulse{
     position:absolute;
-    inset:-8px;
+    inset:-10px;
     border-radius:50%;
-    background:rgba(77,163,255,.35);
-    animation:pulse 2s infinite;
+    background:rgba(77,163,255,.28);
+    animation:pulse 2.2s ease-out infinite;
+    z-index:0;
 }
+
+/* Направление — только мягкий сектор */
 .my-location__direction{
     position:absolute;
     left:50%;
-    bottom:50%;
-    width:28px;
-    height:36px;
-    transform:translateX(-50%);
-    transform-origin:50% 100%;
+    top:50%;
+    width:64px;
+    height:64px;
+    margin-left:-32px;
+    margin-top:-32px;
     pointer-events:none;
     opacity:0;
-    transition:opacity .25s ease;
+    transition:opacity .3s ease;
+    z-index:1;
 }
+
 .my-location__direction.visible{
     opacity:1;
 }
-.my-location__direction-cone{
+
+.my-location__direction-fan{
     position:absolute;
-    left:50%;
-    bottom:0;
-    width:0;
-    height:0;
-    border-left:14px solid transparent;
-    border-right:14px solid transparent;
-    border-bottom:36px solid rgba(77,163,255,.45);
-    transform:translateX(-50%);
-    filter:drop-shadow(0 0 6px rgba(77,163,255,.5));
+    inset:0;
+    border-radius:50%;
+    background:conic-gradient(
+        from -32deg at 50% 50%,
+        transparent 0deg,
+        rgba(77,163,255,0) 2deg,
+        rgba(77,163,255,.08) 8deg,
+        rgba(77,163,255,.22) 18deg,
+        rgba(90,180,255,.42) 28deg,
+        rgba(120,200,255,.55) 32deg,
+        rgba(90,180,255,.42) 36deg,
+        rgba(77,163,255,.22) 46deg,
+        rgba(77,163,255,.08) 56deg,
+        rgba(77,163,255,0) 62deg,
+        transparent 64deg,
+        transparent 360deg
+    );
+    -webkit-mask-image:radial-gradient(
+        circle at center,
+        transparent 20%,
+        rgba(0,0,0,.35) 35%,
+        rgba(0,0,0,.85) 55%,
+        transparent 78%
+    );
+    mask-image:radial-gradient(
+        circle at center,
+        transparent 20%,
+        rgba(0,0,0,.35) 35%,
+        rgba(0,0,0,.85) 55%,
+        transparent 78%
+    );
 }
-.my-location__direction-arrow{
-    position:absolute;
-    left:50%;
-    bottom:22px;
-    width:0;
-    height:0;
-    border-left:5px solid transparent;
-    border-right:5px solid transparent;
-    border-bottom:12px solid #ffffff;
-    transform:translateX(-50%);
-    filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));
-}
+
 @keyframes pulse{
     0%{
         transform:scale(.7);
-        opacity:.8;
+        opacity:.75;
     }
     100%{
-        transform:scale(1.4);
+        transform:scale(1.55);
         opacity:0;
     }
 }
+
 .online-counter{
     position:absolute;
     top:86px;
@@ -187,58 +213,80 @@
 .bottom-button:hover{
     transform:translateY(-2px);
 }
+
+/* ===== LIVE МАРКЕР ===== */
 .my-live-marker{
     width:36px;
     height:36px;
     border-radius:50%;
-    overflow:hidden;
+    overflow:visible;
     border:3px solid #00aaff;
     background:white;
     box-shadow:
-    0 0 10px rgba(0,170,255,.8);
+        0 0 0 2px rgba(0,170,255,.2),
+        0 0 12px rgba(0,170,255,.75);
     position:relative;
+    z-index:2;
 }
+
 .my-live-marker img{
     width:100%;
     height:100%;
     object-fit:cover;
+    border-radius:50%;
+    display:block;
 }
+
+/* Направление Live — только мягкий сектор */
 .my-live-marker__direction{
     position:absolute;
     left:50%;
-    bottom:50%;
-    width:32px;
-    height:40px;
-    transform:translateX(-50%);
-    transform-origin:50% 100%;
+    top:50%;
+    width:72px;
+    height:72px;
+    margin-left:-36px;
+    margin-top:-36px;
     pointer-events:none;
     opacity:0;
-    transition:opacity .25s ease;
-    z-index:5;
+    transition:opacity .3s ease;
+    z-index:1;
 }
+
 .my-live-marker__direction.visible{
     opacity:1;
 }
-.my-live-marker__direction-cone{
+
+.my-live-marker__direction-fan{
     position:absolute;
-    left:50%;
-    bottom:0;
-    width:0;
-    height:0;
-    border-left:16px solid transparent;
-    border-right:16px solid transparent;
-    border-bottom:40px solid rgba(0,170,255,.4);
-    transform:translateX(-50%);
-    filter:drop-shadow(0 0 6px rgba(0,170,255,.55));
-}
-.my-live-marker__direction-arrow{
-    position:absolute;
-    left:50%;
-    bottom:24px;
-    width:0;
-    height:0;
-    border-left:5px solid transparent;
-    border-right:5px solid transparent;
-    border-bottom:12px solid #ffffff;
-    transform:translateX(-50%);
+    inset:0;
+    border-radius:50%;
+    background:conic-gradient(
+        from -32deg at 50% 50%,
+        transparent 0deg,
+        rgba(0,170,255,0) 2deg,
+        rgba(0,170,255,.08) 8deg,
+        rgba(0,170,255,.22) 18deg,
+        rgba(40,190,255,.4) 28deg,
+        rgba(80,210,255,.52) 32deg,
+        rgba(40,190,255,.4) 36deg,
+        rgba(0,170,255,.22) 46deg,
+        rgba(0,170,255,.08) 56deg,
+        rgba(0,170,255,0) 62deg,
+        transparent 64deg,
+        transparent 360deg
+    );
+    -webkit-mask-image:radial-gradient(
+        circle at center,
+        transparent 22%,
+        rgba(0,0,0,.3) 38%,
+        rgba(0,0,0,.85) 58%,
+        transparent 80%
+    );
+    mask-image:radial-gradient(
+        circle at center,
+        transparent 22%,
+        rgba(0,0,0,.3) 38%,
+        rgba(0,0,0,.85) 58%,
+        transparent 80%
+    );
 }

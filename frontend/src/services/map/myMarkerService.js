@@ -17,6 +17,7 @@ export function initMyMarker(){
         'location:updated',
         (event)=>{
             const position = event.detail;
+
             updateMyMarker(
                 position.lat,
                 position.lng
@@ -55,6 +56,7 @@ export function updateMyMarker(
     longitude
 ){
     const map = getMap();
+
     if(!map)
         return;
 
@@ -64,17 +66,15 @@ export function updateMyMarker(
     ];
 
     if(myMarker){
-        myMarker.setLatLng(
-            position
-        );
+        myMarker.setLatLng(position);
         return;
     }
 
     myMarker = L.marker(
         position,
         {
-            icon:createIcon(),
-            zIndexOffset:1000
+            icon: createIcon(),
+            zIndexOffset: 1000
         }
     )
     .addTo(map);
@@ -112,17 +112,16 @@ function applyHeadingToDom(){
     if(currentHeading == null)
         return;
 
-    const direction =
-        document.querySelector(
-            '.my-location__direction, .my-live-marker__direction'
-        );
+    const direction = document.querySelector(
+        '.my-location__direction, .my-live-marker__direction'
+    );
 
     if(!direction)
         return;
 
     direction.classList.add('visible');
     direction.style.transform =
-        `translateX(-50%) rotate(${currentHeading}deg)`;
+        `rotate(${currentHeading}deg)`;
 }
 
 function startDeviceOrientation(){
@@ -134,14 +133,10 @@ function startDeviceOrientation(){
     const handleOrientation = (event)=>{
         let heading = null;
 
-        if(
-            event.webkitCompassHeading != null
-        ){
+        if(event.webkitCompassHeading != null){
             heading = event.webkitCompassHeading;
         }
-        else if(
-            event.alpha != null
-        ){
+        else if(event.alpha != null){
             heading = 360 - event.alpha;
         }
 
@@ -178,13 +173,13 @@ function startDeviceOrientation(){
         window.addEventListener(
             'touchend',
             request,
-            { once:true }
+            { once: true }
         );
 
         window.addEventListener(
             'click',
             request,
-            { once:true }
+            { once: true }
         );
     }
     else{
@@ -202,38 +197,36 @@ function createIcon(){
         const profile = getProfile();
 
         return L.divIcon({
-            className:'',
-            html:`
+            className: '',
+            html: `
             <div class="my-live-marker">
                 <div class="my-live-marker__direction">
-                    <div class="my-live-marker__direction-cone"></div>
-                    <div class="my-live-marker__direction-arrow"></div>
+                    <div class="my-live-marker__direction-fan"></div>
                 </div>
                 <img
-                src="${
-                    profile?.photo_url ||
-                    'https://i.pravatar.cc/150'
-                }"
+                    src="${
+                        profile?.photo_url ||
+                        'https://i.pravatar.cc/150'
+                    }"
                 >
             </div>
             `,
-            iconSize:[36,36],
-            iconAnchor:[18,18]
+            iconSize: [36, 36],
+            iconAnchor: [18, 18]
         });
     }
 
     return L.divIcon({
-        className:'',
-        html:`
+        className: '',
+        html: `
         <div class="my-location">
             <div class="my-location__direction">
-                <div class="my-location__direction-cone"></div>
-                <div class="my-location__direction-arrow"></div>
+                <div class="my-location__direction-fan"></div>
             </div>
             <div class="my-location__pulse"></div>
         </div>
         `,
-        iconSize:[24,24],
-        iconAnchor:[12,12]
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
     });
 }
