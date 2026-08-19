@@ -6,7 +6,7 @@
     z-index:0;
 }
 
-/* ===== СИНИЙ МАРКЕР — Google Maps style ===== */
+/* ===== СИНИЙ МАРКЕР — Google Maps ===== */
 .my-location{
     width:16px;
     height:16px;
@@ -29,15 +29,15 @@
     z-index:0;
 }
 
-/* Сектор направления — Google Maps style */
+/* Направление — треугольник как в Google Maps */
 .my-location__direction{
     position:absolute;
     left:50%;
-    top:50%;
-    width:72px;
-    height:72px;
-    margin-left:-36px;
-    margin-top:-36px;
+    bottom:50%;
+    width:42px;
+    height:52px;
+    margin-left:-21px;
+    transform-origin:50% 100%;
     pointer-events:none;
     opacity:0;
     transition:opacity .2s ease;
@@ -49,42 +49,17 @@
 }
 
 .my-location__direction-fan{
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    background:conic-gradient(
-        from -35deg at 50% 50%,
-        transparent 0deg,
-        rgba(66,133,244,0) 0deg,
-        rgba(66,133,244,.06) 6deg,
-        rgba(66,133,244,.18) 16deg,
-        rgba(66,133,244,.32) 26deg,
-        rgba(66,133,244,.42) 32deg,
-        rgba(66,133,244,.48) 35deg,
-        rgba(66,133,244,.42) 38deg,
-        rgba(66,133,244,.32) 44deg,
-        rgba(66,133,244,.18) 54deg,
-        rgba(66,133,244,.06) 64deg,
-        rgba(66,133,244,0) 70deg,
-        transparent 70deg,
-        transparent 360deg
+    width:100%;
+    height:100%;
+    background:linear-gradient(
+        to top,
+        rgba(66,133,244,.55) 0%,
+        rgba(66,133,244,.32) 35%,
+        rgba(66,133,244,.12) 70%,
+        rgba(66,133,244,0) 100%
     );
-    -webkit-mask-image:radial-gradient(
-        circle at center,
-        transparent 8%,
-        rgba(0,0,0,.25) 18%,
-        rgba(0,0,0,.7) 40%,
-        rgba(0,0,0,.4) 62%,
-        transparent 78%
-    );
-    mask-image:radial-gradient(
-        circle at center,
-        transparent 8%,
-        rgba(0,0,0,.25) 18%,
-        rgba(0,0,0,.7) 40%,
-        rgba(0,0,0,.4) 62%,
-        transparent 78%
-    );
+    clip-path:polygon(50% 100%, 0% 0%, 100% 0%);
+    filter:blur(0.4px);
 }
 
 @keyframes pulse{
@@ -113,6 +88,7 @@
     border:1px solid rgba(255,255,255,.08);
     color:white;
 }
+
 .online-counter__dot{
     width:12px;
     height:12px;
@@ -120,14 +96,17 @@
     background:#22E36E;
     box-shadow:0 0 10px #22E36E;
 }
+
 .online-counter__title{
     font-size:12px;
     opacity:.65;
 }
+
 .online-counter__count{
     font-size:22px;
     font-weight:700;
 }
+
 .activity-tabs{
     position:absolute;
     top:86px;
@@ -139,9 +118,11 @@
     overflow-x:auto;
     scrollbar-width:none;
 }
+
 .activity-tabs::-webkit-scrollbar{
     display:none;
 }
+
 .activity-tab{
     height:42px;
     padding:0 16px;
@@ -158,6 +139,7 @@
     backdrop-filter:blur(18px);
     transition:.2s;
 }
+
 .activity-tab.active{
     background:linear-gradient(
         135deg,
@@ -165,9 +147,11 @@
         #A855F7
     );
 }
+
 .activity-tab:hover{
     transform:translateY(-2px);
 }
+
 .bottom-bar{
     position:absolute;
     left:20px;
@@ -178,6 +162,7 @@
     justify-content:space-between;
     z-index:3000;
 }
+
 .bottom-button{
     width:58px;
     height:58px;
@@ -190,6 +175,7 @@
     cursor:pointer;
     box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
+
 .live-button{
     width:220px;
     height:60px;
@@ -207,17 +193,20 @@
     box-shadow:0 10px 35px rgba(139,92,246,.35);
     transition:.2s;
 }
+
 .live-button:hover{
     transform:translateY(-2px);
 }
+
 .live-button:active{
     transform:scale(.97);
 }
+
 .bottom-button:hover{
     transform:translateY(-2px);
 }
 
-/* ===== LIVE МАРКЕР — тоже Google Maps style ===== */
+/* ===== LIVE МАРКЕР ===== */
 .my-live-marker{
     width:34px;
     height:34px;
@@ -239,19 +228,17 @@
     object-fit:cover;
     border-radius:50%;
     display:block;
-    border:2px solid #4285F4;
-    box-sizing:border-box;
 }
 
-/* Сектор направления Live */
+/* Направление Live — тот же треугольник */
 .my-live-marker__direction{
     position:absolute;
     left:50%;
-    top:50%;
-    width:80px;
-    height:80px;
-    margin-left:-40px;
-    margin-top:-40px;
+    bottom:50%;
+    width:50px;
+    height:60px;
+    margin-left:-25px;
+    transform-origin:50% 100%;
     pointer-events:none;
     opacity:0;
     transition:opacity .2s ease;
@@ -263,40 +250,15 @@
 }
 
 .my-live-marker__direction-fan{
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    background:conic-gradient(
-        from -35deg at 50% 50%,
-        transparent 0deg,
-        rgba(66,133,244,0) 0deg,
-        rgba(66,133,244,.06) 6deg,
-        rgba(66,133,244,.18) 16deg,
-        rgba(66,133,244,.32) 26deg,
-        rgba(66,133,244,.42) 32deg,
-        rgba(66,133,244,.48) 35deg,
-        rgba(66,133,244,.42) 38deg,
-        rgba(66,133,244,.32) 44deg,
-        rgba(66,133,244,.18) 54deg,
-        rgba(66,133,244,.06) 64deg,
-        rgba(66,133,244,0) 70deg,
-        transparent 70deg,
-        transparent 360deg
+    width:100%;
+    height:100%;
+    background:linear-gradient(
+        to top,
+        rgba(66,133,244,.55) 0%,
+        rgba(66,133,244,.32) 35%,
+        rgba(66,133,244,.12) 70%,
+        rgba(66,133,244,0) 100%
     );
-    -webkit-mask-image:radial-gradient(
-        circle at center,
-        transparent 14%,
-        rgba(0,0,0,.25) 24%,
-        rgba(0,0,0,.7) 42%,
-        rgba(0,0,0,.4) 64%,
-        transparent 80%
-    );
-    mask-image:radial-gradient(
-        circle at center,
-        transparent 14%,
-        rgba(0,0,0,.25) 24%,
-        rgba(0,0,0,.7) 42%,
-        rgba(0,0,0,.4) 64%,
-        transparent 80%
-    );
+    clip-path:polygon(50% 100%, 0% 0%, 100% 0%);
+    filter:blur(0.4px);
 }
