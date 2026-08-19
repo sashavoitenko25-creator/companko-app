@@ -252,9 +252,6 @@ function createIcon() {
           </div>
           <div class="my-live-marker">
             <img src="${profile?.photo_url || 'https://i.pravatar.cc/150'}">
-            <div class="my-live-marker__badge">
-              <span class="my-live-marker__badge-dot"></span>
-              LIVE
             </div>
           </div>
         </div>
