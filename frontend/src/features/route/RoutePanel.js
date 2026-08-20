@@ -160,11 +160,50 @@ export function RoutePanel(){
 
 </div>
 
+
 <button
     id="route-open-button"
-    class="route-open-button">
+    class="route-open-button"
+    aria-label="Открыть маршрут">
 
-    🧭
+    <svg
+        class="route-open-button__icon"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true">
+
+        <path
+            d="M12 2
+               L14.7 9.3
+               L22 12
+               L14.7 14.7
+               L12 22
+               L9.3 14.7
+               L2 12
+               L9.3 9.3
+               Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+        />
+
+        <path
+            d="M12 7
+               L13.6 10.4
+               L17 12
+               L13.6 13.6
+               L12 17
+               L10.4 13.6
+               L7 12
+               L10.4 10.4
+               Z"
+            fill="currentColor"
+            opacity=".9"
+        />
+
+    </svg>
 
 </button>
 
@@ -331,7 +370,6 @@ function closeRouteAutomatically(){
     /*
      * На всякий случай очищаем информацию
      * о старом маршруте.
-
      */
 
     const info =

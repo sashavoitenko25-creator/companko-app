@@ -313,10 +313,21 @@ function initAutoStopLiveOnExit(){
 
 
     /*
-     * Основной обработчик.
+     * ВАЖНО:
      *
-     * pagehide срабатывает при уходе
-     * со страницы / закрытии WebApp.
+     * visibilitychange здесь НЕ используется.
+     *
+     * Telegram Mini App при сворачивании
+     * меняет visibilityState на hidden.
+     *
+     * Поэтому hidden НЕЛЬЗЯ считать
+     * выходом из приложения.
+     */
+
+
+    /*
+     * pagehide оставляем только для
+     * реального ухода со страницы.
      */
 
     window.addEventListener(
@@ -333,8 +344,8 @@ function initAutoStopLiveOnExit(){
 
 
     /*
-     * Дополнительная страховка
-     * для браузеров/WebView.
+     * beforeunload — дополнительная страховка
+     * при полном закрытии страницы/WebView.
      */
 
     window.addEventListener(
@@ -344,54 +355,6 @@ function initAutoStopLiveOnExit(){
         ()=>{
 
             stopLiveOnExit();
-
-        }
-
-    );
-
-
-    /*
-     * Telegram Mini App может скрывать WebView.
-     *
-     * visibilitychange здесь используется
-     * только как дополнительная попытка.
-     *
-     * Мы НЕ завершаем Live просто из-за
-     * первого hidden, если pagehide ещё не произошёл.
-     */
-
-    document.addEventListener(
-
-        'visibilitychange',
-
-        ()=>{
-
-            if(
-                document.visibilityState ===
-                'hidden'
-            ){
-
-                /*
-                 * Даём pagehide основной приоритет.
-                 *
-                 * Если WebView действительно закрывается,
-                 * этот вызов дополнительно помогает.
-                 */
-
-                setTimeout(()=>{
-
-                    if(
-                        document.visibilityState ===
-                        'hidden'
-                    ){
-
-                        stopLiveOnExit();
-
-                    }
-
-                },300);
-
-            }
 
         }
 
@@ -446,9 +409,6 @@ function stopLiveOnExit(){
 
     /*
      * Сразу меняем локальное состояние.
-     *
-     * Это не зависит от того,
-     * успел ли запрос Supabase завершиться.
      */
 
     clearLiveState();
@@ -468,10 +428,12 @@ function stopLiveOnExit(){
 
 
     /*
-     * Основной вариант.
+     * Пытаемся отправить завершение
+     * напрямую через REST.
      *
-     * keepalive позволяет браузеру/WebView
-     * продолжить HTTP-запрос после закрытия страницы.
+     * keepalive позволяет запросу
+     * продолжить выполнение при закрытии
+     * страницы.
      */
 
     try{
@@ -547,10 +509,8 @@ function stopLiveOnExit(){
 
 
     /*
-     * Дополнительно пытаемся использовать
-     * существующий сервис.
-     *
-     * Если WebView ещё жив — запрос успеет уйти.
+     * Дополнительная попытка через
+     * существующий Supabase service.
      */
 
     try{

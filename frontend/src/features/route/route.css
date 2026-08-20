@@ -1,168 +1,182 @@
 .route-panel{
 
-position:absolute;
+    position:absolute;
 
-left:16px;
-right:16px;
+    left:16px;
+    right:16px;
 
-bottom:110px;
+    bottom:110px;
 
-padding:22px;
+    padding:22px;
 
-background:rgba(17,20,37,.96);
+    background:rgba(17,20,37,.96);
 
-backdrop-filter:blur(26px);
+    backdrop-filter:blur(26px);
 
-border-radius:28px;
+    border-radius:28px;
 
-box-shadow:
-0 18px 45px rgba(0,0,0,.45);
+    box-shadow:
+        0 18px 45px rgba(0,0,0,.45);
 
-color:white;
+    color:white;
 
-z-index:9999;
+    z-index:9999;
 
-transform:translateY(150%);
-transition:.35s ease;
+    transform:translateY(150%);
 
-display:flex;
-flex-direction:column;
+    transition:.35s ease;
+
+    display:flex;
+    flex-direction:column;
 
 }
+
 
 .route-panel--open{
 
-transform:translateY(0);
+    transform:translateY(0);
 
 }
+
 
 .route-panel__title{
 
-font-size:30px;
-font-weight:700;
+    font-size:30px;
+    font-weight:700;
 
-margin-bottom:18px;
+    margin-bottom:18px;
 
 }
+
 
 #route-info{
 
-display:flex;
-flex-direction:column;
+    display:flex;
+    flex-direction:column;
 
-gap:12px;
+    gap:12px;
 
-margin-bottom:20px;
+    margin-bottom:20px;
 
 }
+
 
 .route-user{
 
-font-size:24px;
-font-weight:700;
+    font-size:24px;
+    font-weight:700;
 
-margin-bottom:6px;
+    margin-bottom:6px;
 
 }
+
 
 .route-stat{
 
-display:flex;
-align-items:center;
+    display:flex;
+    align-items:center;
 
-padding:14px 16px;
+    padding:14px 16px;
 
-background:#1f2337;
+    background:#1f2337;
 
-border-radius:18px;
+    border-radius:18px;
 
-font-size:18px;
-font-weight:600;
+    font-size:18px;
+    font-weight:600;
 
 }
+
 
 .transport-buttons{
 
-display:flex;
+    display:flex;
 
-gap:10px;
+    gap:10px;
 
-margin-bottom:18px;
+    margin-bottom:18px;
 
 }
+
 
 .transport-buttons button{
 
-flex:1;
+    flex:1;
 
-height:50px;
+    height:50px;
 
-border:none;
+    border:none;
 
-border-radius:18px;
+    border-radius:18px;
 
-background:#262a40;
+    background:#262a40;
 
-color:white;
+    color:white;
 
-font-size:16px;
-font-weight:600;
+    font-size:16px;
+    font-weight:600;
 
-cursor:pointer;
+    cursor:pointer;
 
-transition:.2s;
+    transition:.2s;
 
 }
+
 
 .transport-buttons button:hover{
 
-background:#343956;
+    background:#343956;
 
 }
+
 
 .transport-buttons button.active{
 
-background:linear-gradient(
-90deg,
-#6E35FF,
-#9B4DFF
-);
+    background:
+        linear-gradient(
+            90deg,
+            #6E35FF,
+            #9B4DFF
+        );
 
-box-shadow:
-0 0 20px rgba(124,99,255,.45);
+    box-shadow:
+        0 0 20px rgba(124,99,255,.45);
 
 }
+
 
 #route-cancel{
 
-width:100%;
+    width:100%;
 
-height:56px;
+    height:56px;
 
-border:none;
+    border:none;
 
-border-radius:20px;
+    border-radius:20px;
 
-background:linear-gradient(
-90deg,
-#ff5470,
-#ff3558
-);
+    background:
+        linear-gradient(
+            90deg,
+            #ff5470,
+            #ff3558
+        );
 
-color:white;
+    color:white;
 
-font-size:20px;
-font-weight:700;
+    font-size:20px;
+    font-weight:700;
 
-cursor:pointer;
+    cursor:pointer;
 
-transition:.2s;
+    transition:.2s;
 
 }
 
+
 #route-cancel:hover{
 
-transform:scale(.98);
+    transform:scale(.98);
 
 }
 
@@ -173,240 +187,323 @@ transform:scale(.98);
 
 .route-live-notice{
 
-position:fixed;
+    position:fixed;
 
-top:20px;
+    top:20px;
 
-left:50%;
+    left:50%;
 
-transform:
-translateX(-50%)
-translateY(-20px);
+    transform:
+        translateX(-50%)
+        translateY(-20px);
 
-display:flex;
+    display:flex;
 
-align-items:center;
+    align-items:center;
 
-gap:9px;
+    gap:9px;
 
-padding:12px 18px;
+    padding:12px 18px;
 
-background:rgba(17,20,37,.96);
+    background:rgba(17,20,37,.96);
 
-backdrop-filter:blur(18px);
+    backdrop-filter:blur(18px);
 
--webkit-backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
 
-border:1px solid rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.10);
 
-border-radius:16px;
+    border-radius:16px;
 
-box-shadow:
-0 10px 30px rgba(0,0,0,.35);
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.35);
 
-color:white;
+    color:white;
 
-font-size:14px;
+    font-size:14px;
 
-font-weight:600;
+    font-weight:600;
 
-white-space:nowrap;
+    white-space:nowrap;
 
-opacity:0;
+    opacity:0;
 
-pointer-events:none;
+    pointer-events:none;
 
-z-index:20000;
+    z-index:20000;
 
-transition:
-opacity .25s ease,
-transform .25s ease;
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
 
 }
+
 
 .route-live-notice--show{
 
-opacity:1;
+    opacity:1;
 
-transform:
-translateX(-50%)
-translateY(0);
+    transform:
+        translateX(-50%)
+        translateY(0);
 
 }
+
 
 .route-live-notice--hide{
 
-opacity:0;
+    opacity:0;
 
-transform:
-translateX(-50%)
-translateY(-20px);
+    transform:
+        translateX(-50%)
+        translateY(-20px);
 
 }
+
 
 .route-live-notice__icon{
 
-font-size:13px;
+    font-size:13px;
 
-line-height:1;
+    line-height:1;
 
 }
+
 
 .route-live-notice__text{
 
-line-height:1.2;
+    line-height:1.2;
 
 }
 
 
-/* ---------- маленькая кнопка ---------- */
+/* ========================================
+   КНОПКА ОТКРЫТИЯ МАРШРУТА
+======================================== */
 
 .route-open-button{
 
-position:absolute;
+    position:absolute;
 
-right:20px;
+    right:20px;
 
-bottom:118px;
+    bottom:118px;
 
-width:58px;
+    width:58px;
 
-height:58px;
+    height:58px;
 
-border:none;
+    border:none;
 
-border-radius:50%;
+    border-radius:50%;
 
-background:linear-gradient(
-135deg,
-#6E35FF,
-#9B4DFF
-);
+    background:
+        linear-gradient(
+            135deg,
+            #6E35FF,
+            #9B4DFF
+        );
 
-color:white;
+    color:white;
 
-font-size:26px;
+    cursor:pointer;
 
-cursor:pointer;
+    display:flex;
 
-display:flex;
-align-items:center;
-justify-content:center;
+    align-items:center;
 
-box-shadow:
-0 10px 30px rgba(0,0,0,.35);
+    justify-content:center;
 
-opacity:0;
+    padding:0;
 
-pointer-events:none;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.35);
 
-transform:scale(.8);
+    opacity:0;
 
-transition:.25s;
+    pointer-events:none;
 
-z-index:9999;
+    transform:scale(.8);
+
+    transition:.25s;
+
+    z-index:9999;
 
 }
+
 
 .route-open-button--show{
 
-opacity:1;
+    opacity:1;
 
-pointer-events:auto;
+    pointer-events:auto;
 
-transform:scale(1);
+    transform:scale(1);
 
 }
+
 
 .route-open-button:hover{
 
-transform:scale(1.08);
+    transform:scale(1.08);
 
 }
+
+
+.route-open-button:active{
+
+    transform:scale(.96);
+
+}
+
+
+/* ========================================
+   SVG НАВИГАЦИОННАЯ СТРЕЛКА
+======================================== */
+
+.route-open-button__icon{
+
+    width:24px;
+
+    height:24px;
+
+    display:block;
+
+    flex-shrink:0;
+
+    color:white;
+
+    filter:
+        drop-shadow(
+            0 1px 3px
+            rgba(0,0,0,.25)
+        );
+
+    transition:
+        transform .25s ease;
+
+}
+
+
+.route-open-button:hover
+.route-open-button__icon{
+
+    transform:rotate(8deg);
+
+}
+
+
+.route-open-button:active
+.route-open-button__icon{
+
+    transform:scale(.90);
+
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
 
 @media(max-width:480px){
 
-.route-panel{
+    .route-panel{
 
-left:12px;
-right:12px;
+        left:12px;
+        right:12px;
 
-bottom:102px;
+        bottom:102px;
 
-padding:18px;
+        padding:18px;
 
-}
-
-.route-panel__title{
-
-font-size:26px;
-
-}
-
-.route-user{
-
-font-size:21px;
-
-}
-
-.route-stat{
-
-font-size:16px;
-
-}
-
-.transport-buttons button{
-
-font-size:14px;
-
-}
-
-.route-open-button{
-
-right:16px;
-
-bottom:112px;
-
-}
+    }
 
 
-/* Уведомление на телефоне */
+    .route-panel__title{
 
-.route-live-notice{
+        font-size:26px;
 
-top:15px;
+    }
 
-left:12px;
 
-right:12px;
+    .route-user{
 
-width:auto;
+        font-size:21px;
 
-justify-content:center;
+    }
 
-white-space:normal;
 
-text-align:center;
+    .route-stat{
 
-padding:12px 16px;
+        font-size:16px;
 
-transform:
-translateY(-20px);
+    }
 
-}
 
-.route-live-notice--show{
+    .transport-buttons button{
 
-transform:
-translateY(0);
+        font-size:14px;
 
-}
+    }
 
-.route-live-notice--hide{
 
-transform:
-translateY(-20px);
+    .route-open-button{
 
-}
+        right:16px;
+
+        bottom:112px;
+
+    }
+
+
+    .route-open-button__icon{
+
+        width:24px;
+
+        height:24px;
+
+    }
+
+
+    /* Уведомление на телефоне */
+
+    .route-live-notice{
+
+        top:15px;
+
+        left:12px;
+
+        right:12px;
+
+        width:auto;
+
+        justify-content:center;
+
+        white-space:normal;
+
+        text-align:center;
+
+        padding:12px 16px;
+
+        transform:
+            translateY(-20px);
+
+    }
+
+
+    .route-live-notice--show{
+
+        transform:
+            translateY(0);
+
+    }
+
+
+    .route-live-notice--hide{
+
+        transform:
+            translateY(-20px);
+
+    }
 
 }
