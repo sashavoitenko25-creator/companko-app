@@ -3,279 +3,256 @@ import {
 } from './supabaseClient';
 
 
-
 import {
     updateLiveMarkerPosition,
     loadLiveMarkers
 } from '../map/liveMarkerService';
 
 
-
-
 let channel = null;
 
 
-
-
-
-
-
+/* =========================================================
+   INIT REALTIME
+========================================================= */
 
 export function initLocationRealtime(){
 
-
-
     if(channel)
-
         return;
 
 
+    channel =
+        supabase
 
+            .channel(
+                'app-realtime'
+            )
 
 
+            /* =================================================
+               LOCATIONS
+            ================================================= */
 
-    channel = supabase
+            .on(
 
-        .channel(
-            'app-realtime'
-        )
+                'postgres_changes',
 
+                {
 
+                    event:'*',
 
+                    schema:'public',
 
+                    table:'locations'
 
+                },
 
+                payload=>{
 
-        // движение пользователей
+                    const data =
+                        payload.new;
 
-        .on(
 
-            'postgres_changes',
+                    if(!data)
+                        return;
 
-            {
 
-                event:'*',
+                    updateLiveMarkerPosition(
 
-                schema:'public',
+                        data.user_id,
 
-                table:'locations'
+                        [
 
-            },
+                            data.latitude,
 
+                            data.longitude
 
-            payload=>{
+                        ]
 
+                    );
 
+                }
 
-                const data =
+            )
 
-                payload.new;
 
+            /* =================================================
+               LIVE SESSIONS
+            ================================================= */
 
+            .on(
 
+                'postgres_changes',
 
+                {
 
-                if(!data)
+                    event:'*',
 
-                    return;
+                    schema:'public',
 
+                    table:'live_sessions'
 
+                },
 
+                payload=>{
 
+                    console.log(
 
+                        'LIVE SESSION CHANGE',
 
-                updateLiveMarkerPosition(
+                        payload
 
+                    );
 
 
-                    data.user_id,
+                    /*
+                     * Определяем актуальную запись.
+                     *
+                     * Для INSERT / UPDATE используется new.
+                     * Для DELETE остаётся old.
+                     */
 
+                    const data =
+                        payload.new ||
+                        payload.old;
 
 
-                    [
+                    /*
+                     * Если LIVE завершился,
+                     * сообщаем приложению ID пользователя.
+                     */
 
-                        data.latitude,
+                    if(
 
-                        data.longitude
+                        data &&
 
-                    ]
+                        data.user_id &&
 
+                        data.status ===
+                            'finished'
 
+                    ){
 
-                );
+                        window.dispatchEvent(
 
+                            new CustomEvent(
 
+                                'live:user-ended',
 
-            }
+                                {
 
-        )
+                                    detail:{
 
+                                        userId:
+                                            data.user_id,
 
+                                        sessionId:
+                                            data.id
 
+                                    }
 
+                                }
 
+                            )
 
+                        );
 
+                    }
 
-        // включение / выключение LIVE
 
-        .on(
+                    /*
+                     * Оставляем существующее
+                     * обновление карты.
+                     */
 
-            'postgres_changes',
+                    window.dispatchEvent(
 
-            {
+                        new Event(
+                            'live:refresh'
+                        )
 
-                event:'*',
+                    );
 
-                schema:'public',
 
-                table:'live_sessions'
+                    setTimeout(()=>{
 
-            },
+                        loadLiveMarkers();
 
+                    },500);
 
-            payload=>{
+                }
 
+            )
 
 
-                console.log(
+            /* =================================================
+               PROFILES
+            ================================================= */
 
-                    'LIVE SESSION CHANGE',
+            .on(
 
-                    payload
+                'postgres_changes',
 
-                );
+                {
 
+                    event:'*',
 
+                    schema:'public',
 
+                    table:'profiles'
 
+                },
 
+                payload=>{
 
-                window.dispatchEvent(
+                    console.log(
 
-                    new Event(
+                        'PROFILE CHANGE',
 
-                        'live:refresh'
+                        payload
 
-                    )
+                    );
 
-                );
 
+                    window.dispatchEvent(
 
+                        new Event(
+                            'live:refresh'
+                        )
 
+                    );
 
 
+                    setTimeout(()=>{
 
-                setTimeout(()=>{
+                        loadLiveMarkers();
 
+                    },500);
 
-                    loadLiveMarkers();
+                }
 
+            )
 
 
-                },500);
+            /* =================================================
+               SUBSCRIBE
+            ================================================= */
 
+            .subscribe(
 
+                status=>{
 
-            }
+                    console.log(
 
-        )
+                        'REALTIME STATUS',
 
+                        status
 
+                    );
 
+                }
 
-
-
-
-
-        // изменение профилей
-
-        .on(
-
-            'postgres_changes',
-
-            {
-
-                event:'*',
-
-                schema:'public',
-
-                table:'profiles'
-
-            },
-
-
-            payload=>{
-
-
-
-                console.log(
-
-                    'PROFILE CHANGE',
-
-                    payload
-
-                );
-
-
-
-
-
-
-                window.dispatchEvent(
-
-                    new Event(
-
-                        'live:refresh'
-
-                    )
-
-                );
-
-
-
-
-
-                setTimeout(()=>{
-
-
-                    loadLiveMarkers();
-
-
-
-                },500);
-
-
-
-            }
-
-        )
-
-
-
-
-
-
-
-
-        .subscribe(
-
-            status=>{
-
-
-                console.log(
-
-                    'REALTIME STATUS',
-
-                    status
-
-                );
-
-
-            }
-
-        );
-
-
+            );
 
 }
