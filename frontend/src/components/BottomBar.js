@@ -85,67 +85,73 @@ export function BottomBar(){
             xmlns="http://www.w3.org/2000/svg">
 
             <!--
-                НОРМАЛЬНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
-                Только контур + маленькое
-                центральное отверстие
+                РОВНАЯ СИММЕТРИЧНАЯ ШЕСТЕРЁНКА
+                Тонкий белый контур
             -->
 
             <path
                 d="
-                    M12 2.8
+                    M9.65 3.25
+                    L10.05 2.55
+                    H13.95
+                    L14.35 3.25
+                    L14.05 4.35
 
-                    L13.05 4.65
-                    C13.45 4.75 13.82 4.90 14.18 5.10
+                    C14.65 4.55 15.2 4.85 15.7 5.25
 
-                    L16.25 4.42
-                    L17.82 6.00
-                    L17.14 8.07
+                    L16.7 4.65
+                    L18.05 6
+                    L17.45 7
 
-                    C17.34 8.43 17.49 8.80 17.59 9.20
+                    C17.85 7.5 18.15 8.05 18.35 8.65
 
-                    L19.45 10.25
-                    V13.75
+                    L19.45 8.35
+                    L20.15 12
+                    L19.45 15.65
+                    L18.35 15.35
 
-                    L17.59 14.80
+                    C18.15 15.95 17.85 16.5 17.45 17
 
-                    C17.49 15.20 17.34 15.57 17.14 15.93
+                    L18.05 18
+                    L16.7 19.35
+                    L15.7 18.75
 
-                    L17.82 18.00
-                    L16.25 19.58
-                    L14.18 18.90
+                    C15.2 19.15 14.65 19.45 14.05 19.65
 
-                    C13.82 19.10 13.45 19.25 13.05 19.35
+                    L14.35 20.75
+                    L13.95 21.45
+                    H10.05
+                    L9.65 20.75
+                    L9.95 19.65
 
-                    L12 21.20
+                    C9.35 19.45 8.8 19.15 8.3 18.75
 
-                    L10.95 19.35
+                    L7.3 19.35
+                    L5.95 18
+                    L6.55 17
 
-                    C10.55 19.25 10.18 19.10 9.82 18.90
+                    C6.15 16.5 5.85 15.95 5.65 15.35
 
-                    L7.75 19.58
-                    L6.18 18.00
-                    L6.86 15.93
+                    L4.55 15.65
+                    L3.85 12
+                    L4.55 8.35
+                    L5.65 8.65
 
-                    C6.66 15.57 6.51 15.20 6.41 14.80
+                    C5.85 8.05 6.15 7.5 6.55 7
 
-                    L4.55 13.75
-                    V10.25
+                    L5.95 6
+                    L7.3 4.65
+                    L8.3 5.25
 
-                    L6.41 9.20
-
-                    C6.51 8.80 6.66 8.43 6.86 8.07
-
-                    L6.18 6.00
-                    L7.75 4.42
-                    L9.82 5.10
-
-                    C10.18 4.90 10.55 4.75 10.95 4.65
+                    C8.8 4.85 9.35 4.55 9.95 4.35
 
                     Z
                 "
             />
 
-            <!-- ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ -->
+            <!-- =================================================
+                 МАЛЕНЬКОЕ КРУГЛОЕ ОТВЕРСТИЕ
+            ================================================== -->
 
             <circle
                 cx="12"
@@ -170,7 +176,6 @@ export function BottomBar(){
 ========================================================= */
 
 function initBottomBar(){
-
 
     const locationButton =
         document.querySelector(
@@ -197,18 +202,18 @@ function initBottomBar(){
 
 
     /* =====================================================
-       УНИВЕРСАЛЬНЫЙ КОРОТКИЙ CLICK EFFECT
+       ВРЕМЕННЫЙ ЭФФЕКТ НАЖАТИЯ
     ===================================================== */
 
-    function buttonPressed(button){
+    function pressButton(button){
 
         if(!button)
             return;
 
 
         /*
-         * Сначала полностью убираем
-         * старое состояние
+         * Полностью сбрасываем
+         * старые состояния
          */
 
         button.classList.remove(
@@ -217,25 +222,13 @@ function initBottomBar(){
 
 
         /*
-         * Форсируем браузер
-         * пересчитать состояние
-         */
-
-        void button.offsetWidth;
-
-
-        /*
-         * Добавляем эффект
+         * Добавляем короткий эффект
          */
 
         button.classList.add(
             'pressed'
         );
 
-
-        /*
-         * Через 180ms полностью убираем
-         */
 
         setTimeout(()=>{
 
@@ -249,43 +242,116 @@ function initBottomBar(){
 
 
     /* =====================================================
+       ЗАБЛОКИРОВАТЬ HOVER
+       пока курсор находится над кнопкой
+    ===================================================== */
+
+    function lockHoverUntilMouseLeave(button){
+
+        if(!button)
+            return;
+
+
+        button.classList.add(
+            'no-hover'
+        );
+
+
+        const unlock = ()=>{
+
+            button.classList.remove(
+                'no-hover'
+            );
+
+            button.removeEventListener(
+                'mouseleave',
+                unlock
+            );
+
+        };
+
+
+        button.addEventListener(
+            'mouseleave',
+            unlock
+        );
+
+    }
+
+
+    /* =====================================================
        НАЙТИ СЕБЯ
     ===================================================== */
 
     if(locationButton){
 
-        locationButton.onclick = (event)=>{
+        locationButton.addEventListener(
+            'click',
+            (event)=>{
 
-            event.preventDefault();
+                event.preventDefault();
 
-            event.stopPropagation();
-
-
-            /*
-             * Закрываем настройки
-             */
-
-            settings?.classList.remove(
-                'open'
-            );
+                event.stopPropagation();
 
 
-            /*
-             * Короткая анимация кнопки
-             */
+                /*
+                 * Закрываем настройки
+                 */
 
-            buttonPressed(
-                locationButton
-            );
+                settings?.classList.remove(
+                    'open'
+                );
 
 
-            /*
-             * Центрируем карту
-             */
+                /*
+                 * Сбрасываем кнопку
+                 * настроек полностью
+                 */
 
-            centerOnMyLocation();
+                settingsButton?.classList.remove(
+                    'pressed'
+                );
 
-        };
+                settingsButton?.classList.remove(
+                    'no-hover'
+                );
+
+
+                /*
+                 * Короткая анимация
+                 */
+
+                pressButton(
+                    locationButton
+                );
+
+
+                /*
+                 * После клика убираем
+                 * визуальный hover
+                 */
+
+                setTimeout(()=>{
+
+                    locationButton.classList.remove(
+                        'pressed'
+                    );
+
+                    lockHoverUntilMouseLeave(
+                        locationButton
+                    );
+
+                },190);
+
+
+                /*
+                 * Центрируем карту
+                 */
+
+                centerOnMyLocation();
+
+            }
+        );
 
     }
 
@@ -296,52 +362,86 @@ function initBottomBar(){
 
     if(settingsButton){
 
-        settingsButton.onclick = (event)=>{
+        settingsButton.addEventListener(
+            'click',
+            (event)=>{
 
-            event.preventDefault();
+                event.preventDefault();
 
-            event.stopPropagation();
-
-
-            if(!settings)
-                return;
+                event.stopPropagation();
 
 
-            /*
-             * Переключаем окно
-             */
+                if(!settings)
+                    return;
 
-            const willOpen =
-                !settings.classList.contains(
+
+                const isOpen =
+                    settings.classList.contains(
+                        'open'
+                    );
+
+
+                /*
+                 * ВТОРОЙ КЛИК:
+                 * закрываем настройки
+                 */
+
+                if(isOpen){
+
+                    settings.classList.remove(
+                        'open'
+                    );
+
+
+                    /*
+                     * Полностью возвращаем
+                     * кнопку в исходное состояние
+                     */
+
+                    settingsButton.classList.remove(
+                        'pressed'
+                    );
+
+                    settingsButton.classList.remove(
+                        'no-hover'
+                    );
+
+
+                    /*
+                     * Больше ничего
+                     * не оставляем активным
+                     */
+
+                    settingsButton.blur();
+
+                    return;
+
+                }
+
+
+                /*
+                 * ПЕРВЫЙ КЛИК:
+                 * открываем настройки
+                 */
+
+                settings.classList.add(
                     'open'
                 );
 
 
-            settings.classList.toggle(
-                'open'
-            );
+                /*
+                 * Короткая анимация
+                 */
+
+                pressButton(
+                    settingsButton
+                );
 
 
-            /*
-             * Кнопка получает эффект
-             * только на время клика.
-             *
-             * После закрытия или открытия
-             * состояние ВСЕГДА очищается.
-             */
-
-            buttonPressed(
-                settingsButton
-            );
-
-
-            /*
-             * На всякий случай
-             * принудительно убираем
-             * pressed после переключения.
-             */
-
-            if(!willOpen){
+                /*
+                 * После нажатия
+                 * убираем hover
+                 */
 
                 setTimeout(()=>{
 
@@ -349,11 +449,14 @@ function initBottomBar(){
                         'pressed'
                     );
 
-                },200);
+                    lockHoverUntilMouseLeave(
+                        settingsButton
+                    );
+
+                },190);
 
             }
-
-        };
+        );
 
     }
 
@@ -364,35 +467,43 @@ function initBottomBar(){
 
     if(liveButton){
 
-        liveButton.onclick = (event)=>{
+        liveButton.addEventListener(
+            'click',
+            (event)=>{
 
-            event.preventDefault();
+                event.preventDefault();
 
-            event.stopPropagation();
-
-
-            settings?.classList.remove(
-                'open'
-            );
+                event.stopPropagation();
 
 
-            /*
-             * Если настройки закрываются
-             * через LIVE — кнопка настроек
-             * тоже возвращается в обычное состояние.
-             */
+                settings?.classList.remove(
+                    'open'
+                );
 
-            settingsButton?.classList.remove(
-                'pressed'
-            );
 
-        };
+                /*
+                 * Полностью сбрасываем
+                 * кнопку настроек
+                 */
+
+                settingsButton?.classList.remove(
+                    'pressed'
+                );
+
+                settingsButton?.classList.remove(
+                    'no-hover'
+                );
+
+                settingsButton?.blur();
+
+            }
+        );
 
     }
 
 
     /* =====================================================
-       КЛИК ПО ПУСТОМУ МЕСТУ
+       КЛИК ВНЕ ОКНА НАСТРОЕК
     ===================================================== */
 
     document.addEventListener(
@@ -403,13 +514,21 @@ function initBottomBar(){
                 return;
 
 
+            const clickedInsideSettings =
+                settings.contains(
+                    event.target
+                );
+
+
+            const clickedSettingsButton =
+                settingsButton?.contains(
+                    event.target
+                );
+
+
             if(
-                !settings.contains(
-                    event.target
-                ) &&
-                !settingsButton?.contains(
-                    event.target
-                )
+                !clickedInsideSettings &&
+                !clickedSettingsButton
             ){
 
                 settings.classList.remove(
@@ -417,14 +536,15 @@ function initBottomBar(){
                 );
 
 
-                /*
-                 * Полностью сбрасываем
-                 * состояние кнопки настроек.
-                 */
-
                 settingsButton?.classList.remove(
                     'pressed'
                 );
+
+                settingsButton?.classList.remove(
+                    'no-hover'
+                );
+
+                settingsButton?.blur();
 
             }
 
@@ -462,14 +582,15 @@ function initBottomBar(){
                 );
 
 
-                /*
-                 * Возвращаем настройки
-                 * в исходный вид.
-                 */
-
                 settingsButton?.classList.remove(
                     'pressed'
                 );
+
+                settingsButton?.classList.remove(
+                    'no-hover'
+                );
+
+                settingsButton?.blur();
 
             }
 

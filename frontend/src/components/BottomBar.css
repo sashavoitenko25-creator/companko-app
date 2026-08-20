@@ -97,10 +97,11 @@
 
 
 /* =========================================================
-   ОБЫЧНОЕ HOVER-СОСТОЯНИЕ
+   HOVER
+   Работает только когда кнопка НЕ заблокирована
 ========================================================= */
 
-.bottom-button:hover{
+.bottom-button:not(.no-hover):hover{
 
     transform:translateY(-2px);
 
@@ -125,7 +126,7 @@
 
 
 /* =========================================================
-   НАЖАТИЕ МЫШКОЙ
+   НАЖАТИЕ
 ========================================================= */
 
 .bottom-button:active{
@@ -137,7 +138,6 @@
 
 /* =========================================================
    ВРЕМЕННЫЙ PRESSED
-   Используется только JS
 ========================================================= */
 
 .bottom-button.pressed{
@@ -156,6 +156,36 @@
         0 6px 18px rgba(0,0,0,.40),
         0 0 18px rgba(139,92,246,.28),
         inset 0 1px 0 rgba(255,255,255,.08) !important;
+
+}
+
+
+/* =========================================================
+   NO-HOVER
+   После клика кнопка полностью обычная,
+   пока мышь не уйдёт с неё
+========================================================= */
+
+.bottom-button.no-hover{
+
+    transform:none !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28,30,43,.97),
+            rgba(14,16,26,.97)
+        ) !important;
+
+    border-color:
+        rgba(255,255,255,.10) !important;
+
+    color:
+        rgba(255,255,255,.90) !important;
+
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.40),
+        inset 0 1px 0 rgba(255,255,255,.06) !important;
 
 }
 
@@ -183,7 +213,9 @@
 }
 
 
-.bottom-button:hover .location-icon{
+/* hover только если разрешён */
+
+.bottom-button:not(.no-hover):hover .location-icon{
 
     color:#b994ff;
 
@@ -194,12 +226,18 @@
 
 /* =========================================================
    SETTINGS ICON
-   АККУРАТНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
+   РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon{
 
     width:21px;
+
+    height:21px;
+
+    min-width:21px;
+
+    max-width:21px;
 
     height:21px;
 
@@ -213,7 +251,7 @@
 
     stroke:currentColor;
 
-    stroke-width:1.45;
+    stroke-width:1.55;
 
     stroke-linecap:round;
 
@@ -242,7 +280,7 @@
 
     stroke:currentColor;
 
-    stroke-width:1.45;
+    stroke-width:1.55;
 
     stroke-linecap:round;
 
@@ -261,7 +299,7 @@
 
     stroke:currentColor;
 
-    stroke-width:1.45;
+    stroke-width:1.55;
 
 }
 
@@ -270,7 +308,7 @@
    HOVER ШЕСТЕРЁНКИ
 ========================================================= */
 
-#settings-button:hover .settings-icon{
+#settings-button:not(.no-hover):hover .settings-icon{
 
     color:#b994ff;
 
@@ -287,7 +325,20 @@
 
     color:#ffffff;
 
-    transform:rotate(25deg) scale(.96);
+    transform:scale(.96);
+
+}
+
+
+/* =========================================================
+   NO-HOVER ДЛЯ ШЕСТЕРЁНКИ
+========================================================= */
+
+#settings-button.no-hover .settings-icon{
+
+    color:#ffffff;
+
+    transform:none !important;
 
 }
 
