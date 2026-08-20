@@ -82,6 +82,10 @@
 
     box-sizing:border-box;
 
+    outline:none;
+
+    -webkit-tap-highlight-color:transparent;
+
     box-shadow:
         0 8px 22px rgba(0,0,0,.40),
         inset 0 1px 0 rgba(255,255,255,.06);
@@ -98,34 +102,18 @@
 
 /* =========================================================
    ОБЫЧНЫЙ HOVER
+   НЕ ДЕЛАЕМ ЕГО АКТИВНЫМ СОСТОЯНИЕМ
 ========================================================= */
 
 .bottom-button:hover{
 
     transform:translateY(-2px);
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(39,41,57,.98),
-            rgba(18,20,32,.98)
-        );
-
-    border-color:
-        rgba(139,92,246,.35);
-
-    color:#ffffff;
-
-    box-shadow:
-        0 10px 26px rgba(0,0,0,.45),
-        0 0 14px rgba(139,92,246,.10),
-        inset 0 1px 0 rgba(255,255,255,.07);
-
 }
 
 
 /* =========================================================
-   ОБЫЧНОЕ НАЖАТИЕ
+   НАЖАТИЕ
 ========================================================= */
 
 .bottom-button:active{
@@ -136,55 +124,43 @@
 
 
 /* =========================================================
-   =========================================================
-   ACTIVE
-   Настоящее активное состояние
-   =========================================================
-   ========================================================= */
+   УБИРАЕМ FOCUS ПОСЛЕ КЛИКА
+========================================================= */
 
-.bottom-button.active{
+.bottom-button:focus{
 
-    transform:scale(.96) !important;
-
-    background:
-        rgba(124,58,237,.28) !important;
-
-    border-color:
-        rgba(139,92,246,.65) !important;
-
-    color:#ffffff !important;
-
-    box-shadow:
-        0 8px 22px rgba(0,0,0,.40),
-        0 0 10px rgba(139,92,246,.35),
-        0 0 24px rgba(139,92,246,.22),
-        inset 0 1px 0 rgba(255,255,255,.10) !important;
+    outline:none;
 
 }
 
 
 /* =========================================================
-   ACTIVE + HOVER
-   Не меняем состояние при наведении
+   АКТИВНОЕ СОСТОЯНИЕ
+   ИСПОЛЬЗУЕТСЯ ТОЛЬКО JS
 ========================================================= */
 
-.bottom-button.active:hover{
+.bottom-button.locating,
+.bottom-button.open-state{
 
-    transform:scale(.96) !important;
+    transform:scale(.94);
 
     background:
-        rgba(124,58,237,.28) !important;
+        linear-gradient(
+            145deg,
+            rgba(124,58,237,.38),
+            rgba(91,33,182,.30)
+        );
 
     border-color:
-        rgba(139,92,246,.65) !important;
+        rgba(167,139,250,.75);
 
-    color:#ffffff !important;
+    color:#ffffff;
 
     box-shadow:
         0 8px 22px rgba(0,0,0,.40),
-        0 0 10px rgba(139,92,246,.35),
-        0 0 24px rgba(139,92,246,.22),
-        inset 0 1px 0 rgba(255,255,255,.10) !important;
+        0 0 20px rgba(139,92,246,.38),
+        0 0 6px rgba(167,139,250,.30),
+        inset 0 1px 0 rgba(255,255,255,.10);
 
 }
 
@@ -213,23 +189,10 @@
 
 
 /* =========================================================
-   LOCATION — ОБЫЧНЫЙ HOVER
+   LOCATION В АКТИВНОМ СОСТОЯНИИ
 ========================================================= */
 
-.bottom-button:not(.active):hover .location-icon{
-
-    color:#b994ff;
-
-    transform:scale(1.05);
-
-}
-
-
-/* =========================================================
-   LOCATION — ACTIVE
-========================================================= */
-
-#my-location-button.active .location-icon{
+.bottom-button.locating .location-icon{
 
     color:#ffffff;
 
@@ -240,7 +203,6 @@
 
 /* =========================================================
    SETTINGS ICON
-   РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon{
@@ -248,10 +210,6 @@
     width:21px;
 
     height:21px;
-
-    min-width:21px;
-
-    max-width:21px;
 
     display:block;
 
@@ -263,7 +221,7 @@
 
     stroke:currentColor;
 
-    stroke-width:1.55;
+    stroke-width:1.35;
 
     stroke-linecap:round;
 
@@ -283,7 +241,7 @@
 
 
 /* =========================================================
-   КОНТУР ШЕСТЕРЁНКИ
+   ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon path{
@@ -292,7 +250,7 @@
 
     stroke:currentColor;
 
-    stroke-width:1.55;
+    stroke-width:1.35;
 
     stroke-linecap:round;
 
@@ -301,52 +259,22 @@
 }
 
 
-/* =========================================================
-   ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
-========================================================= */
-
 .settings-icon circle{
 
     fill:none;
 
     stroke:currentColor;
 
-    stroke-width:1.55;
+    stroke-width:1.35;
 
 }
 
 
 /* =========================================================
-   SETTINGS — ОБЫЧНЫЙ HOVER
+   ШЕСТЕРЁНКА ПРИ ОТКРЫТЫХ НАСТРОЙКАХ
 ========================================================= */
 
-#settings-button:not(.active):hover .settings-icon{
-
-    color:#b994ff;
-
-    transform:rotate(25deg);
-
-}
-
-
-/* =========================================================
-   SETTINGS — ACTIVE
-========================================================= */
-
-#settings-button.active .settings-icon{
-
-    color:#ffffff;
-
-    transform:rotate(25deg);
-
-}
-
-
-/* =========================================================
-   SETTINGS — ACTIVE + HOVER
-========================================================= */
-
-#settings-button.active:hover .settings-icon{
+#settings-button.open-state .settings-icon{
 
     color:#ffffff;
 

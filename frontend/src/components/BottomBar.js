@@ -84,10 +84,6 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
-            <!--
-                КРУГЛАЯ ТОНКАЯ ШЕСТЕРЁНКА
-            -->
-
             <path
                 d="
                     M12 3.2
@@ -141,24 +137,12 @@ export function BottomBar(){
 
                     Z
                 "
-                stroke="currentColor"
-                stroke-width="1.35"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                fill="none"
             />
-
-            <!--
-                МАЛЕНЬКОЕ ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
-            -->
 
             <circle
                 cx="12"
                 cy="12"
                 r="2.35"
-                stroke="currentColor"
-                stroke-width="1.35"
-                fill="none"
             />
 
         </svg>
@@ -204,24 +188,6 @@ function initBottomBar(){
 
 
     /* =====================================================
-       СБРОС КНОПКИ В ОБЫЧНОЕ СОСТОЯНИЕ
-    ===================================================== */
-
-    function resetButton(button){
-
-        if(!button)
-            return;
-
-        button.classList.remove(
-            'pressed'
-        );
-
-        button.blur();
-
-    }
-
-
-    /* =====================================================
        НАЙТИ СЕБЯ
     ===================================================== */
 
@@ -247,8 +213,8 @@ function initBottomBar(){
             }
 
 
-            resetButton(
-                settingsButton
+            settingsButton?.classList.remove(
+                'open-state'
             );
 
 
@@ -257,20 +223,24 @@ function initBottomBar(){
             --------------------------------------------- */
 
             locationButton.classList.add(
-                'pressed'
+                'locating'
             );
+
+
+            /*
+             * Убираем focus браузера.
+             * Активное состояние теперь полностью
+             * контролируется классом .locating.
+             */
+
+            locationButton.blur();
 
 
             try{
 
                 /*
-                 * ЖДЁМ ПОЛНОГО ЗАВЕРШЕНИЯ:
-                 *
-                 * получение геолокации
-                 * +
-                 * flyTo
-                 * +
-                 * moveend
+                 * Ждём полного окончания
+                 * геолокации + flyTo + moveend.
                  */
 
                 await centerOnMyLocation();
@@ -279,7 +249,7 @@ function initBottomBar(){
             catch(error){
 
                 console.error(
-                    'Не удалось определить местоположение:',
+                    'Ошибка поиска местоположения:',
                     error
                 );
 
@@ -287,13 +257,16 @@ function initBottomBar(){
             finally{
 
                 /*
-                 * После завершения фокусировки
-                 * возвращаем кнопку в обычное состояние.
+                 * ВОТ ЗДЕСЬ кнопка гарантированно
+                 * возвращается в исходное состояние.
                  */
 
-                resetButton(
-                    locationButton
+                locationButton.classList.remove(
+                    'locating'
                 );
+
+
+                locationButton.blur();
 
             }
 
@@ -327,7 +300,6 @@ function initBottomBar(){
 
             /* ---------------------------------------------
                ВТОРОЕ НАЖАТИЕ
-               Закрываем настройки
             --------------------------------------------- */
 
             if(isOpen){
@@ -337,9 +309,12 @@ function initBottomBar(){
                 );
 
 
-                resetButton(
-                    settingsButton
+                settingsButton.classList.remove(
+                    'open-state'
                 );
+
+
+                settingsButton.blur();
 
 
                 return;
@@ -349,7 +324,6 @@ function initBottomBar(){
 
             /* ---------------------------------------------
                ПЕРВОЕ НАЖАТИЕ
-               Открываем настройки
             --------------------------------------------- */
 
             settings.classList.add(
@@ -358,8 +332,11 @@ function initBottomBar(){
 
 
             settingsButton.classList.add(
-                'pressed'
+                'open-state'
             );
+
+
+            settingsButton.blur();
 
         };
 
@@ -368,7 +345,7 @@ function initBottomBar(){
 
     /* =====================================================
        LIVE
-    ===================================================== */
+    ====================================================== */
 
     if(liveButton){
 
@@ -379,22 +356,17 @@ function initBottomBar(){
             event.stopPropagation();
 
 
-            /* Закрываем настройки */
-
-            if(settings){
-
-                settings.classList.remove(
-                    'open'
-                );
-
-            }
-
-
-            /* Сбрасываем кнопку настроек */
-
-            resetButton(
-                settingsButton
+            settings?.classList.remove(
+                'open'
             );
+
+
+            settingsButton?.classList.remove(
+                'open-state'
+            );
+
+
+            settingsButton?.blur();
 
         };
 
@@ -413,12 +385,6 @@ function initBottomBar(){
                 return;
 
 
-            /*
-             * Если клик был не внутри окна
-             * и не по кнопке настроек —
-             * закрываем настройки.
-             */
-
             if(
                 !settings.contains(
                     event.target
@@ -433,9 +399,12 @@ function initBottomBar(){
                 );
 
 
-                resetButton(
-                    settingsButton
+                settingsButton?.classList.remove(
+                    'open-state'
                 );
+
+
+                settingsButton?.blur();
 
             }
 
@@ -461,11 +430,6 @@ function initBottomBar(){
                 return;
 
 
-            /*
-             * Если нажата любая другая кнопка,
-             * настройки закрываются.
-             */
-
             if(
                 target !== settingsButton &&
                 !settings?.contains(
@@ -478,9 +442,12 @@ function initBottomBar(){
                 );
 
 
-                resetButton(
-                    settingsButton
+                settingsButton?.classList.remove(
+                    'open-state'
                 );
+
+
+                settingsButton?.blur();
 
             }
 
