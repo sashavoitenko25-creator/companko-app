@@ -2,28 +2,29 @@
    MAP THEME SERVICE
 ========================================================= */
 
-
 let currentLayer = null;
 
 
 /* =========================================================
-   DARK MAP
+   КАРТЫ
 ========================================================= */
 
+/*
+ * Основная светлая карта
+ */
+const LIGHT_MAP =
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+
+/*
+ * Тёмная карта
+ */
 const DARK_MAP =
     'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
 
 /* =========================================================
-   LIGHT MAP
-========================================================= */
-
-const LIGHT_MAP =
-    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-
-
-/* =========================================================
-   GET THEME
+   THEME
 ========================================================= */
 
 export function getMapTheme(){
@@ -31,7 +32,7 @@ export function getMapTheme(){
     return (
         localStorage.getItem(
             'map-theme'
-        ) || 'dark'
+        ) || 'light'
     );
 
 }
@@ -48,7 +49,7 @@ export function setMapTheme(theme){
         theme !== 'light'
     ){
 
-        theme = 'dark';
+        theme = 'light';
 
     }
 
@@ -62,7 +63,7 @@ export function setMapTheme(theme){
 
 
 /* =========================================================
-   GET TILE URL
+   TILE URL
 ========================================================= */
 
 export function getTileUrl(){
@@ -71,20 +72,20 @@ export function getTileUrl(){
         getMapTheme();
 
 
-    if(theme === 'light'){
+    if(theme === 'dark'){
 
-        return LIGHT_MAP;
+        return DARK_MAP;
 
     }
 
 
-    return DARK_MAP;
+    return LIGHT_MAP;
 
 }
 
 
 /* =========================================================
-   CURRENT TILE LAYER
+   CURRENT LAYER
 ========================================================= */
 
 export function setCurrentTileLayer(layer){
@@ -103,7 +104,7 @@ export function getCurrentTileLayer(){
 
 
 /* =========================================================
-   RELOAD MAP THEME
+   RELOAD THEME
 ========================================================= */
 
 export function reloadMapTheme(
@@ -132,7 +133,7 @@ export function reloadMapTheme(
         catch(error){
 
             console.warn(
-                'Не удалось удалить старый слой карты',
+                'MAP OLD TILE REMOVE ERROR',
                 error
             );
 
@@ -142,10 +143,10 @@ export function reloadMapTheme(
 
 
     /* -----------------------------------------
-       Создаём новый слой
+       Новый слой
     ----------------------------------------- */
 
-    const newLayer =
+    const layer =
         L.tileLayer(
 
             getTileUrl(),
@@ -164,9 +165,12 @@ export function reloadMapTheme(
 
                 updateWhenZooming:true,
 
-                keepBuffer:2,
+                keepBuffer:3,
 
-                crossOrigin:true
+                detectRetina:false,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
 
             }
 
@@ -174,23 +178,39 @@ export function reloadMapTheme(
 
 
     /* -----------------------------------------
-       Добавляем карту
+       Ошибка тайла
     ----------------------------------------- */
 
-    newLayer.addTo(
-        map
+    layer.on(
+
+        'tileerror',
+
+        event=>{
+
+            console.error(
+                'MAP TILE ERROR',
+                event.tile?.src
+            );
+
+        }
+
     );
 
 
     /* -----------------------------------------
-       Сохраняем текущий слой
+       Добавляем
     ----------------------------------------- */
 
-    setCurrentTileLayer(
-        newLayer
+    layer.addTo(
+        map
     );
 
 
-    return newLayer;
+    setCurrentTileLayer(
+        layer
+    );
+
+
+    return layer;
 
 }

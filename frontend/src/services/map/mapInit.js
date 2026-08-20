@@ -63,8 +63,15 @@ export function initMap(){
         );
 
 
-    if(!mapElement)
+    if(!mapElement){
+
+        console.error(
+            'MAP ELEMENT NOT FOUND'
+        );
+
         return;
+
+    }
 
 
     initialized = true;
@@ -76,65 +83,61 @@ export function initMap(){
 
 
     /* =====================================================
-       MAP
+       LEAFLET MAP
     ===================================================== */
 
-    const map = L.map(
+    const map =
+        L.map(
 
-        'map',
+            'map',
 
-        {
+            {
 
-            zoomControl:false,
+                zoomControl:false,
 
-            attributionControl:false,
-
-
-            /* ---------------------------------------------
-               ВРАЩЕНИЕ
-            --------------------------------------------- */
-
-            rotate:true,
-
-            touchRotate:true,
-
-            bearing:0,
-
-            rotateControl:false,
+                attributionControl:false,
 
 
-            /* ---------------------------------------------
-               МИНИМАЛЬНЫЙ / МАКСИМАЛЬНЫЙ ZOOM
-            --------------------------------------------- */
+                /* -----------------------------------------
+                   ROTATE
+                ----------------------------------------- */
 
-            minZoom:2,
+                rotate:true,
 
-            maxZoom:19,
+                touchRotate:true,
 
+                bearing:0,
 
-            /* ---------------------------------------------
-               НЕ ДАЁМ УЙТИ ЗА ПРЕДЕЛЫ МИРА
-            --------------------------------------------- */
-
-            maxBounds:[
-                [-85.05112878, -180],
-                [ 85.05112878,  180]
-            ],
-
-            maxBoundsViscosity:1.0,
+                rotateControl:false,
 
 
-            /* ---------------------------------------------
-               ПОВЕДЕНИЕ ПРИ ZOOM
-            --------------------------------------------- */
+                /* -----------------------------------------
+                   ZOOM
+                ----------------------------------------- */
 
-            zoomSnap:1,
+                minZoom:2,
 
-            zoomDelta:1
+                maxZoom:19,
 
-        }
+                zoomSnap:1,
 
-    );
+                zoomDelta:1,
+
+
+                /* -----------------------------------------
+                   ГРАНИЦЫ ЗЕМЛИ
+                ----------------------------------------- */
+
+                maxBounds:[
+                    [-85.05112878, -180],
+                    [ 85.05112878,  180]
+                ],
+
+                maxBoundsViscosity:1.0
+
+            }
+
+        );
 
 
     /* =====================================================
@@ -154,7 +157,7 @@ export function initMap(){
 
 
     /* =====================================================
-       Сохраняем карту
+       СОХРАНЯЕМ MAP
     ===================================================== */
 
     setMap(
@@ -165,6 +168,12 @@ export function initMap(){
     /* =====================================================
        TILE LAYER
     ===================================================== */
+
+    console.log(
+        'MAP TILE URL:',
+        getTileUrl()
+    );
+
 
     tileLayer =
         L.tileLayer(
@@ -185,9 +194,12 @@ export function initMap(){
 
                 updateWhenZooming:true,
 
-                keepBuffer:2,
+                keepBuffer:3,
 
-                crossOrigin:true
+                detectRetina:false,
+
+                attribution:
+                    '&copy; OpenStreetMap contributors'
 
             }
 
@@ -195,7 +207,26 @@ export function initMap(){
 
 
     /* =====================================================
-       ОШИБКА ЗАГРУЗКИ TILE
+       TILE LOAD
+    ===================================================== */
+
+    tileLayer.on(
+
+        'tileload',
+
+        ()=>{
+
+            console.log(
+                'MAP TILE LOADED'
+            );
+
+        }
+
+    );
+
+
+    /* =====================================================
+       TILE ERROR
     ===================================================== */
 
     tileLayer.on(
@@ -204,9 +235,8 @@ export function initMap(){
 
         event=>{
 
-            console.warn(
+            console.error(
                 'MAP TILE ERROR:',
-                event.coords,
                 event.tile?.src
             );
 
@@ -216,7 +246,7 @@ export function initMap(){
 
 
     /* =====================================================
-       ДОБАВЛЯЕМ КАРТУ
+       ДОБАВЛЯЕМ TILE LAYER
     ===================================================== */
 
     tileLayer.addTo(
@@ -237,7 +267,7 @@ export function initMap(){
 
         'click',
 
-        event=>{
+        ()=>{
 
             window.dispatchEvent(
 
@@ -269,14 +299,14 @@ export function initMap(){
 
 
     /* =====================================================
-       СОБЫТИЯ ЛОКАЦИИ
+       LOCATION EVENTS
     ===================================================== */
 
     initLocationEvents();
 
 
     /* =====================================================
-       ОТСЛЕЖИВАНИЕ ПОЗИЦИИ
+       LOCATION WATCH
     ===================================================== */
 
     watchLocation(
@@ -289,10 +319,6 @@ export function initMap(){
             );
 
 
-            /* ---------------------------------------------
-               МОЯ ПОЗИЦИЯ
-            --------------------------------------------- */
-
             window.myLocation = {
 
                 lat:
@@ -304,10 +330,6 @@ export function initMap(){
             };
 
 
-            /* ---------------------------------------------
-               МОЙ МАРКЕР
-            --------------------------------------------- */
-
             updateMyMarker(
 
                 position.latitude,
@@ -316,10 +338,6 @@ export function initMap(){
 
             );
 
-
-            /* ---------------------------------------------
-               СОБЫТИЕ
-            --------------------------------------------- */
 
             window.dispatchEvent(
 
@@ -387,7 +405,7 @@ export function initMap(){
 
 
     /* =====================================================
-       LOCATION REALTIME
+       REALTIME
     ===================================================== */
 
     initLocationRealtime();
@@ -442,26 +460,32 @@ export function initMap(){
 
 
     /* =====================================================
-       RESIZE
+       INVALIDATE SIZE
     ===================================================== */
 
     setTimeout(()=>{
 
-        map.invalidateSize();
+        map.invalidateSize(
+            true
+        );
 
     },100);
 
 
     setTimeout(()=>{
 
-        map.invalidateSize();
+        map.invalidateSize(
+            true
+        );
 
     },500);
 
 
     setTimeout(()=>{
 
-        map.invalidateSize();
+        map.invalidateSize(
+            true
+        );
 
     },1000);
 
