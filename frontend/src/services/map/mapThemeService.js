@@ -1,6 +1,12 @@
 let currentLayer = null;
 
 
+
+
+/* =========================================================
+   MAP TILES
+========================================================= */
+
 const DARK_MAP =
 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
@@ -9,6 +15,32 @@ const LIGHT_MAP =
 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 
 
+
+
+/* =========================================================
+   ГРАНИЦЫ ОДНОГО МИРА
+========================================================= */
+
+const WORLD_BOUNDS = [
+
+    [
+        -85.05112878,
+        -180
+    ],
+
+    [
+        85.05112878,
+        180
+    ]
+
+];
+
+
+
+
+/* =========================================================
+   THEME
+========================================================= */
 
 export function getMapTheme(){
 
@@ -23,6 +55,9 @@ export function getMapTheme(){
 
 
 
+/* =========================================================
+   SET THEME
+========================================================= */
 
 export function setMapTheme(theme){
 
@@ -38,20 +73,20 @@ export function setMapTheme(theme){
 
 
 
+/* =========================================================
+   TILE URL
+========================================================= */
 
 export function getTileUrl(){
 
 
     const theme =
-    getMapTheme();
-
+        getMapTheme();
 
 
     if(theme === 'light'){
 
-
         return LIGHT_MAP;
-
 
     }
 
@@ -64,11 +99,15 @@ export function getTileUrl(){
 
 
 
+/* =========================================================
+   CURRENT TILE LAYER
+========================================================= */
 
 export function setCurrentTileLayer(layer){
 
 
-    currentLayer = layer;
+    currentLayer =
+        layer;
 
 
 }
@@ -76,40 +115,68 @@ export function setCurrentTileLayer(layer){
 
 
 
+/* =========================================================
+   RELOAD MAP THEME
+========================================================= */
 
 export function reloadMapTheme(map, L){
 
 
+    /* =====================================================
+       УДАЛЯЕМ СТАРЫЙ СЛОЙ
+    ===================================================== */
 
     if(currentLayer){
-
 
         map.removeLayer(
             currentLayer
         );
-
 
     }
 
 
 
 
+    /* =====================================================
+       СОЗДАЁМ НОВЫЙ СЛОЙ
+    ===================================================== */
 
     currentLayer =
-    L.tileLayer(
+        L.tileLayer(
 
-        getTileUrl(),
+            getTileUrl(),
 
-        {
+            {
 
-            maxZoom:19
+                maxZoom:19,
 
-        }
+                minZoom:2,
 
-    )
-    .addTo(map);
+                noWrap:true,
+
+                bounds:WORLD_BOUNDS
+
+            }
+
+        );
 
 
+
+
+    /* =====================================================
+       ДОБАВЛЯЕМ
+    ===================================================== */
+
+    currentLayer.addTo(
+        map
+    );
+
+
+
+
+    /* =====================================================
+       СОХРАНЯЕМ
+    ===================================================== */
 
     setCurrentTileLayer(
         currentLayer

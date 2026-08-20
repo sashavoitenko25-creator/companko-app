@@ -1,3 +1,31 @@
+/* =========================================================
+   GLOBAL PAGE
+========================================================= */
+
+html,
+body{
+
+    width:100%;
+
+    height:100%;
+
+    min-width:100%;
+
+    min-height:100%;
+
+    margin:0;
+
+    padding:0;
+
+    overflow:hidden;
+
+}
+
+
+/* =========================================================
+   MAP CONTAINER
+========================================================= */
+
 .map{
 
     position:absolute;
@@ -10,12 +38,76 @@
 
     z-index:0;
 
+    overflow:hidden;
+
 }
 
 
-/* ==================================================
-   СИНИЙ МАРКЕР
-================================================== */
+/*
+ * Leaflet должен занимать
+ * абсолютно весь контейнер.
+ */
+
+.map .leaflet-container{
+
+    width:100%;
+
+    height:100%;
+
+    background:#d9d9d9;
+
+}
+
+
+/* =========================================================
+   LEAFLET TILE
+========================================================= */
+
+.map .leaflet-tile{
+
+    max-width:none !important;
+
+}
+
+
+/*
+ * Не позволяем плиткам визуально
+ * вылезать за пределы карты.
+ */
+
+.map .leaflet-layer{
+
+    overflow:hidden;
+
+}
+
+
+/* =========================================================
+   SELECTED USER
+========================================================= */
+
+#selected-user-container{
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    width:100%;
+
+    height:100%;
+
+    pointer-events:none;
+
+    z-index:2000;
+
+}
+
+
+/* =========================================================
+   BLUE LOCATION MARKER
+========================================================= */
 
 .my-location{
 
@@ -78,9 +170,9 @@
 }
 
 
-/* ==================================================
+/* =========================================================
    ONLINE
-================================================== */
+========================================================= */
 
 .online-counter{
 
@@ -146,9 +238,9 @@
 }
 
 
-/* ==================================================
+/* =========================================================
    ACTIVITY TABS
-================================================== */
+========================================================= */
 
 .activity-tabs{
 
@@ -232,66 +324,109 @@
 }
 
 
-/* ==================================================
+/* =========================================================
    BOTTOM BAR
-================================================== */
+========================================================= */
 
 .bottom-bar{
 
-    position:absolute;
+    position:fixed;
 
-    left:20px;
+    left:50%;
 
-    right:20px;
+    bottom:20px;
 
-    bottom:22px;
+    width:100%;
+
+    max-width:430px;
+
+    transform:translateX(-50%);
 
     display:flex;
 
     align-items:center;
 
-    justify-content:space-between;
+    justify-content:center;
 
-    z-index:3000;
+    gap:8px;
+
+    z-index:9000;
 
 }
 
 
+/* =========================================================
+   BOTTOM BUTTON
+========================================================= */
+
 .bottom-button{
 
-    width:58px;
+    width:45px;
 
-    height:58px;
+    height:45px;
 
-    border:none;
+    min-width:45px;
 
-    border-radius:18px;
+    max-width:45px;
 
-    background:rgba(18,20,35,.88);
+    border:1px solid rgba(255,255,255,.10);
 
-    backdrop-filter:blur(18px);
+    border-radius:50%;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28,30,43,.97),
+            rgba(14,16,26,.97)
+        );
 
     color:white;
 
-    font-size:24px;
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:0;
+
+    margin:0;
+
+    box-sizing:border-box;
 
     cursor:pointer;
 
     box-shadow:
-        0 10px 30px rgba(0,0,0,.25);
+        0 8px 22px rgba(0,0,0,.40),
+        inset 0 1px 0 rgba(255,255,255,.06);
 
 }
 
 
+.bottom-button:hover{
+
+    transform:translateY(-2px);
+
+}
+
+
+/* =========================================================
+   LIVE
+========================================================= */
+
 .live-button{
 
-    width:220px;
+    width:180px;
 
-    height:60px;
+    height:50px;
+
+    min-width:180px;
+
+    max-width:180px;
 
     border:none;
 
-    border-radius:18px;
+    border-radius:16px;
 
     background:
         linear-gradient(
@@ -302,16 +437,14 @@
 
     color:white;
 
-    font-size:22px;
+    font-size:20px;
 
     font-weight:700;
 
     cursor:pointer;
 
     box-shadow:
-        0 10px 35px rgba(139,92,246,.35);
-
-    transition:.2s;
+        0 10px 28px rgba(139,92,246,.35);
 
 }
 
@@ -330,16 +463,9 @@
 }
 
 
-.bottom-button:hover{
-
-    transform:translateY(-2px);
-
-}
-
-
-/* ==================================================
-   LIVE МАРКЕР
-================================================== */
+/* =========================================================
+   LIVE MARKER
+========================================================= */
 
 .my-live-marker{
 
@@ -487,7 +613,8 @@
 
 @keyframes liveDot{
 
-    0%,100%{
+    0%,
+    100%{
 
         opacity:1;
 
@@ -506,49 +633,85 @@
 }
 
 
-/* ==================================================
-   СЕКТОР НАПРАВЛЕНИЯ (внутри маркера)
-   rotateWithView: true → крутится с картой
-   heading крутит только сектор по компасу
-================================================== */
+/* =========================================================
+   HEADING SECTOR
+========================================================= */
 
 .my-marker-wrapper{
-    background: transparent !important;
-    border: none !important;
-    overflow: visible !important;
+
+    background:transparent !important;
+
+    border:none !important;
+
+    overflow:visible !important;
+
 }
+
 
 .my-marker-root{
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
+
+    position:relative;
+
+    width:100%;
+
+    height:100%;
+
+    overflow:visible;
+
 }
+
 
 .my-heading-sector-inner{
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 56px;
-    height: 70px;
-    margin: 0;
-    padding: 0;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0;
-    transform-origin: 50% 100%;
-    transform: translate(-50%, -100%) rotate(0deg);
-    will-change: transform, opacity;
+
+    position:absolute;
+
+    left:50%;
+
+    top:50%;
+
+    width:56px;
+
+    height:70px;
+
+    margin:0;
+
+    padding:0;
+
+    pointer-events:none;
+
+    z-index:0;
+
+    opacity:0;
+
+    transform-origin:50% 100%;
+
+    transform:
+        translate(-50%, -100%)
+        rotate(0deg);
+
+    will-change:
+        transform,
+        opacity;
+
 }
 
+
 .my-heading-sector__fan{
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
+
+    position:absolute;
+
+    left:0;
+
+    top:0;
+
+    width:100%;
+
+    height:100%;
+
+    margin:0;
+
+    padding:0;
+
     background:
         linear-gradient(
             to top,
@@ -557,12 +720,54 @@
             rgba(66,133,244,.12) 70%,
             rgba(66,133,244,0) 100%
         );
-    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
-    filter: blur(.3px);
+
+    clip-path:
+        polygon(
+            50% 100%,
+            0% 0%,
+            100% 0%
+        );
+
+    filter:blur(.3px);
+
 }
+
 
 .my-location,
 .my-live-marker{
-    position: relative;
-    z-index: 2;
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:480px){
+
+    .bottom-bar{
+
+        bottom:20px;
+
+        padding:0 12px;
+
+        box-sizing:border-box;
+
+    }
+
+
+    .live-button{
+
+        width:180px;
+
+        min-width:180px;
+
+        max-width:180px;
+
+    }
+
 }
