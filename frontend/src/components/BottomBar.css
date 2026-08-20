@@ -136,7 +136,7 @@
 
 
 /* =========================================================
-   PRESSED
+   ВРЕМЕННЫЙ PRESSED
 ========================================================= */
 
 .bottom-button.pressed{
@@ -196,13 +196,13 @@
 
 .settings-icon{
 
-    width:22px;
+    width:21px;
 
-    height:22px;
+    height:21px;
 
     display:block;
 
-    flex:0 0 22px;
+    flex:0 0 21px;
 
     color:#ffffff;
 
@@ -214,7 +214,7 @@
 
     transform:none;
 
-    transform-origin:center center;
+    transform-origin:center;
 
     transition:
         transform .3s ease,
@@ -224,7 +224,7 @@
 
 
 /* =========================================================
-   КОНТУР ШЕСТЕРЁНКИ
+   ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon path{
@@ -243,7 +243,7 @@
 
 
 /* =========================================================
-   МАЛЕНЬКОЕ ОТВЕРСТИЕ В ЦЕНТРЕ
+   ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
 ========================================================= */
 
 .settings-icon circle{
@@ -258,28 +258,27 @@
 
 
 /* =========================================================
-   HOVER
+   HOVER ШЕСТЕРЁНКИ
 ========================================================= */
 
 #settings-button:hover .settings-icon{
 
     color:#b994ff;
 
-    transform:rotate(25deg) scale(1.04);
+    transform:rotate(25deg);
 
 }
 
 
 /* =========================================================
-   PRESSED
-   Никакого постоянного поворота
+   PRESSED ШЕСТЕРЁНКА
 ========================================================= */
 
 #settings-button.pressed .settings-icon{
 
     color:#ffffff;
 
-    transform:scale(.96);
+    transform:rotate(25deg) scale(.96);
 
 }
 
@@ -323,7 +322,8 @@
 
     cursor:pointer;
 
-    transition:.18s;
+    transition:
+        transform .18s ease;
 
     box-shadow:
         0 10px 28px rgba(139,92,246,.35);
