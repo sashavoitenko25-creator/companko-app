@@ -136,8 +136,7 @@
 
 
 /* =========================================================
-   ЭФФЕКТ PRESSED
-   ОДИНАКОВЫЙ ДЛЯ ОБЕИХ КНОПОК
+   PRESSED
 ========================================================= */
 
 .bottom-button.pressed{
@@ -181,7 +180,7 @@
 }
 
 
-.bottom-button:hover .location-icon{
+#my-location-button:hover .location-icon{
 
     color:#b994ff;
 
@@ -192,17 +191,18 @@
 
 /* =========================================================
    SETTINGS ICON
+   ТОНКАЯ КРУГЛАЯ ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon{
 
-    width:21px;
+    width:22px;
 
-    height:21px;
+    height:22px;
 
     display:block;
 
-    flex:0 0 21px;
+    flex:0 0 22px;
 
     color:#ffffff;
 
@@ -210,13 +210,11 @@
 
     stroke:currentColor;
 
-    stroke-width:1.45;
-
     overflow:visible;
 
-    transform:translate(0,0);
+    transform:none;
 
-    transform-origin:center;
+    transform-origin:center center;
 
     transition:
         transform .3s ease,
@@ -226,22 +224,7 @@
 
 
 /* =========================================================
-   ЦЕНТРАЛЬНЫЙ КРУЖОК
-========================================================= */
-
-.settings-icon circle{
-
-    fill:none;
-
-    stroke:currentColor;
-
-    stroke-width:1.45;
-
-}
-
-
-/* =========================================================
-   ЗУБЧАТАЯ ЧАСТЬ
+   КОНТУР ШЕСТЕРЁНКИ
 ========================================================= */
 
 .settings-icon path{
@@ -260,7 +243,22 @@
 
 
 /* =========================================================
-   HOVER ШЕСТЕРЁНКИ
+   МАЛЕНЬКОЕ ОТВЕРСТИЕ В ЦЕНТРЕ
+========================================================= */
+
+.settings-icon circle{
+
+    fill:none;
+
+    stroke:currentColor;
+
+    stroke-width:1.45;
+
+}
+
+
+/* =========================================================
+   HOVER
 ========================================================= */
 
 #settings-button:hover .settings-icon{
@@ -273,14 +271,15 @@
 
 
 /* =========================================================
-   PRESSED ШЕСТЕРЁНКИ
+   PRESSED
+   Никакого постоянного поворота
 ========================================================= */
 
 #settings-button.pressed .settings-icon{
 
     color:#ffffff;
 
-    transform:rotate(25deg) scale(.96);
+    transform:scale(.96);
 
 }
 
