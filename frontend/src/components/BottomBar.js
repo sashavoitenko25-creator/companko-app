@@ -25,8 +25,7 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="my-location-button"
-        aria-label="Найти себя"
-        type="button">
+        aria-label="Найти себя">
 
         <svg
             class="location-icon"
@@ -61,8 +60,7 @@ export function BottomBar(){
 
     <button
         class="live-button"
-        id="live-button"
-        type="button">
+        id="live-button">
 
         <span class="live-dot"></span>
 
@@ -78,8 +76,7 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="settings-button"
-        aria-label="Настройки"
-        type="button">
+        aria-label="Настройки">
 
         <svg
             class="settings-icon"
@@ -87,78 +84,74 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
-            <!-- =================================================
-                 РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
-            ================================================== -->
+            <!-- КРУГЛАЯ ТОНКАЯ ШЕСТЕРЁНКА -->
 
             <path
                 d="
-                    M9.65 3.25
-                    L10.05 2.55
-                    H13.95
-                    L14.35 3.25
-                    L14.05 4.35
+                    M12 3.2
 
-                    C14.65 4.55 15.2 4.85 15.7 5.25
+                    L13.05 4.75
+                    C13.45 4.85 13.82 5 14.18 5.2
 
-                    L16.7 4.65
-                    L18.05 6
-                    L17.45 7
+                    L16 4.65
+                    L17.35 6
+                    L16.8 7.82
 
-                    C17.85 7.5 18.15 8.05 18.35 8.65
+                    C17 8.18 17.15 8.55 17.25 8.95
 
-                    L19.45 8.35
-                    L20.15 12
-                    L19.45 15.65
-                    L18.35 15.35
+                    L18.8 10
+                    V14
 
-                    C18.15 15.95 17.85 16.5 17.45 17
+                    L17.25 15.05
+                    C17.15 15.45 17 15.82 16.8 16.18
 
-                    L18.05 18
-                    L16.7 19.35
-                    L15.7 18.75
+                    L17.35 18
+                    L16 19.35
+                    L14.18 18.8
 
-                    C15.2 19.15 14.65 19.45 14.05 19.65
+                    C13.82 19 13.45 19.15 13.05 19.25
 
-                    L14.35 20.75
-                    L13.95 21.45
-                    H10.05
-                    L9.65 20.75
-                    L9.95 19.65
+                    L12 20.8
 
-                    C9.35 19.45 8.8 19.15 8.3 18.75
+                    L10.95 19.25
+                    C10.55 19.15 10.18 19 9.82 18.8
 
-                    L7.3 19.35
-                    L5.95 18
-                    L6.55 17
+                    L8 19.35
+                    L6.65 18
+                    L7.2 16.18
 
-                    C6.15 16.5 5.85 15.95 5.65 15.35
+                    C7 15.82 6.85 15.45 6.75 15.05
 
-                    L4.55 15.65
-                    L3.85 12
-                    L4.55 8.35
-                    L5.65 8.65
+                    L5.2 14
+                    V10
 
-                    C5.85 8.05 6.15 7.5 6.55 7
+                    L6.75 8.95
+                    C6.85 8.55 7 8.18 7.2 7.82
 
-                    L5.95 6
-                    L7.3 4.65
-                    L8.3 5.25
+                    L6.65 6
+                    L8 4.65
+                    L9.82 5.2
 
-                    C8.8 4.85 9.35 4.55 9.95 4.35
+                    C10.18 5 10.55 4.85 10.95 4.75
 
                     Z
                 "
+                stroke="currentColor"
+                stroke-width="1.35"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="none"
             />
 
-            <!-- =================================================
-                 ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
-            ================================================== -->
+            <!-- МАЛЕНЬКОЕ ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ -->
 
             <circle
                 cx="12"
                 cy="12"
-                r="2.45"
+                r="2.35"
+                stroke="currentColor"
+                stroke-width="1.35"
+                fill="none"
             />
 
         </svg>
@@ -204,6 +197,24 @@ function initBottomBar(){
 
 
     /* =====================================================
+       СБРОС СОСТОЯНИЯ КНОПКИ
+    ===================================================== */
+
+    function resetButton(button){
+
+        if(!button)
+            return;
+
+        button.classList.remove(
+            'pressed'
+        );
+
+        button.blur();
+
+    }
+
+
+    /* =====================================================
        НАЙТИ СЕБЯ
     ===================================================== */
 
@@ -216,50 +227,24 @@ function initBottomBar(){
             event.stopPropagation();
 
 
-            /*
-             * Если уже идёт фокусировка —
-             * ничего повторно не запускаем.
-             */
+            /* Закрываем настройки */
 
-            if(
-                locationButton.classList.contains(
-                    'active'
-                )
-            ){
+            if(settings){
 
-                return;
+                settings.classList.remove(
+                    'open'
+                );
 
             }
 
 
             /*
-             * Если открыты настройки —
-             * закрываем их.
-             */
-
-            settings?.classList.remove(
-                'open'
-            );
-
-
-            /*
-             * Кнопка настроек должна
-             * вернуться в обычное состояние.
-             */
-
-            settingsButton?.classList.remove(
-                'active'
-            );
-
-
-            /*
-             * =================================================
-             * НАЧАЛО ФОКУСИРОВКИ
-             * =================================================
+             * Сначала включаем активное
+             * состояние кнопки.
              */
 
             locationButton.classList.add(
-                'active'
+                'pressed'
             );
 
 
@@ -268,46 +253,35 @@ function initBottomBar(){
                 /*
                  * Очень важно:
                  *
-                 * Если centerOnMyLocation()
-                 * возвращает Promise,
-                 * мы ждём его завершения.
+                 * Ждём завершения
+                 * centerOnMyLocation().
+                 *
+                 * Если функция возвращает Promise,
+                 * await дождётся её окончания.
                  */
 
-                const result =
-                    centerOnMyLocation();
+                await Promise.resolve(
+                    centerOnMyLocation()
+                );
 
 
-                if(
-                    result &&
-                    typeof result.then === 'function'
-                ){
-
-                    await result;
-
-                }
-
-            }
-            catch(error){
+            }catch(error){
 
                 console.error(
                     'Ошибка центрирования карты:',
                     error
                 );
 
-            }
-            finally{
+            }finally{
 
                 /*
-                 * =================================================
-                 * ФОКУСИРОВКА ЗАКОНЧИЛАСЬ
-                 * =================================================
-                 *
-                 * Возвращаем кнопку
+                 * В любом случае после окончания
+                 * фокусировки возвращаем кнопку
                  * в обычное состояние.
                  */
 
-                locationButton.classList.remove(
-                    'active'
+                resetButton(
+                    locationButton
                 );
 
             }
@@ -335,51 +309,50 @@ function initBottomBar(){
 
 
             /*
-             * =================================================
-             * ЕСЛИ НАСТРОЙКИ УЖЕ ОТКРЫТЫ
-             * =================================================
-             *
-             * Второй клик:
-             *
-             * окно закрываем
-             * кнопку выключаем
+             * Проверяем текущее состояние.
              */
 
-            if(
+            const isOpen =
                 settings.classList.contains(
                     'open'
-                )
-            ){
+                );
+
+
+            if(isOpen){
+
+                /*
+                 * ВТОРОЕ НАЖАТИЕ
+                 *
+                 * Закрываем настройки
+                 * и полностью сбрасываем кнопку.
+                 */
 
                 settings.classList.remove(
                     'open'
                 );
 
-                settingsButton.classList.remove(
-                    'active'
+                resetButton(
+                    settingsButton
                 );
 
-                return;
+            }else{
+
+                /*
+                 * ПЕРВОЕ НАЖАТИЕ
+                 *
+                 * Открываем настройки
+                 * и оставляем кнопку активной.
+                 */
+
+                settings.classList.add(
+                    'open'
+                );
+
+                settingsButton.classList.add(
+                    'pressed'
+                );
 
             }
-
-
-            /*
-             * =================================================
-             * ПЕРВЫЙ КЛИК
-             * =================================================
-             *
-             * Открываем настройки
-             * и оставляем кнопку ACTIVE.
-             */
-
-            settings.classList.add(
-                'open'
-            );
-
-            settingsButton.classList.add(
-                'active'
-            );
 
         };
 
@@ -403,18 +376,22 @@ function initBottomBar(){
              * Закрываем настройки.
              */
 
-            settings?.classList.remove(
-                'open'
-            );
+            if(settings){
+
+                settings.classList.remove(
+                    'open'
+                );
+
+            }
 
 
             /*
-             * Возвращаем кнопку настроек
-             * в обычное состояние.
+             * Кнопка настроек
+             * возвращается в обычное состояние.
              */
 
-            settingsButton?.classList.remove(
-                'active'
+            resetButton(
+                settingsButton
             );
 
         };
@@ -435,9 +412,8 @@ function initBottomBar(){
 
 
             /*
-             * Если кликнули не внутри
-             * окна настроек и не по самой
-             * кнопке настроек —
+             * Если кликнули не по окну
+             * и не по кнопке настроек —
              * закрываем настройки.
              */
 
@@ -455,8 +431,8 @@ function initBottomBar(){
                 );
 
 
-                settingsButton?.classList.remove(
-                    'active'
+                resetButton(
+                    settingsButton
                 );
 
             }
@@ -484,8 +460,8 @@ function initBottomBar(){
 
 
             /*
-             * Если нажата любая другая
-             * кнопка — настройки закрываем.
+             * Если нажата другая кнопка —
+             * закрываем настройки.
              */
 
             if(
@@ -500,8 +476,8 @@ function initBottomBar(){
                 );
 
 
-                settingsButton?.classList.remove(
-                    'active'
+                resetButton(
+                    settingsButton
                 );
 
             }
