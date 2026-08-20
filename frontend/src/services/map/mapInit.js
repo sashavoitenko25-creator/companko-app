@@ -1,4 +1,5 @@
 import L from 'leaflet';
+
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-rotate';
 
@@ -41,41 +42,28 @@ import {
 } from './mapThemeService';
 
 
-
-
 let initialized = false;
 
 let tileLayer = null;
 
 
-
-
 /* =========================================================
-   ГРАНИЦЫ ОДНОГО МИРА
+   INIT MAP
 ========================================================= */
-
-const WORLD_BOUNDS = L.latLngBounds(
-
-    [
-        -85.05112878,
-        -180
-    ],
-
-    [
-        85.05112878,
-        180
-    ]
-
-);
-
-
-
 
 export function initMap(){
 
-
     if(initialized)
+        return;
 
+
+    const mapElement =
+        document.querySelector(
+            '#map'
+        );
+
+
+    if(!mapElement)
         return;
 
 
@@ -87,10 +75,8 @@ export function initMap(){
     );
 
 
-
-
     /* =====================================================
-       СОЗДАЁМ КАРТУ
+       MAP
     ===================================================== */
 
     const map = L.map(
@@ -104,9 +90,9 @@ export function initMap(){
             attributionControl:false,
 
 
-            /* =============================================
-               ВРАЩЕНИЕ КАРТЫ
-            ============================================= */
+            /* ---------------------------------------------
+               ВРАЩЕНИЕ
+            --------------------------------------------- */
 
             rotate:true,
 
@@ -117,20 +103,34 @@ export function initMap(){
             rotateControl:false,
 
 
-            /* =============================================
-               ЗАПРЕЩАЕМ ВЫХОД ЗА ПРЕДЕЛЫ ОДНОГО МИРА
-            ============================================= */
+            /* ---------------------------------------------
+               МИНИМАЛЬНЫЙ / МАКСИМАЛЬНЫЙ ZOOM
+            --------------------------------------------- */
 
-            maxBounds:WORLD_BOUNDS,
+            minZoom:2,
+
+            maxZoom:19,
+
+
+            /* ---------------------------------------------
+               НЕ ДАЁМ УЙТИ ЗА ПРЕДЕЛЫ МИРА
+            --------------------------------------------- */
+
+            maxBounds:[
+                [-85.05112878, -180],
+                [ 85.05112878,  180]
+            ],
 
             maxBoundsViscosity:1.0,
 
 
-            /* =============================================
-               НЕ ПОКАЗЫВАЕМ ПОВТОРЯЮЩИЕСЯ МИРЫ
-            ============================================= */
+            /* ---------------------------------------------
+               ПОВЕДЕНИЕ ПРИ ZOOM
+            --------------------------------------------- */
 
-            worldCopyJump:false
+            zoomSnap:1,
+
+            zoomDelta:1
 
         }
 
@@ -154,7 +154,7 @@ export function initMap(){
 
 
     /* =====================================================
-       СОХРАНЯЕМ MAP
+       Сохраняем карту
     ===================================================== */
 
     setMap(
@@ -162,30 +162,62 @@ export function initMap(){
     );
 
 
-
-
     /* =====================================================
        TILE LAYER
     ===================================================== */
 
-    tileLayer = L.tileLayer(
+    tileLayer =
+        L.tileLayer(
 
-        getTileUrl(),
+            getTileUrl(),
 
-        {
+            {
 
-            maxZoom:19,
+                minZoom:2,
 
-            minZoom:2,
+                maxZoom:19,
 
-            noWrap:true,
+                maxNativeZoom:19,
 
-            bounds:WORLD_BOUNDS
+                tileSize:256,
+
+                updateWhenIdle:false,
+
+                updateWhenZooming:true,
+
+                keepBuffer:2,
+
+                crossOrigin:true
+
+            }
+
+        );
+
+
+    /* =====================================================
+       ОШИБКА ЗАГРУЗКИ TILE
+    ===================================================== */
+
+    tileLayer.on(
+
+        'tileerror',
+
+        event=>{
+
+            console.warn(
+                'MAP TILE ERROR:',
+                event.coords,
+                event.tile?.src
+            );
 
         }
 
     );
 
+
+    /* =====================================================
+       ДОБАВЛЯЕМ КАРТУ
+    ===================================================== */
 
     tileLayer.addTo(
         map
@@ -197,8 +229,6 @@ export function initMap(){
     );
 
 
-
-
     /* =====================================================
        КЛИК ПО КАРТЕ
     ===================================================== */
@@ -207,7 +237,7 @@ export function initMap(){
 
         'click',
 
-        event => {
+        event=>{
 
             window.dispatchEvent(
 
@@ -231,15 +261,11 @@ export function initMap(){
     );
 
 
-
-
     /* =====================================================
        МОЙ МАРКЕР
     ===================================================== */
 
     initMyMarker();
-
-
 
 
     /* =====================================================
@@ -249,46 +275,38 @@ export function initMap(){
     initLocationEvents();
 
 
-
-
     /* =====================================================
        ОТСЛЕЖИВАНИЕ ПОЗИЦИИ
     ===================================================== */
 
     watchLocation(
 
-        (position)=>{
-
+        position=>{
 
             console.log(
-
                 'LOCATION UPDATED',
-
                 position
-
             );
 
 
-            /* =============================================
+            /* ---------------------------------------------
                МОЯ ПОЗИЦИЯ
-            ============================================= */
+            --------------------------------------------- */
 
             window.myLocation = {
 
                 lat:
-                position.latitude,
+                    position.latitude,
 
                 lng:
-                position.longitude
+                    position.longitude
 
             };
 
 
-
-
-            /* =============================================
-               ОБНОВЛЯЕМ МОЙ МАРКЕР
-            ============================================= */
+            /* ---------------------------------------------
+               МОЙ МАРКЕР
+            --------------------------------------------- */
 
             updateMyMarker(
 
@@ -299,11 +317,9 @@ export function initMap(){
             );
 
 
-
-
-            /* =============================================
-               СОБЫТИЕ ОБНОВЛЕНИЯ ЛОКАЦИИ
-            ============================================= */
+            /* ---------------------------------------------
+               СОБЫТИЕ
+            --------------------------------------------- */
 
             window.dispatchEvent(
 
@@ -316,10 +332,10 @@ export function initMap(){
                         detail:{
 
                             lat:
-                            position.latitude,
+                                position.latitude,
 
                             lng:
-                            position.longitude
+                                position.longitude
 
                         }
 
@@ -329,12 +345,9 @@ export function initMap(){
 
             );
 
-
         }
 
     );
-
-
 
 
     /* =====================================================
@@ -342,27 +355,18 @@ export function initMap(){
     ===================================================== */
 
     window.removeEventListener(
-
         'profile:open',
-
         focusRoutePanel
-
     );
 
 
     window.addEventListener(
-
         'profile:open',
-
         focusRoutePanel
-
     );
 
 
-
-
     function focusRoutePanel(){
-
 
         window.dispatchEvent(
 
@@ -372,10 +376,7 @@ export function initMap(){
 
         );
 
-
     }
-
-
 
 
     /* =====================================================
@@ -385,15 +386,11 @@ export function initMap(){
     loadLiveMarkers();
 
 
-
-
     /* =====================================================
        LOCATION REALTIME
     ===================================================== */
 
     initLocationRealtime();
-
-
 
 
     /* =====================================================
@@ -406,7 +403,6 @@ export function initMap(){
 
         ()=>{
 
-
             console.log(
                 'LIVE START EVENT'
             );
@@ -416,12 +412,9 @@ export function initMap(){
 
             loadLiveMarkers();
 
-
         }
 
     );
-
-
 
 
     /* =====================================================
@@ -434,7 +427,6 @@ export function initMap(){
 
         ()=>{
 
-
             console.log(
                 'LIVE STOP EVENT'
             );
@@ -444,10 +436,33 @@ export function initMap(){
 
             loadLiveMarkers();
 
-
         }
 
     );
 
+
+    /* =====================================================
+       RESIZE
+    ===================================================== */
+
+    setTimeout(()=>{
+
+        map.invalidateSize();
+
+    },100);
+
+
+    setTimeout(()=>{
+
+        map.invalidateSize();
+
+    },500);
+
+
+    setTimeout(()=>{
+
+        map.invalidateSize();
+
+    },1000);
 
 }

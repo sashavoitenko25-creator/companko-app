@@ -1,58 +1,40 @@
+/* =========================================================
+   MAP THEME SERVICE
+========================================================= */
+
+
 let currentLayer = null;
 
 
-
-
 /* =========================================================
-   MAP TILES
+   DARK MAP
 ========================================================= */
 
 const DARK_MAP =
-'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-
-
-const LIGHT_MAP =
-'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
 
 /* =========================================================
-   ГРАНИЦЫ ОДНОГО МИРА
+   LIGHT MAP
 ========================================================= */
 
-const WORLD_BOUNDS = [
-
-    [
-        -85.05112878,
-        -180
-    ],
-
-    [
-        85.05112878,
-        180
-    ]
-
-];
-
-
+const LIGHT_MAP =
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
 
 /* =========================================================
-   THEME
+   GET THEME
 ========================================================= */
 
 export function getMapTheme(){
 
-
-    return localStorage.getItem(
-        'map-theme'
-    ) || 'dark';
-
+    return (
+        localStorage.getItem(
+            'map-theme'
+        ) || 'dark'
+    );
 
 }
-
-
 
 
 /* =========================================================
@@ -61,24 +43,29 @@ export function getMapTheme(){
 
 export function setMapTheme(theme){
 
+    if(
+        theme !== 'dark' &&
+        theme !== 'light'
+    ){
+
+        theme = 'dark';
+
+    }
+
 
     localStorage.setItem(
         'map-theme',
         theme
     );
 
-
 }
 
 
-
-
 /* =========================================================
-   TILE URL
+   GET TILE URL
 ========================================================= */
 
 export function getTileUrl(){
-
 
     const theme =
         getMapTheme();
@@ -93,10 +80,7 @@ export function getTileUrl(){
 
     return DARK_MAP;
 
-
 }
-
-
 
 
 /* =========================================================
@@ -105,82 +89,108 @@ export function getTileUrl(){
 
 export function setCurrentTileLayer(layer){
 
-
     currentLayer =
         layer;
-
 
 }
 
 
+export function getCurrentTileLayer(){
+
+    return currentLayer;
+
+}
 
 
 /* =========================================================
    RELOAD MAP THEME
 ========================================================= */
 
-export function reloadMapTheme(map, L){
+export function reloadMapTheme(
+    map,
+    L
+){
+
+    if(!map || !L)
+        return;
 
 
-    /* =====================================================
-       УДАЛЯЕМ СТАРЫЙ СЛОЙ
-    ===================================================== */
+    /* -----------------------------------------
+       Удаляем старый слой
+    ----------------------------------------- */
 
     if(currentLayer){
 
-        map.removeLayer(
-            currentLayer
-        );
+        try{
+
+            map.removeLayer(
+                currentLayer
+            );
+
+        }
+
+        catch(error){
+
+            console.warn(
+                'Не удалось удалить старый слой карты',
+                error
+            );
+
+        }
 
     }
 
 
+    /* -----------------------------------------
+       Создаём новый слой
+    ----------------------------------------- */
 
-
-    /* =====================================================
-       СОЗДАЁМ НОВЫЙ СЛОЙ
-    ===================================================== */
-
-    currentLayer =
+    const newLayer =
         L.tileLayer(
 
             getTileUrl(),
 
             {
 
-                maxZoom:19,
-
                 minZoom:2,
 
-                noWrap:true,
+                maxZoom:19,
 
-                bounds:WORLD_BOUNDS
+                maxNativeZoom:19,
+
+                tileSize:256,
+
+                updateWhenIdle:false,
+
+                updateWhenZooming:true,
+
+                keepBuffer:2,
+
+                crossOrigin:true
 
             }
 
         );
 
 
+    /* -----------------------------------------
+       Добавляем карту
+    ----------------------------------------- */
 
-
-    /* =====================================================
-       ДОБАВЛЯЕМ
-    ===================================================== */
-
-    currentLayer.addTo(
+    newLayer.addTo(
         map
     );
 
 
-
-
-    /* =====================================================
-       СОХРАНЯЕМ
-    ===================================================== */
+    /* -----------------------------------------
+       Сохраняем текущий слой
+    ----------------------------------------- */
 
     setCurrentTileLayer(
-        currentLayer
+        newLayer
     );
 
+
+    return newLayer;
 
 }
