@@ -1,9 +1,15 @@
+```javascript
 import {
     supabase
 } from '../supabase/supabaseClient';
 
 let locationId = null;
 let watcherId = null;
+
+
+/* =========================================================
+   SAVE LOCATION
+========================================================= */
 
 export async function saveMyLocation(
     userId,
@@ -100,6 +106,11 @@ export async function saveMyLocation(
 
 }
 
+
+/* =========================================================
+   UPDATE LOCATION
+========================================================= */
+
 export async function updateMyLocation(
 
     latitude,
@@ -141,6 +152,11 @@ export async function updateMyLocation(
 
 }
 
+
+/* =========================================================
+   WATCH LOCATION
+========================================================= */
+
 export function watchLocation(callback){
 
     if(typeof callback !== 'function'){
@@ -163,6 +179,7 @@ export function watchLocation(callback){
 
     }
 
+
     if(watcherId){
 
         navigator.geolocation.clearWatch(
@@ -173,9 +190,44 @@ export function watchLocation(callback){
 
     }
 
+
     watcherId = navigator.geolocation.watchPosition(
 
         position=>{
+
+            const accuracy =
+                position.coords.accuracy;
+
+
+            /*
+             * accuracy — это погрешность GPS
+             * в метрах.
+             *
+             * Например:
+             *
+             * 5  = очень хорошо
+             * 10 = хорошо
+             * 20 = нормально
+             * 50 = неточно
+             * 100+ = очень неточно
+             */
+
+
+            if(
+                typeof accuracy === 'number' &&
+                accuracy > 100
+            ){
+
+                console.warn(
+                    'Ignoring inaccurate location:',
+                    accuracy,
+                    'meters'
+                );
+
+                return;
+
+            }
+
 
             callback({
 
@@ -186,7 +238,7 @@ export function watchLocation(callback){
                 position.coords.longitude,
 
                 accuracy:
-                position.coords.accuracy,
+                accuracy,
 
                 heading:
                 position.coords.heading
@@ -206,9 +258,26 @@ export function watchLocation(callback){
 
         {
 
+            /*
+             * Используем GPS,
+             * а не только Wi-Fi/IP.
+             */
+
             enableHighAccuracy:true,
 
-            timeout:15000,
+
+            /*
+             * Даём устройству больше времени
+             * получить нормальный GPS fix.
+             */
+
+            timeout:30000,
+
+
+            /*
+             * Никогда не используем
+             * старую координату из кэша.
+             */
 
             maximumAge:0
 
@@ -216,9 +285,15 @@ export function watchLocation(callback){
 
     );
 
+
     return watcherId;
 
 }
+
+
+/* =========================================================
+   STOP WATCHING
+========================================================= */
 
 export function stopWatchingLocation(){
 
@@ -234,6 +309,11 @@ export function stopWatchingLocation(){
 
 }
 
+
+/* =========================================================
+   GET CURRENT POSITION
+========================================================= */
+
 export function getCurrentPosition(){
 
     return new Promise((resolve,reject)=>{
@@ -248,9 +328,41 @@ export function getCurrentPosition(){
 
         }
 
+
         navigator.geolocation.getCurrentPosition(
 
             position=>{
+
+                const accuracy =
+                    position.coords.accuracy;
+
+
+                /*
+                 * Если GPS совсем плохой,
+                 * не используем такую точку.
+                 */
+
+                if(
+                    typeof accuracy === 'number' &&
+                    accuracy > 100
+                ){
+
+                    reject({
+
+                        code:3,
+
+                        message:
+                            'Location accuracy is too low',
+
+                        accuracy:
+                            accuracy
+
+                    });
+
+                    return;
+
+                }
+
 
                 resolve({
 
@@ -261,7 +373,7 @@ export function getCurrentPosition(){
                     position.coords.longitude,
 
                     accuracy:
-                    position.coords.accuracy,
+                    accuracy,
 
                     heading:
                     position.coords.heading
@@ -280,7 +392,7 @@ export function getCurrentPosition(){
 
                 enableHighAccuracy:true,
 
-                timeout:15000,
+                timeout:30000,
 
                 maximumAge:0
 
@@ -292,8 +404,14 @@ export function getCurrentPosition(){
 
 }
 
+
+/* =========================================================
+   RESET LOCATION ID
+========================================================= */
+
 export function resetLocationId(){
 
     locationId = null;
 
 }
+```
