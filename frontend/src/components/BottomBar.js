@@ -18,7 +18,9 @@ export function BottomBar(){
 <div class="bottom-bar">
 
 
-    <!-- НАЙТИ СЕБЯ -->
+    <!-- =====================================================
+         НАЙТИ СЕБЯ
+    ====================================================== -->
 
     <button
         class="bottom-button"
@@ -52,7 +54,9 @@ export function BottomBar(){
     </button>
 
 
-    <!-- LIVE -->
+    <!-- =====================================================
+         LIVE
+    ====================================================== -->
 
     <button
         class="live-button"
@@ -65,7 +69,9 @@ export function BottomBar(){
     </button>
 
 
-    <!-- НАСТРОЙКИ -->
+    <!-- =====================================================
+         НАСТРОЙКИ
+    ====================================================== -->
 
     <button
         class="bottom-button"
@@ -78,68 +84,73 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
-            <!-- КРУГЛАЯ ШЕСТЕРЁНКА -->
+            <!--
+                НОРМАЛЬНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
+                Только контур + маленькое
+                центральное отверстие
+            -->
 
             <path
                 d="
                     M12 2.8
 
-                    L13.15 4.55
-                    C13.55 4.65 13.95 4.82 14.3 5.05
+                    L13.05 4.65
+                    C13.45 4.75 13.82 4.90 14.18 5.10
 
-                    L16.35 4.25
-                    L17.95 5.85
-                    L17.15 7.9
+                    L16.25 4.42
+                    L17.82 6.00
+                    L17.14 8.07
 
-                    C17.4 8.3 17.6 8.7 17.7 9.15
+                    C17.34 8.43 17.49 8.80 17.59 9.20
 
-                    L19.5 10.25
+                    L19.45 10.25
                     V13.75
 
-                    L17.7 14.85
-                    C17.6 15.3 17.4 15.7 17.15 16.1
+                    L17.59 14.80
 
-                    L17.95 18.15
-                    L16.35 19.75
-                    L14.3 18.95
+                    C17.49 15.20 17.34 15.57 17.14 15.93
 
-                    C13.95 19.18 13.55 19.35 13.15 19.45
+                    L17.82 18.00
+                    L16.25 19.58
+                    L14.18 18.90
 
-                    L12 21.2
+                    C13.82 19.10 13.45 19.25 13.05 19.35
 
-                    L10.85 19.45
-                    C10.45 19.35 10.05 19.18 9.7 18.95
+                    L12 21.20
 
-                    L7.65 19.75
-                    L6.05 18.15
-                    L6.85 16.1
+                    L10.95 19.35
 
-                    C6.6 15.7 6.4 15.3 6.3 14.85
+                    C10.55 19.25 10.18 19.10 9.82 18.90
 
-                    L4.5 13.75
+                    L7.75 19.58
+                    L6.18 18.00
+                    L6.86 15.93
+
+                    C6.66 15.57 6.51 15.20 6.41 14.80
+
+                    L4.55 13.75
                     V10.25
 
-                    L6.3 9.15
-                    C6.4 8.7 6.6 8.3 6.85 7.9
+                    L6.41 9.20
 
-                    L6.05 5.85
-                    L7.65 4.25
-                    L9.7 5.05
+                    C6.51 8.80 6.66 8.43 6.86 8.07
 
-                    C10.05 4.82 10.45 4.65 10.85 4.55
+                    L6.18 6.00
+                    L7.75 4.42
+                    L9.82 5.10
 
-                    L12 2.8
+                    C10.18 4.90 10.55 4.75 10.95 4.65
 
                     Z
                 "
             />
 
-            <!-- МАЛЕНЬКОЕ ОТВЕРСТИЕ -->
+            <!-- ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ -->
 
             <circle
                 cx="12"
                 cy="12"
-                r="2.55"
+                r="2.45"
             />
 
         </svg>
@@ -153,6 +164,10 @@ export function BottomBar(){
 
 }
 
+
+/* =========================================================
+   INIT
+========================================================= */
 
 function initBottomBar(){
 
@@ -182,17 +197,53 @@ function initBottomBar(){
 
 
     /* =====================================================
-       СБРОС СОСТОЯНИЯ КНОПОК
+       УНИВЕРСАЛЬНЫЙ КОРОТКИЙ CLICK EFFECT
     ===================================================== */
 
-    function resetButton(button){
+    function buttonPressed(button){
 
         if(!button)
             return;
 
+
+        /*
+         * Сначала полностью убираем
+         * старое состояние
+         */
+
         button.classList.remove(
             'pressed'
         );
+
+
+        /*
+         * Форсируем браузер
+         * пересчитать состояние
+         */
+
+        void button.offsetWidth;
+
+
+        /*
+         * Добавляем эффект
+         */
+
+        button.classList.add(
+            'pressed'
+        );
+
+
+        /*
+         * Через 180ms полностью убираем
+         */
+
+        setTimeout(()=>{
+
+            button.classList.remove(
+                'pressed'
+            );
+
+        },180);
 
     }
 
@@ -203,21 +254,11 @@ function initBottomBar(){
 
     if(locationButton){
 
-        locationButton.onclick = async (event)=>{
+        locationButton.onclick = (event)=>{
 
             event.preventDefault();
 
             event.stopPropagation();
-
-
-            /*
-             * На всякий случай
-             * сразу сбрасываем старое состояние
-             */
-
-            resetButton(
-                locationButton
-            );
 
 
             /*
@@ -228,43 +269,21 @@ function initBottomBar(){
                 'open'
             );
 
-            resetButton(
-                settingsButton
+
+            /*
+             * Короткая анимация кнопки
+             */
+
+            buttonPressed(
+                locationButton
             );
 
 
             /*
-             * Показываем эффект нажатия
+             * Центрируем карту
              */
 
-            locationButton.classList.add(
-                'pressed'
-            );
-
-
-            try{
-
-                await centerOnMyLocation();
-
-            }catch(error){
-
-                console.error(
-                    'Ошибка центрирования:',
-                    error
-                );
-
-            }finally{
-
-                /*
-                 * ВСЕГДА возвращаем
-                 * кнопку в исходное состояние
-                 */
-
-                resetButton(
-                    locationButton
-                );
-
-            }
+            centerOnMyLocation();
 
         };
 
@@ -289,71 +308,50 @@ function initBottomBar(){
 
 
             /*
-             * Проверяем текущее состояние
+             * Переключаем окно
              */
 
-            const isOpen =
-                settings.classList.contains(
+            const willOpen =
+                !settings.classList.contains(
                     'open'
                 );
 
 
-            /*
-             * СНАЧАЛА полностью
-             * сбрасываем кнопку
-             */
-
-            resetButton(
-                settingsButton
-            );
-
-
-            /*
-             * Если окно уже открыто —
-             * закрываем его
-             */
-
-            if(isOpen){
-
-                settings.classList.remove(
-                    'open'
-                );
-
-                resetButton(
-                    settingsButton
-                );
-
-                return;
-
-            }
-
-
-            /*
-             * Если окно закрыто —
-             * открываем его
-             */
-
-            settings.classList.add(
+            settings.classList.toggle(
                 'open'
             );
 
 
             /*
-             * Короткий эффект нажатия
+             * Кнопка получает эффект
+             * только на время клика.
+             *
+             * После закрытия или открытия
+             * состояние ВСЕГДА очищается.
              */
 
-            settingsButton.classList.add(
-                'pressed'
+            buttonPressed(
+                settingsButton
             );
 
 
-            setTimeout(()=>{
+            /*
+             * На всякий случай
+             * принудительно убираем
+             * pressed после переключения.
+             */
 
-                resetButton(
-                    settingsButton
-                );
+            if(!willOpen){
 
-            },180);
+                setTimeout(()=>{
+
+                    settingsButton.classList.remove(
+                        'pressed'
+                    );
+
+                },200);
+
+            }
 
         };
 
@@ -378,8 +376,14 @@ function initBottomBar(){
             );
 
 
-            resetButton(
-                settingsButton
+            /*
+             * Если настройки закрываются
+             * через LIVE — кнопка настроек
+             * тоже возвращается в обычное состояние.
+             */
+
+            settingsButton?.classList.remove(
+                'pressed'
             );
 
         };
@@ -413,8 +417,13 @@ function initBottomBar(){
                 );
 
 
-                resetButton(
-                    settingsButton
+                /*
+                 * Полностью сбрасываем
+                 * состояние кнопки настроек.
+                 */
+
+                settingsButton?.classList.remove(
+                    'pressed'
                 );
 
             }
@@ -453,8 +462,13 @@ function initBottomBar(){
                 );
 
 
-                resetButton(
-                    settingsButton
+                /*
+                 * Возвращаем настройки
+                 * в исходный вид.
+                 */
+
+                settingsButton?.classList.remove(
+                    'pressed'
                 );
 
             }

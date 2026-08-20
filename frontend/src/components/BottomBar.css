@@ -40,7 +40,7 @@
 
 
 /* =========================================================
-   НАЙТИ СЕБЯ + НАСТРОЙКИ
+   КНОПКИ
 ========================================================= */
 
 .bottom-button{
@@ -97,7 +97,7 @@
 
 
 /* =========================================================
-   HOVER
+   ОБЫЧНОЕ HOVER-СОСТОЯНИЕ
 ========================================================= */
 
 .bottom-button:hover{
@@ -125,7 +125,7 @@
 
 
 /* =========================================================
-   НАЖАТИЕ
+   НАЖАТИЕ МЫШКОЙ
 ========================================================= */
 
 .bottom-button:active{
@@ -137,22 +137,25 @@
 
 /* =========================================================
    ВРЕМЕННЫЙ PRESSED
+   Используется только JS
 ========================================================= */
 
 .bottom-button.pressed{
 
-    transform:scale(.92);
+    transform:scale(.92) !important;
 
     background:
-        rgba(124,58,237,.25);
+        rgba(124,58,237,.25) !important;
 
     border-color:
-        rgba(139,92,246,.55);
+        rgba(139,92,246,.55) !important;
+
+    color:#ffffff !important;
 
     box-shadow:
         0 6px 18px rgba(0,0,0,.40),
         0 0 18px rgba(139,92,246,.28),
-        inset 0 1px 0 rgba(255,255,255,.08);
+        inset 0 1px 0 rgba(255,255,255,.08) !important;
 
 }
 
@@ -174,13 +177,13 @@
     flex:0 0 auto;
 
     transition:
-        transform .2s ease,
-        color .2s ease;
+        transform .18s ease,
+        color .18s ease;
 
 }
 
 
-#my-location-button:hover .location-icon{
+.bottom-button:hover .location-icon{
 
     color:#b994ff;
 
@@ -191,7 +194,7 @@
 
 /* =========================================================
    SETTINGS ICON
-   ТОНКАЯ КРУГЛАЯ ШЕСТЕРЁНКА
+   АККУРАТНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon{
@@ -210,6 +213,12 @@
 
     stroke:currentColor;
 
+    stroke-width:1.45;
+
+    stroke-linecap:round;
+
+    stroke-linejoin:round;
+
     overflow:visible;
 
     transform:none;
@@ -217,14 +226,14 @@
     transform-origin:center;
 
     transition:
-        transform .3s ease,
-        color .2s ease;
+        transform .28s ease,
+        color .18s ease;
 
 }
 
 
 /* =========================================================
-   ШЕСТЕРЁНКА
+   КОНТУР ШЕСТЕРЁНКИ
 ========================================================= */
 
 .settings-icon path{
@@ -271,7 +280,7 @@
 
 
 /* =========================================================
-   PRESSED ШЕСТЕРЁНКА
+   PRESSED ШЕСТЕРЁНКИ
 ========================================================= */
 
 #settings-button.pressed .settings-icon{
