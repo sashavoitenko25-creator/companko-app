@@ -25,7 +25,8 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="my-location-button"
-        aria-label="Найти себя">
+        aria-label="Найти себя"
+        type="button">
 
         <svg
             class="location-icon"
@@ -60,7 +61,8 @@ export function BottomBar(){
 
     <button
         class="live-button"
-        id="live-button">
+        id="live-button"
+        type="button">
 
         <span class="live-dot"></span>
 
@@ -76,7 +78,8 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="settings-button"
-        aria-label="Настройки">
+        aria-label="Настройки"
+        type="button">
 
         <svg
             class="settings-icon"
@@ -84,10 +87,9 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
-            <!--
-                РОВНАЯ СИММЕТРИЧНАЯ ШЕСТЕРЁНКА
-                Тонкий белый контур
-            -->
+            <!-- =================================================
+                 РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
+            ================================================== -->
 
             <path
                 d="
@@ -150,7 +152,7 @@ export function BottomBar(){
             />
 
             <!-- =================================================
-                 МАЛЕНЬКОЕ КРУГЛОЕ ОТВЕРСТИЕ
+                 ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
             ================================================== -->
 
             <circle
@@ -202,156 +204,115 @@ function initBottomBar(){
 
 
     /* =====================================================
-       ВРЕМЕННЫЙ ЭФФЕКТ НАЖАТИЯ
-    ===================================================== */
-
-    function pressButton(button){
-
-        if(!button)
-            return;
-
-
-        /*
-         * Полностью сбрасываем
-         * старые состояния
-         */
-
-        button.classList.remove(
-            'pressed'
-        );
-
-
-        /*
-         * Добавляем короткий эффект
-         */
-
-        button.classList.add(
-            'pressed'
-        );
-
-
-        setTimeout(()=>{
-
-            button.classList.remove(
-                'pressed'
-            );
-
-        },180);
-
-    }
-
-
-    /* =====================================================
-       ЗАБЛОКИРОВАТЬ HOVER
-       пока курсор находится над кнопкой
-    ===================================================== */
-
-    function lockHoverUntilMouseLeave(button){
-
-        if(!button)
-            return;
-
-
-        button.classList.add(
-            'no-hover'
-        );
-
-
-        const unlock = ()=>{
-
-            button.classList.remove(
-                'no-hover'
-            );
-
-            button.removeEventListener(
-                'mouseleave',
-                unlock
-            );
-
-        };
-
-
-        button.addEventListener(
-            'mouseleave',
-            unlock
-        );
-
-    }
-
-
-    /* =====================================================
        НАЙТИ СЕБЯ
     ===================================================== */
 
     if(locationButton){
 
-        locationButton.addEventListener(
-            'click',
-            (event)=>{
+        locationButton.onclick = async (event)=>{
 
-                event.preventDefault();
+            event.preventDefault();
 
-                event.stopPropagation();
+            event.stopPropagation();
 
 
-                /*
-                 * Закрываем настройки
-                 */
+            /*
+             * Если уже идёт фокусировка —
+             * ничего повторно не запускаем.
+             */
 
-                settings?.classList.remove(
-                    'open'
-                );
+            if(
+                locationButton.classList.contains(
+                    'active'
+                )
+            ){
 
-
-                /*
-                 * Сбрасываем кнопку
-                 * настроек полностью
-                 */
-
-                settingsButton?.classList.remove(
-                    'pressed'
-                );
-
-                settingsButton?.classList.remove(
-                    'no-hover'
-                );
-
-
-                /*
-                 * Короткая анимация
-                 */
-
-                pressButton(
-                    locationButton
-                );
-
-
-                /*
-                 * После клика убираем
-                 * визуальный hover
-                 */
-
-                setTimeout(()=>{
-
-                    locationButton.classList.remove(
-                        'pressed'
-                    );
-
-                    lockHoverUntilMouseLeave(
-                        locationButton
-                    );
-
-                },190);
-
-
-                /*
-                 * Центрируем карту
-                 */
-
-                centerOnMyLocation();
+                return;
 
             }
-        );
+
+
+            /*
+             * Если открыты настройки —
+             * закрываем их.
+             */
+
+            settings?.classList.remove(
+                'open'
+            );
+
+
+            /*
+             * Кнопка настроек должна
+             * вернуться в обычное состояние.
+             */
+
+            settingsButton?.classList.remove(
+                'active'
+            );
+
+
+            /*
+             * =================================================
+             * НАЧАЛО ФОКУСИРОВКИ
+             * =================================================
+             */
+
+            locationButton.classList.add(
+                'active'
+            );
+
+
+            try{
+
+                /*
+                 * Очень важно:
+                 *
+                 * Если centerOnMyLocation()
+                 * возвращает Promise,
+                 * мы ждём его завершения.
+                 */
+
+                const result =
+                    centerOnMyLocation();
+
+
+                if(
+                    result &&
+                    typeof result.then === 'function'
+                ){
+
+                    await result;
+
+                }
+
+            }
+            catch(error){
+
+                console.error(
+                    'Ошибка центрирования карты:',
+                    error
+                );
+
+            }
+            finally{
+
+                /*
+                 * =================================================
+                 * ФОКУСИРОВКА ЗАКОНЧИЛАСЬ
+                 * =================================================
+                 *
+                 * Возвращаем кнопку
+                 * в обычное состояние.
+                 */
+
+                locationButton.classList.remove(
+                    'active'
+                );
+
+            }
+
+        };
 
     }
 
@@ -362,101 +323,65 @@ function initBottomBar(){
 
     if(settingsButton){
 
-        settingsButton.addEventListener(
-            'click',
-            (event)=>{
+        settingsButton.onclick = (event)=>{
 
-                event.preventDefault();
+            event.preventDefault();
 
-                event.stopPropagation();
+            event.stopPropagation();
 
 
-                if(!settings)
-                    return;
+            if(!settings)
+                return;
 
 
-                const isOpen =
-                    settings.classList.contains(
-                        'open'
-                    );
+            /*
+             * =================================================
+             * ЕСЛИ НАСТРОЙКИ УЖЕ ОТКРЫТЫ
+             * =================================================
+             *
+             * Второй клик:
+             *
+             * окно закрываем
+             * кнопку выключаем
+             */
 
+            if(
+                settings.classList.contains(
+                    'open'
+                )
+            ){
 
-                /*
-                 * ВТОРОЙ КЛИК:
-                 * закрываем настройки
-                 */
-
-                if(isOpen){
-
-                    settings.classList.remove(
-                        'open'
-                    );
-
-
-                    /*
-                     * Полностью возвращаем
-                     * кнопку в исходное состояние
-                     */
-
-                    settingsButton.classList.remove(
-                        'pressed'
-                    );
-
-                    settingsButton.classList.remove(
-                        'no-hover'
-                    );
-
-
-                    /*
-                     * Больше ничего
-                     * не оставляем активным
-                     */
-
-                    settingsButton.blur();
-
-                    return;
-
-                }
-
-
-                /*
-                 * ПЕРВЫЙ КЛИК:
-                 * открываем настройки
-                 */
-
-                settings.classList.add(
+                settings.classList.remove(
                     'open'
                 );
 
-
-                /*
-                 * Короткая анимация
-                 */
-
-                pressButton(
-                    settingsButton
+                settingsButton.classList.remove(
+                    'active'
                 );
 
-
-                /*
-                 * После нажатия
-                 * убираем hover
-                 */
-
-                setTimeout(()=>{
-
-                    settingsButton.classList.remove(
-                        'pressed'
-                    );
-
-                    lockHoverUntilMouseLeave(
-                        settingsButton
-                    );
-
-                },190);
+                return;
 
             }
-        );
+
+
+            /*
+             * =================================================
+             * ПЕРВЫЙ КЛИК
+             * =================================================
+             *
+             * Открываем настройки
+             * и оставляем кнопку ACTIVE.
+             */
+
+            settings.classList.add(
+                'open'
+            );
+
+            settingsButton.classList.add(
+                'active'
+            );
+
+        };
 
     }
 
@@ -467,43 +392,38 @@ function initBottomBar(){
 
     if(liveButton){
 
-        liveButton.addEventListener(
-            'click',
-            (event)=>{
+        liveButton.onclick = (event)=>{
 
-                event.preventDefault();
+            event.preventDefault();
 
-                event.stopPropagation();
+            event.stopPropagation();
 
 
-                settings?.classList.remove(
-                    'open'
-                );
+            /*
+             * Закрываем настройки.
+             */
+
+            settings?.classList.remove(
+                'open'
+            );
 
 
-                /*
-                 * Полностью сбрасываем
-                 * кнопку настроек
-                 */
+            /*
+             * Возвращаем кнопку настроек
+             * в обычное состояние.
+             */
 
-                settingsButton?.classList.remove(
-                    'pressed'
-                );
+            settingsButton?.classList.remove(
+                'active'
+            );
 
-                settingsButton?.classList.remove(
-                    'no-hover'
-                );
-
-                settingsButton?.blur();
-
-            }
-        );
+        };
 
     }
 
 
     /* =====================================================
-       КЛИК ВНЕ ОКНА НАСТРОЕК
+       КЛИК ПО ПУСТОМУ МЕСТУ
     ===================================================== */
 
     document.addEventListener(
@@ -514,21 +434,20 @@ function initBottomBar(){
                 return;
 
 
-            const clickedInsideSettings =
-                settings.contains(
-                    event.target
-                );
-
-
-            const clickedSettingsButton =
-                settingsButton?.contains(
-                    event.target
-                );
-
+            /*
+             * Если кликнули не внутри
+             * окна настроек и не по самой
+             * кнопке настроек —
+             * закрываем настройки.
+             */
 
             if(
-                !clickedInsideSettings &&
-                !clickedSettingsButton
+                !settings.contains(
+                    event.target
+                ) &&
+                !settingsButton?.contains(
+                    event.target
+                )
             ){
 
                 settings.classList.remove(
@@ -537,14 +456,8 @@ function initBottomBar(){
 
 
                 settingsButton?.classList.remove(
-                    'pressed'
+                    'active'
                 );
-
-                settingsButton?.classList.remove(
-                    'no-hover'
-                );
-
-                settingsButton?.blur();
 
             }
 
@@ -570,6 +483,11 @@ function initBottomBar(){
                 return;
 
 
+            /*
+             * Если нажата любая другая
+             * кнопка — настройки закрываем.
+             */
+
             if(
                 target !== settingsButton &&
                 !settings?.contains(
@@ -583,14 +501,8 @@ function initBottomBar(){
 
 
                 settingsButton?.classList.remove(
-                    'pressed'
+                    'active'
                 );
-
-                settingsButton?.classList.remove(
-                    'no-hover'
-                );
-
-                settingsButton?.blur();
 
             }
 
