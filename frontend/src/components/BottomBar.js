@@ -78,70 +78,71 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
+            <!-- ШЕСТЕРЁНКА -->
+
             <path
                 d="
                     M12 2.75
-                    L13.05 4.45
 
-                    C13.35 4.52 13.65 4.62 13.94 4.75
+                    L13.15 4.55
+                    C13.55 4.65 13.95 4.82 14.3 5.05
 
-                    L15.85 3.95
-                    L17.55 5.65
-                    L16.75 7.56
+                    L16.35 4.25
+                    L18.05 5.95
+                    L17.25 8
 
-                    C16.88 7.85 16.98 8.15 17.05 8.45
+                    C17.48 8.35 17.65 8.75 17.75 9.15
 
-                    L19.25 9.15
-                    V11.55
+                    L19.55 10.3
+                    V13.7
 
-                    L17.05 12.25
+                    L17.75 14.85
+                    C17.65 15.25 17.48 15.65 17.25 16
 
-                    C16.98 12.55 16.88 12.85 16.75 13.14
+                    L18.05 18.05
+                    L16.35 19.75
+                    L14.3 18.95
 
-                    L17.55 15.05
-                    L15.85 16.75
-                    L13.94 15.95
+                    C13.95 19.18 13.55 19.35 13.15 19.45
 
-                    C13.65 16.08 13.35 16.18 13.05 16.25
+                    L12 21.25
 
-                    L12 18.45
+                    L10.85 19.45
+                    C10.45 19.35 10.05 19.18 9.7 18.95
 
-                    L10.95 16.25
+                    L7.65 19.75
+                    L5.95 18.05
+                    L6.75 16
 
-                    C10.65 16.18 10.35 16.08 10.06 15.95
+                    C6.52 15.65 6.35 15.25 6.25 14.85
 
-                    L8.15 16.75
-                    L6.45 15.05
-                    L7.25 13.14
+                    L4.45 13.7
+                    V10.3
 
-                    C7.12 12.85 7.02 12.55 6.95 12.25
+                    L6.25 9.15
+                    C6.35 8.75 6.52 8.35 6.75 8
 
-                    L4.75 11.55
-                    V9.15
-                    L6.95 8.45
+                    L5.95 5.95
+                    L7.65 4.25
+                    L9.7 5.05
 
-                    C7.02 8.15 7.12 7.85 7.25 7.56
+                    C10.05 4.82 10.45 4.65 10.85 4.55
 
-                    L6.45 5.65
-                    L8.15 3.95
-                    L10.06 4.75
-
-                    C10.35 4.62 10.65 4.52 10.95 4.45
-
+                    L12 2.75
                     Z
                 "
                 stroke="currentColor"
-                stroke-width="1.45"
+                stroke-width="1.35"
                 stroke-linecap="round"
                 stroke-linejoin="round"
             />
 
             <circle
                 cx="12"
-                cy="10.35"
-                r="2.45"
+                cy="12"
+                r="2.65"
                 stroke="currentColor"
-                stroke-width="1.45"
+                stroke-width="1.35"
             />
 
         </svg>
@@ -192,7 +193,6 @@ function initBottomBar(){
         locationButton.onclick = (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
@@ -202,14 +202,26 @@ function initBottomBar(){
 
 
             /*
-             * Свечение кнопки
-             * убираем сразу после
-             * нажатия.
+             * Нажатие
              */
 
-            locationButton.classList.remove(
+            locationButton.classList.add(
                 'pressed'
             );
+
+
+            /*
+             * Возвращаем исходное
+             * состояние
+             */
+
+            setTimeout(()=>{
+
+                locationButton.classList.remove(
+                    'pressed'
+                );
+
+            },180);
 
 
             centerOnMyLocation();
@@ -228,7 +240,6 @@ function initBottomBar(){
         settingsButton.onclick = (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
@@ -237,53 +248,33 @@ function initBottomBar(){
 
 
             /*
-             * Проверяем текущее состояние.
+             * Открываем / закрываем окно
              */
 
-            const isOpen =
-                settings.classList.contains(
-                    'open'
-                );
+            settings.classList.toggle(
+                'open'
+            );
 
 
             /*
-             * НАСТРОЙКИ ЗАКРЫТЫ
-             *
-             * Открываем:
-             * окно + свечение кнопки.
+             * Нажатие кнопки настроек
+             * всегда кратковременное.
+             * После этого она возвращается
+             * в обычное состояние.
              */
 
-            if(!isOpen){
-
-                settings.classList.add(
-                    'open'
-                );
-
-                settingsButton.classList.add(
-                    'pressed'
-                );
-
-            }
+            settingsButton.classList.add(
+                'pressed'
+            );
 
 
-            /*
-             * НАСТРОЙКИ ОТКРЫТЫ
-             *
-             * Закрываем:
-             * окно + убираем свечение.
-             */
-
-            else{
-
-                settings.classList.remove(
-                    'open'
-                );
+            setTimeout(()=>{
 
                 settingsButton.classList.remove(
                     'pressed'
                 );
 
-            }
+            },180);
 
         };
 
@@ -299,24 +290,11 @@ function initBottomBar(){
         liveButton.onclick = (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
             settings?.classList.remove(
                 'open'
-            );
-
-
-            /*
-             * Если нажали LIVE,
-             * настройки закрываются
-             * и свечение кнопки
-             * настроек тоже убирается.
-             */
-
-            settingsButton?.classList.remove(
-                'pressed'
             );
 
         };
@@ -347,11 +325,6 @@ function initBottomBar(){
 
                 settings.classList.remove(
                     'open'
-                );
-
-
-                settingsButton?.classList.remove(
-                    'pressed'
                 );
 
             }
@@ -387,11 +360,6 @@ function initBottomBar(){
 
                 settings?.classList.remove(
                     'open'
-                );
-
-
-                settingsButton?.classList.remove(
-                    'pressed'
                 );
 
             }
