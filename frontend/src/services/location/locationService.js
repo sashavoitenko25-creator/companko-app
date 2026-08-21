@@ -1,7 +1,7 @@
-```javascript
 import {
     supabase
 } from '../supabase/supabaseClient';
+
 
 let locationId = null;
 let watcherId = null;
@@ -39,7 +39,6 @@ export async function saveMyLocation(
             .update({
 
                 latitude,
-
                 longitude
 
             })
@@ -53,6 +52,7 @@ export async function saveMyLocation(
 
             .single();
 
+
         if(error){
 
             console.error(
@@ -64,9 +64,11 @@ export async function saveMyLocation(
 
         }
 
+
         return data;
 
     }
+
 
     const {
         data,
@@ -89,6 +91,7 @@ export async function saveMyLocation(
 
         .single();
 
+
     if(error){
 
         console.error(
@@ -100,7 +103,10 @@ export async function saveMyLocation(
 
     }
 
-    locationId = data.id;
+
+    locationId =
+        data.id;
+
 
     return data;
 
@@ -112,15 +118,13 @@ export async function saveMyLocation(
 ========================================================= */
 
 export async function updateMyLocation(
-
     latitude,
-
     longitude
-
 ){
 
     if(!locationId)
         return;
+
 
     const {
         error
@@ -140,6 +144,7 @@ export async function updateMyLocation(
             'id',
             locationId
         );
+
 
     if(error){
 
@@ -169,6 +174,7 @@ export function watchLocation(callback){
 
     }
 
+
     if(!navigator.geolocation){
 
         console.error(
@@ -191,99 +197,71 @@ export function watchLocation(callback){
     }
 
 
-    watcherId = navigator.geolocation.watchPosition(
+    watcherId =
+        navigator.geolocation.watchPosition(
 
-        position=>{
+            position=>{
 
-            const accuracy =
-                position.coords.accuracy;
-
-
-            /*
-             * accuracy — это погрешность GPS
-             * в метрах.
-             *
-             * Например:
-             *
-             * 5  = очень хорошо
-             * 10 = хорошо
-             * 20 = нормально
-             * 50 = неточно
-             * 100+ = очень неточно
-             */
+                const accuracy =
+                    position.coords.accuracy;
 
 
-            if(
-                typeof accuracy === 'number' &&
-                accuracy > 100
-            ){
+                if(
+                    typeof accuracy === 'number' &&
+                    accuracy > 100
+                ){
 
-                console.warn(
-                    'Ignoring inaccurate location:',
-                    accuracy,
-                    'meters'
+                    console.warn(
+                        'Ignoring inaccurate location:',
+                        accuracy,
+                        'meters'
+                    );
+
+                    return;
+
+                }
+
+
+                callback({
+
+                    latitude:
+                        position.coords.latitude,
+
+                    longitude:
+                        position.coords.longitude,
+
+                    accuracy:
+                        accuracy,
+
+                    heading:
+                        position.coords.heading
+
+                });
+
+            },
+
+
+            error=>{
+
+                console.error(
+                    'Watch location error',
+                    error
                 );
 
-                return;
+            },
+
+
+            {
+
+                enableHighAccuracy:true,
+
+                timeout:30000,
+
+                maximumAge:0
 
             }
 
-
-            callback({
-
-                latitude:
-                position.coords.latitude,
-
-                longitude:
-                position.coords.longitude,
-
-                accuracy:
-                accuracy,
-
-                heading:
-                position.coords.heading
-
-            });
-
-        },
-
-        error=>{
-
-            console.error(
-                'Watch location error',
-                error
-            );
-
-        },
-
-        {
-
-            /*
-             * Используем GPS,
-             * а не только Wi-Fi/IP.
-             */
-
-            enableHighAccuracy:true,
-
-
-            /*
-             * Даём устройству больше времени
-             * получить нормальный GPS fix.
-             */
-
-            timeout:30000,
-
-
-            /*
-             * Никогда не используем
-             * старую координату из кэша.
-             */
-
-            maximumAge:0
-
-        }
-
-    );
+        );
 
 
     return watcherId;
@@ -316,91 +294,92 @@ export function stopWatchingLocation(){
 
 export function getCurrentPosition(){
 
-    return new Promise((resolve,reject)=>{
+    return new Promise(
 
-        if(!navigator.geolocation){
+        (resolve,reject)=>{
 
-            reject(
-                'Geolocation unavailable'
-            );
+            if(!navigator.geolocation){
 
-            return;
+                reject(
+                    'Geolocation unavailable'
+                );
 
-        }
-
-
-        navigator.geolocation.getCurrentPosition(
-
-            position=>{
-
-                const accuracy =
-                    position.coords.accuracy;
-
-
-                /*
-                 * Если GPS совсем плохой,
-                 * не используем такую точку.
-                 */
-
-                if(
-                    typeof accuracy === 'number' &&
-                    accuracy > 100
-                ){
-
-                    reject({
-
-                        code:3,
-
-                        message:
-                            'Location accuracy is too low',
-
-                        accuracy:
-                            accuracy
-
-                    });
-
-                    return;
-
-                }
-
-
-                resolve({
-
-                    latitude:
-                    position.coords.latitude,
-
-                    longitude:
-                    position.coords.longitude,
-
-                    accuracy:
-                    accuracy,
-
-                    heading:
-                    position.coords.heading
-
-                });
-
-            },
-
-            error=>{
-
-                reject(error);
-
-            },
-
-            {
-
-                enableHighAccuracy:true,
-
-                timeout:30000,
-
-                maximumAge:0
+                return;
 
             }
 
-        );
 
-    });
+            navigator.geolocation.getCurrentPosition(
+
+                position=>{
+
+                    const accuracy =
+                        position.coords.accuracy;
+
+
+                    if(
+                        typeof accuracy === 'number' &&
+                        accuracy > 100
+                    ){
+
+                        reject({
+
+                            code:3,
+
+                            message:
+                                'Location accuracy is too low',
+
+                            accuracy:
+                                accuracy
+
+                        });
+
+                        return;
+
+                    }
+
+
+                    resolve({
+
+                        latitude:
+                            position.coords.latitude,
+
+                        longitude:
+                            position.coords.longitude,
+
+                        accuracy:
+                            accuracy,
+
+                        heading:
+                            position.coords.heading
+
+                    });
+
+                },
+
+
+                error=>{
+
+                    reject(error);
+
+                },
+
+
+                {
+
+                    enableHighAccuracy:true,
+
+                    timeout:30000,
+
+                    maximumAge:0
+
+                }
+
+            );
+
+        }
+
+    );
 
 }
 
@@ -414,4 +393,3 @@ export function resetLocationId(){
     locationId = null;
 
 }
-```
