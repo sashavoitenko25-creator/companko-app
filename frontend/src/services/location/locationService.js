@@ -4,8 +4,349 @@ import {
 
 
 let locationId = null;
-
 let watcherId = null;
+
+
+/* =========================================================
+   REQUEST LOCATION
+========================================================= */
+
+export function requestLocation(){
+
+    return new Promise((resolve, reject)=>{
+
+        if(!navigator.geolocation){
+
+            console.error(
+                'Geolocation is not supported'
+            );
+
+            reject(
+                new Error('Geolocation is not supported')
+            );
+
+            return;
+
+        }
+
+
+        console.log(
+            'REQUESTING GEOLOCATION...'
+        );
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            position=>{
+
+                const result = {
+
+                    latitude:
+                        position.coords.latitude,
+
+                    longitude:
+                        position.coords.longitude,
+
+                    accuracy:
+                        position.coords.accuracy,
+
+                    heading:
+                        position.coords.heading
+
+                };
+
+
+                console.log(
+                    'LOCATION RECEIVED:',
+                    result
+                );
+
+
+                window.myLocation = {
+
+                    lat:
+                        result.latitude,
+
+                    lng:
+                        result.longitude
+
+                };
+
+
+                window.dispatchEvent(
+
+                    new CustomEvent(
+                        'location:updated',
+                        {
+                            detail: {
+
+                                lat:
+                                    result.latitude,
+
+                                lng:
+                                    result.longitude
+
+                            }
+                        }
+                    )
+
+                );
+
+
+                resolve(result);
+
+            },
+
+            error=>{
+
+                console.error(
+                    'GEOLOCATION ERROR:',
+                    error.code,
+                    error.message
+                );
+
+
+                reject(error);
+
+            },
+
+            {
+
+                enableHighAccuracy:true,
+
+                timeout:30000,
+
+                maximumAge:0
+
+            }
+
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   WATCH LOCATION
+========================================================= */
+
+export function watchLocation(callback){
+
+    if(typeof callback !== 'function'){
+
+        console.error(
+            'watchLocation: callback is not a function'
+        );
+
+        return null;
+
+    }
+
+
+    if(!navigator.geolocation){
+
+        console.error(
+            'Geolocation not supported'
+        );
+
+        return null;
+
+    }
+
+
+    if(watcherId){
+
+        navigator.geolocation.clearWatch(
+            watcherId
+        );
+
+        watcherId = null;
+
+    }
+
+
+    console.log(
+        'START LOCATION WATCH'
+    );
+
+
+    watcherId =
+        navigator.geolocation.watchPosition(
+
+            position=>{
+
+                const result = {
+
+                    latitude:
+                        position.coords.latitude,
+
+                    longitude:
+                        position.coords.longitude,
+
+                    accuracy:
+                        position.coords.accuracy,
+
+                    heading:
+                        position.coords.heading
+
+                };
+
+
+                console.log(
+                    'LOCATION UPDATED:',
+                    result
+                );
+
+
+                window.myLocation = {
+
+                    lat:
+                        result.latitude,
+
+                    lng:
+                        result.longitude
+
+                };
+
+
+                callback(
+                    result
+                );
+
+
+                window.dispatchEvent(
+
+                    new CustomEvent(
+                        'location:updated',
+                        {
+                            detail: {
+
+                                lat:
+                                    result.latitude,
+
+                                lng:
+                                    result.longitude
+
+                            }
+                        }
+                    )
+
+                );
+
+            },
+
+            error=>{
+
+                console.error(
+                    'WATCH LOCATION ERROR:',
+                    error.code,
+                    error.message
+                );
+
+            },
+
+            {
+
+                enableHighAccuracy:true,
+
+                timeout:30000,
+
+                maximumAge:0
+
+            }
+
+        );
+
+
+    return watcherId;
+
+}
+
+
+/* =========================================================
+   STOP WATCHING
+========================================================= */
+
+export function stopWatchingLocation(){
+
+    if(watcherId){
+
+        navigator.geolocation.clearWatch(
+            watcherId
+        );
+
+        watcherId = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   GET CURRENT POSITION
+========================================================= */
+
+export function getCurrentPosition(){
+
+    return new Promise((resolve,reject)=>{
+
+        if(!navigator.geolocation){
+
+            reject(
+                new Error(
+                    'Geolocation unavailable'
+                )
+            );
+
+            return;
+
+        }
+
+
+        navigator.geolocation.getCurrentPosition(
+
+            position=>{
+
+                resolve({
+
+                    latitude:
+                        position.coords.latitude,
+
+                    longitude:
+                        position.coords.longitude,
+
+                    accuracy:
+                        position.coords.accuracy,
+
+                    heading:
+                        position.coords.heading
+
+                });
+
+            },
+
+            error=>{
+
+                reject(error);
+
+            },
+
+            {
+
+                enableHighAccuracy:true,
+
+                timeout:30000,
+
+                maximumAge:0
+
+            }
+
+        );
+
+    });
+
+}
 
 
 /* =========================================================
@@ -13,9 +354,13 @@ let watcherId = null;
 ========================================================= */
 
 export async function saveMyLocation(
+
     userId,
+
     latitude,
+
     longitude
+
 ){
 
     if(!userId){
@@ -118,8 +463,11 @@ export async function saveMyLocation(
 ========================================================= */
 
 export async function updateMyLocation(
+
     latitude,
+
     longitude
+
 ){
 
     if(!locationId)
@@ -135,7 +483,6 @@ export async function updateMyLocation(
         .update({
 
             latitude,
-
             longitude
 
         })
@@ -159,333 +506,52 @@ export async function updateMyLocation(
 
 
 /* =========================================================
-   WATCH LOCATION
-========================================================= */
-
-export function watchLocation(callback){
-
-    console.log(
-        '[LOCATION] watchLocation started'
-    );
-
-
-    if(
-        typeof callback !==
-        'function'
-    ){
-
-        console.error(
-            '[LOCATION] callback is not a function'
-        );
-
-        return null;
-
-    }
-
-
-    if(
-        !navigator.geolocation
-    ){
-
-        console.error(
-            '[LOCATION] Geolocation is not supported'
-        );
-
-        return null;
-
-    }
-
-
-    /*
-     * Если старый watcher существует —
-     * удаляем его.
-     */
-
-    if(watcherId !== null){
-
-        navigator.geolocation.clearWatch(
-            watcherId
-        );
-
-        watcherId = null;
-
-    }
-
-
-    console.log(
-        '[LOCATION] Requesting GPS permission...'
-    );
-
-
-    watcherId =
-        navigator.geolocation.watchPosition(
-
-            position=>{
-
-                console.log(
-                    '[LOCATION] GPS POSITION:',
-                    position
-                );
-
-
-                const latitude =
-                    position.coords.latitude;
-
-
-                const longitude =
-                    position.coords.longitude;
-
-
-                const accuracy =
-                    position.coords.accuracy;
-
-
-                const heading =
-                    position.coords.heading;
-
-
-                console.log(
-                    '[LOCATION] LAT:',
-                    latitude
-                );
-
-
-                console.log(
-                    '[LOCATION] LNG:',
-                    longitude
-                );
-
-
-                console.log(
-                    '[LOCATION] ACCURACY:',
-                    accuracy
-                );
-
-
-                /*
-                 * Не отбрасываем координату
-                 * из-за accuracy.
-                 *
-                 * Даже если GPS сначала показывает
-                 * 100+ метров, карта всё равно
-                 * должна получить позицию.
-                 */
-
-                callback({
-
-                    latitude,
-
-                    longitude,
-
-                    accuracy,
-
-                    heading
-
-                });
-
-
-            },
-
-
-            error=>{
-
-                console.error(
-                    '[LOCATION] GPS ERROR:',
-                    error
-                );
-
-
-                if(error){
-
-                    console.error(
-                        '[LOCATION] ERROR CODE:',
-                        error.code
-                    );
-
-
-                    console.error(
-                        '[LOCATION] ERROR MESSAGE:',
-                        error.message
-                    );
-
-                }
-
-            },
-
-
-            {
-
-                /*
-                 * Максимально точное
-                 * определение позиции.
-                 */
-
-                enableHighAccuracy:true,
-
-
-                /*
-                 * Даём GPS достаточно времени.
-                 */
-
-                timeout:30000,
-
-
-                /*
-                 * Не используем старую
-                 * позицию из cache.
-                 */
-
-                maximumAge:0
-
-            }
-
-        );
-
-
-    console.log(
-        '[LOCATION] WATCHER ID:',
-        watcherId
-    );
-
-
-    return watcherId;
-
-}
-
-
-/* =========================================================
-   STOP WATCHING
-========================================================= */
-
-export function stopWatchingLocation(){
-
-    if(
-        watcherId !== null
-    ){
-
-        console.log(
-            '[LOCATION] Stopping watcher:',
-            watcherId
-        );
-
-
-        navigator.geolocation.clearWatch(
-            watcherId
-        );
-
-
-        watcherId = null;
-
-    }
-
-}
-
-
-/* =========================================================
-   GET CURRENT POSITION
-========================================================= */
-
-export function getCurrentPosition(){
-
-    return new Promise(
-
-        (
-            resolve,
-            reject
-        )=>{
-
-            if(
-                !navigator.geolocation
-            ){
-
-                reject({
-
-                    code:0,
-
-                    message:
-                        'Geolocation is not supported'
-
-                });
-
-                return;
-
-            }
-
-
-            console.log(
-                '[LOCATION] Getting current position...'
-            );
-
-
-            navigator.geolocation.getCurrentPosition(
-
-                position=>{
-
-                    console.log(
-                        '[LOCATION] CURRENT POSITION:',
-                        position
-                    );
-
-
-                    resolve({
-
-                        latitude:
-                            position.coords.latitude,
-
-                        longitude:
-                            position.coords.longitude,
-
-                        accuracy:
-                            position.coords.accuracy,
-
-                        heading:
-                            position.coords.heading
-
-                    });
-
-                },
-
-
-                error=>{
-
-                    console.error(
-                        '[LOCATION] CURRENT POSITION ERROR:',
-                        error
-                    );
-
-
-                    reject(
-                        error
-                    );
-
-                },
-
-
-                {
-
-                    enableHighAccuracy:true,
-
-                    timeout:30000,
-
-                    maximumAge:0
-
-                }
-
-            );
-
-        }
-
-    );
-
-}
-
-
-/* =========================================================
    RESET LOCATION ID
 ========================================================= */
 
 export function resetLocationId(){
 
     locationId = null;
+
+}
+
+
+/* =========================================================
+   INIT LOCATION
+========================================================= */
+
+export async function initLocation(){
+
+    console.log(
+        'INIT LOCATION'
+    );
+
+
+    try{
+
+        const position =
+            await requestLocation();
+
+
+        console.log(
+            'INITIAL LOCATION:',
+            position
+        );
+
+
+        return position;
+
+    }
+    catch(error){
+
+        console.error(
+            'INITIAL LOCATION FAILED:',
+            error
+        );
+
+
+        return null;
+
+    }
 
 }
