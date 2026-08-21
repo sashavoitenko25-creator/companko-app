@@ -4,6 +4,7 @@ import {
 
 
 let locationId = null;
+
 let watcherId = null;
 
 
@@ -27,6 +28,7 @@ export async function saveMyLocation(
 
     }
 
+
     if(locationId){
 
         const {
@@ -49,7 +51,6 @@ export async function saveMyLocation(
             )
 
             .select()
-
             .single();
 
 
@@ -88,7 +89,6 @@ export async function saveMyLocation(
         })
 
         .select()
-
         .single();
 
 
@@ -164,10 +164,18 @@ export async function updateMyLocation(
 
 export function watchLocation(callback){
 
-    if(typeof callback !== 'function'){
+    console.log(
+        '[LOCATION] watchLocation started'
+    );
+
+
+    if(
+        typeof callback !==
+        'function'
+    ){
 
         console.error(
-            'watchLocation: callback is not a function'
+            '[LOCATION] callback is not a function'
         );
 
         return null;
@@ -175,10 +183,12 @@ export function watchLocation(callback){
     }
 
 
-    if(!navigator.geolocation){
+    if(
+        !navigator.geolocation
+    ){
 
         console.error(
-            'Geolocation not supported'
+            '[LOCATION] Geolocation is not supported'
         );
 
         return null;
@@ -186,7 +196,12 @@ export function watchLocation(callback){
     }
 
 
-    if(watcherId){
+    /*
+     * Если старый watcher существует —
+     * удаляем его.
+     */
+
+    if(watcherId !== null){
 
         navigator.geolocation.clearWatch(
             watcherId
@@ -197,46 +212,77 @@ export function watchLocation(callback){
     }
 
 
+    console.log(
+        '[LOCATION] Requesting GPS permission...'
+    );
+
+
     watcherId =
         navigator.geolocation.watchPosition(
 
             position=>{
 
+                console.log(
+                    '[LOCATION] GPS POSITION:',
+                    position
+                );
+
+
+                const latitude =
+                    position.coords.latitude;
+
+
+                const longitude =
+                    position.coords.longitude;
+
+
                 const accuracy =
                     position.coords.accuracy;
 
 
-                if(
-                    typeof accuracy === 'number' &&
-                    accuracy > 100
-                ){
+                const heading =
+                    position.coords.heading;
 
-                    console.warn(
-                        'Ignoring inaccurate location:',
-                        accuracy,
-                        'meters'
-                    );
 
-                    return;
+                console.log(
+                    '[LOCATION] LAT:',
+                    latitude
+                );
 
-                }
 
+                console.log(
+                    '[LOCATION] LNG:',
+                    longitude
+                );
+
+
+                console.log(
+                    '[LOCATION] ACCURACY:',
+                    accuracy
+                );
+
+
+                /*
+                 * Не отбрасываем координату
+                 * из-за accuracy.
+                 *
+                 * Даже если GPS сначала показывает
+                 * 100+ метров, карта всё равно
+                 * должна получить позицию.
+                 */
 
                 callback({
 
-                    latitude:
-                        position.coords.latitude,
+                    latitude,
 
-                    longitude:
-                        position.coords.longitude,
+                    longitude,
 
-                    accuracy:
-                        accuracy,
+                    accuracy,
 
-                    heading:
-                        position.coords.heading
+                    heading
 
                 });
+
 
             },
 
@@ -244,24 +290,62 @@ export function watchLocation(callback){
             error=>{
 
                 console.error(
-                    'Watch location error',
+                    '[LOCATION] GPS ERROR:',
                     error
                 );
+
+
+                if(error){
+
+                    console.error(
+                        '[LOCATION] ERROR CODE:',
+                        error.code
+                    );
+
+
+                    console.error(
+                        '[LOCATION] ERROR MESSAGE:',
+                        error.message
+                    );
+
+                }
 
             },
 
 
             {
 
+                /*
+                 * Максимально точное
+                 * определение позиции.
+                 */
+
                 enableHighAccuracy:true,
 
+
+                /*
+                 * Даём GPS достаточно времени.
+                 */
+
                 timeout:30000,
+
+
+                /*
+                 * Не используем старую
+                 * позицию из cache.
+                 */
 
                 maximumAge:0
 
             }
 
         );
+
+
+    console.log(
+        '[LOCATION] WATCHER ID:',
+        watcherId
+    );
 
 
     return watcherId;
@@ -275,11 +359,20 @@ export function watchLocation(callback){
 
 export function stopWatchingLocation(){
 
-    if(watcherId){
+    if(
+        watcherId !== null
+    ){
+
+        console.log(
+            '[LOCATION] Stopping watcher:',
+            watcherId
+        );
+
 
         navigator.geolocation.clearWatch(
             watcherId
         );
+
 
         watcherId = null;
 
@@ -296,47 +389,42 @@ export function getCurrentPosition(){
 
     return new Promise(
 
-        (resolve,reject)=>{
+        (
+            resolve,
+            reject
+        )=>{
 
-            if(!navigator.geolocation){
+            if(
+                !navigator.geolocation
+            ){
 
-                reject(
-                    'Geolocation unavailable'
-                );
+                reject({
+
+                    code:0,
+
+                    message:
+                        'Geolocation is not supported'
+
+                });
 
                 return;
 
             }
 
 
+            console.log(
+                '[LOCATION] Getting current position...'
+            );
+
+
             navigator.geolocation.getCurrentPosition(
 
                 position=>{
 
-                    const accuracy =
-                        position.coords.accuracy;
-
-
-                    if(
-                        typeof accuracy === 'number' &&
-                        accuracy > 100
-                    ){
-
-                        reject({
-
-                            code:3,
-
-                            message:
-                                'Location accuracy is too low',
-
-                            accuracy:
-                                accuracy
-
-                        });
-
-                        return;
-
-                    }
+                    console.log(
+                        '[LOCATION] CURRENT POSITION:',
+                        position
+                    );
 
 
                     resolve({
@@ -348,7 +436,7 @@ export function getCurrentPosition(){
                             position.coords.longitude,
 
                         accuracy:
-                            accuracy,
+                            position.coords.accuracy,
 
                         heading:
                             position.coords.heading
@@ -360,7 +448,15 @@ export function getCurrentPosition(){
 
                 error=>{
 
-                    reject(error);
+                    console.error(
+                        '[LOCATION] CURRENT POSITION ERROR:',
+                        error
+                    );
+
+
+                    reject(
+                        error
+                    );
 
                 },
 
