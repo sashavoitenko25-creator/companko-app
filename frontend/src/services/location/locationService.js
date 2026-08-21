@@ -8,31 +8,191 @@ let watcherId = null;
 
 
 /* =========================================================
-   REQUEST LOCATION
+   TELEGRAM LOCATION
 ========================================================= */
 
 export function requestLocation(){
 
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve,reject)=>{
 
-        if(!navigator.geolocation){
+        const tg =
+            window.Telegram?.WebApp;
 
-            console.error(
-                'Geolocation is not supported'
+
+        /*
+         * TELEGRAM MINI APP
+         */
+
+        if(
+            tg &&
+            tg.LocationManager
+        ){
+
+            console.log(
+                'TELEGRAM LOCATION MANAGER'
             );
 
-            reject(
-                new Error('Geolocation is not supported')
-            );
+
+            const manager =
+                tg.LocationManager;
+
+
+            const initManager = ()=>{
+
+                console.log(
+                    'LOCATION MANAGER:',
+                    {
+                        available:
+                            manager.isLocationAvailable,
+
+                        requested:
+                            manager.isAccessRequested,
+
+                        granted:
+                            manager.isAccessGranted
+                    }
+                );
+
+
+                /*
+                 * Запрашиваем разрешение
+                 */
+
+                manager.getLocation(
+
+                    location=>{
+
+                        console.log(
+                            'TELEGRAM LOCATION:',
+                            location
+                        );
+
+
+                        if(!location){
+
+                            reject(
+                                new Error(
+                                    'Telegram location permission denied'
+                                )
+                            );
+
+                            return;
+
+                        }
+
+
+                        const result = {
+
+                            latitude:
+                                Number(
+                                    location.latitude
+                                ),
+
+                            longitude:
+                                Number(
+                                    location.longitude
+                                ),
+
+                            accuracy:
+                                location.horizontal_accuracy ??
+                                null,
+
+                            heading:
+                                location.course ??
+                                null
+
+                        };
+
+
+                        window.myLocation = {
+
+                            lat:
+                                result.latitude,
+
+                            lng:
+                                result.longitude
+
+                        };
+
+
+                        window.dispatchEvent(
+
+                            new CustomEvent(
+                                'location:updated',
+
+                                {
+                                    detail:{
+
+                                        lat:
+                                            result.latitude,
+
+                                        lng:
+                                            result.longitude
+
+                                    }
+
+                                }
+
+                            )
+
+                        );
+
+
+                        resolve(result);
+
+                    }
+
+                );
+
+            };
+
+
+            /*
+             * Telegram LocationManager
+             * сначала нужно инициализировать.
+             */
+
+            if(manager.isInited){
+
+                initManager();
+
+            }
+
+            else{
+
+                manager.init(
+
+                    ()=>{
+
+                        initManager();
+
+                    }
+
+                );
+
+            }
+
 
             return;
 
         }
 
 
-        console.log(
-            'REQUESTING GEOLOCATION...'
-        );
+        /*
+         * FALLBACK ДЛЯ ОБЫЧНОГО БРАУЗЕРА
+         */
+
+        if(!navigator.geolocation){
+
+            reject(
+                new Error(
+                    'Geolocation is not supported'
+                )
+            );
+
+            return;
+
+        }
 
 
         navigator.geolocation.getCurrentPosition(
@@ -56,12 +216,6 @@ export function requestLocation(){
                 };
 
 
-                console.log(
-                    'LOCATION RECEIVED:',
-                    result
-                );
-
-
                 window.myLocation = {
 
                     lat:
@@ -77,8 +231,9 @@ export function requestLocation(){
 
                     new CustomEvent(
                         'location:updated',
+
                         {
-                            detail: {
+                            detail:{
 
                                 lat:
                                     result.latitude,
@@ -87,7 +242,9 @@ export function requestLocation(){
                                     result.longitude
 
                             }
+
                         }
+
                     )
 
                 );
@@ -100,9 +257,8 @@ export function requestLocation(){
             error=>{
 
                 console.error(
-                    'GEOLOCATION ERROR:',
-                    error.code,
-                    error.message
+                    'BROWSER GEOLOCATION ERROR:',
+                    error
                 );
 
 
@@ -133,26 +289,84 @@ export function requestLocation(){
 
 export function watchLocation(callback){
 
-    if(typeof callback !== 'function'){
-
-        console.error(
-            'watchLocation: callback is not a function'
-        );
-
+    if(typeof callback !== 'function')
         return null;
+
+
+    /*
+     * В Telegram LocationManager
+     * не имеет watchPosition.
+     *
+     * Поэтому периодически запрашиваем
+     * актуальную позицию.
+     */
+
+    const tg =
+        window.Telegram?.WebApp;
+
+
+    if(
+        tg &&
+        tg.LocationManager
+    ){
+
+        let stopped = false;
+
+
+        const update = async()=>{
+
+            if(stopped)
+                return;
+
+
+            try{
+
+                const position =
+                    await requestLocation();
+
+
+                if(stopped)
+                    return;
+
+
+                callback(
+                    position
+                );
+
+            }
+            catch(error){
+
+                console.error(
+                    'TELEGRAM LOCATION UPDATE ERROR:',
+                    error
+                );
+
+            }
+
+        };
+
+
+        update();
+
+
+        watcherId =
+            setInterval(
+                update,
+                5000
+            );
+
+
+        return watcherId;
 
     }
 
 
-    if(!navigator.geolocation){
+    /*
+     * Обычный браузер
+     */
 
-        console.error(
-            'Geolocation not supported'
-        );
-
+    if(!navigator.geolocation)
         return null;
-
-    }
 
 
     if(watcherId){
@@ -161,14 +375,7 @@ export function watchLocation(callback){
             watcherId
         );
 
-        watcherId = null;
-
     }
-
-
-    console.log(
-        'START LOCATION WATCH'
-    );
 
 
     watcherId =
@@ -193,12 +400,6 @@ export function watchLocation(callback){
                 };
 
 
-                console.log(
-                    'LOCATION UPDATED:',
-                    result
-                );
-
-
                 window.myLocation = {
 
                     lat:
@@ -219,8 +420,9 @@ export function watchLocation(callback){
 
                     new CustomEvent(
                         'location:updated',
+
                         {
-                            detail: {
+                            detail:{
 
                                 lat:
                                     result.latitude,
@@ -229,7 +431,9 @@ export function watchLocation(callback){
                                     result.longitude
 
                             }
+
                         }
+
                     )
 
                 );
@@ -240,8 +444,7 @@ export function watchLocation(callback){
 
                 console.error(
                     'WATCH LOCATION ERROR:',
-                    error.code,
-                    error.message
+                    error
                 );
 
             },
@@ -270,15 +473,37 @@ export function watchLocation(callback){
 
 export function stopWatchingLocation(){
 
-    if(watcherId){
+    if(!watcherId)
+        return;
+
+
+    const tg =
+        window.Telegram?.WebApp;
+
+
+    if(
+        tg &&
+        tg.LocationManager
+    ){
+
+        clearInterval(
+            watcherId
+        );
+
+    }
+
+    else if(
+        navigator.geolocation
+    ){
 
         navigator.geolocation.clearWatch(
             watcherId
         );
 
-        watcherId = null;
-
     }
+
+
+    watcherId = null;
 
 }
 
@@ -289,89 +514,50 @@ export function stopWatchingLocation(){
 
 export function getCurrentPosition(){
 
-    return new Promise((resolve,reject)=>{
-
-        if(!navigator.geolocation){
-
-            reject(
-                new Error(
-                    'Geolocation unavailable'
-                )
-            );
-
-            return;
-
-        }
-
-
-        navigator.geolocation.getCurrentPosition(
-
-            position=>{
-
-                resolve({
-
-                    latitude:
-                        position.coords.latitude,
-
-                    longitude:
-                        position.coords.longitude,
-
-                    accuracy:
-                        position.coords.accuracy,
-
-                    heading:
-                        position.coords.heading
-
-                });
-
-            },
-
-            error=>{
-
-                reject(error);
-
-            },
-
-            {
-
-                enableHighAccuracy:true,
-
-                timeout:30000,
-
-                maximumAge:0
-
-            }
-
-        );
-
-    });
+    return requestLocation();
 
 }
 
 
 /* =========================================================
-   SAVE LOCATION
+   INIT LOCATION
 ========================================================= */
 
-export async function saveMyLocation(
+export async function initLocation(){
 
-    userId,
+    try{
 
-    latitude,
+        return await requestLocation();
 
-    longitude
-
-){
-
-    if(!userId){
+    }
+    catch(error){
 
         console.error(
-            'No user id for location'
+            'INIT LOCATION ERROR:',
+            error
         );
 
         return null;
 
     }
+
+}
+
+
+/* =========================================================
+   SUPABASE
+========================================================= */
+
+export async function saveMyLocation(
+
+    userId,
+    latitude,
+    longitude
+
+){
+
+    if(!userId)
+        return null;
 
 
     if(locationId){
@@ -399,16 +585,8 @@ export async function saveMyLocation(
             .single();
 
 
-        if(error){
-
-            console.error(
-                'Update location error',
-                error
-            );
-
+        if(error)
             throw error;
-
-        }
 
 
         return data;
@@ -428,7 +606,6 @@ export async function saveMyLocation(
             user_id:userId,
 
             latitude,
-
             longitude
 
         })
@@ -437,16 +614,8 @@ export async function saveMyLocation(
         .single();
 
 
-    if(error){
-
-        console.error(
-            'Save location error',
-            error
-        );
-
+    if(error)
         throw error;
-
-    }
 
 
     locationId =
@@ -465,7 +634,6 @@ export async function saveMyLocation(
 export async function updateMyLocation(
 
     latitude,
-
     longitude
 
 ){
@@ -496,7 +664,7 @@ export async function updateMyLocation(
     if(error){
 
         console.error(
-            'Update location error',
+            'UPDATE LOCATION ERROR:',
             error
         );
 
@@ -506,52 +674,11 @@ export async function updateMyLocation(
 
 
 /* =========================================================
-   RESET LOCATION ID
+   RESET
 ========================================================= */
 
 export function resetLocationId(){
 
     locationId = null;
-
-}
-
-
-/* =========================================================
-   INIT LOCATION
-========================================================= */
-
-export async function initLocation(){
-
-    console.log(
-        'INIT LOCATION'
-    );
-
-
-    try{
-
-        const position =
-            await requestLocation();
-
-
-        console.log(
-            'INITIAL LOCATION:',
-            position
-        );
-
-
-        return position;
-
-    }
-    catch(error){
-
-        console.error(
-            'INITIAL LOCATION FAILED:',
-            error
-        );
-
-
-        return null;
-
-    }
 
 }

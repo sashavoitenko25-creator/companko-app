@@ -3,58 +3,94 @@ import ReactDOM from 'react-dom/client';
 
 import App from './App.jsx';
 
+
 import {
+    initTelegram,
     getTelegramUser
 } from './services/telegram/telegramService';
+
 
 import {
     getOrCreateTelegramUser
 } from './services/supabase/telegramUserService';
 
+
 import {
     setProfile
 } from './features/profile/profileStore';
 
-async function initTelegram() {
 
-    const tgUser = getTelegramUser();
 
-    if (!tgUser) {
+async function initApp(){
 
-        console.log('NO TELEGRAM USER');
+    /*
+     * Telegram запускаем ПЕРВЫМ
+     */
 
-    } else {
+    const tg =
+        initTelegram();
 
-        try {
+
+    console.log(
+        'TELEGRAM:',
+        tg
+    );
+
+
+    /*
+     * Получаем пользователя
+     */
+
+    const tgUser =
+        getTelegramUser();
+
+
+    if(tgUser){
+
+        try{
 
             const profile =
-                await getOrCreateTelegramUser(tgUser);
+                await getOrCreateTelegramUser(
+                    tgUser
+                );
 
-            if (profile) {
 
-                setProfile(profile);
+            if(profile){
 
-                console.log(
-                    'TELEGRAM PROFILE',
+                setProfile(
                     profile
                 );
 
             }
 
-        } catch (error) {
+        }
+        catch(error){
 
-            console.error(error);
+            console.error(
+                'TELEGRAM PROFILE ERROR:',
+                error
+            );
 
         }
 
     }
 
+
+    /*
+     * Запускаем React
+     */
+
     ReactDOM.createRoot(
+
         document.getElementById('app')
+
     ).render(
+
         <App />
+
     );
 
 }
 
-initTelegram();
+
+initApp();

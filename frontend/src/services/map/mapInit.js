@@ -21,8 +21,8 @@ import {
 
 
 import {
-    watchLocation,
-    getCurrentPosition
+    requestLocation,
+    watchLocation
 } from '../location/locationService';
 
 
@@ -43,7 +43,6 @@ import {
 } from './mapThemeService';
 
 
-
 let initialized = false;
 
 let tileLayer = null;
@@ -57,15 +56,8 @@ let locationStarted = false;
 
 export function initMap(){
 
-    if(initialized){
-
-        console.log(
-            'MAP ALREADY INITIALIZED'
-        );
-
+    if(initialized)
         return;
-
-    }
 
 
     const mapElement =
@@ -90,10 +82,6 @@ export function initMap(){
         'MAP INIT'
     );
 
-
-    /* =====================================================
-       LEAFLET
-    ===================================================== */
 
     const map =
         L.map(
@@ -127,7 +115,7 @@ export function initMap(){
                     [85.05112878,180]
                 ],
 
-                maxBoundsViscosity:1.0,
+                maxBoundsViscosity:1,
 
                 worldCopyJump:false
 
@@ -135,10 +123,6 @@ export function initMap(){
 
         );
 
-
-    /* =====================================================
-       START VIEW
-    ===================================================== */
 
     map.setView(
 
@@ -152,15 +136,11 @@ export function initMap(){
     );
 
 
-    /* =====================================================
-       SAVE MAP
-    ===================================================== */
-
     setMap(map);
 
 
     /* =====================================================
-       TILE
+       TILES
     ===================================================== */
 
     tileLayer =
@@ -215,20 +195,12 @@ export function initMap(){
         ()=>{
 
             window.dispatchEvent(
-
-                new Event(
-                    'ui:close-all'
-                )
-
+                new Event('ui:close-all')
             );
 
 
             window.dispatchEvent(
-
-                new Event(
-                    'route:collapse'
-                )
-
+                new Event('route:collapse')
             );
 
         }
@@ -251,58 +223,40 @@ export function initMap(){
 
 
     /* =====================================================
-       GEOLOCATION
+       LOCATION
     ===================================================== */
 
-    startLocationTracking();
+    startLocation();
 
 
     /* =====================================================
        PROFILE
     ===================================================== */
 
-    window.removeEventListener(
-        'profile:open',
-        focusRoutePanel
-    );
-
-
     window.addEventListener(
+
         'profile:open',
-        focusRoutePanel
+
+        ()=>{
+
+            window.dispatchEvent(
+                new Event('route:collapse')
+            );
+
+        }
+
     );
-
-
-    function focusRoutePanel(){
-
-        window.dispatchEvent(
-
-            new Event(
-                'route:collapse'
-            )
-
-        );
-
-    }
 
 
     /* =====================================================
-       LIVE MARKERS
+       LIVE
     ===================================================== */
 
     loadLiveMarkers();
 
 
-    /* =====================================================
-       REALTIME
-    ===================================================== */
-
     initLocationRealtime();
 
-
-    /* =====================================================
-       LIVE STARTED
-    ===================================================== */
 
     window.addEventListener(
 
@@ -310,13 +264,7 @@ export function initMap(){
 
         ()=>{
 
-            console.log(
-                'LIVE START'
-            );
-
-
             clearLiveMarkers();
-
 
             loadLiveMarkers();
 
@@ -324,10 +272,6 @@ export function initMap(){
 
     );
 
-
-    /* =====================================================
-       LIVE STOPPED
-    ===================================================== */
 
     window.addEventListener(
 
@@ -335,13 +279,7 @@ export function initMap(){
 
         ()=>{
 
-            console.log(
-                'LIVE STOP'
-            );
-
-
             clearLiveMarkers();
-
 
             loadLiveMarkers();
 
@@ -351,104 +289,66 @@ export function initMap(){
 
 
     /* =====================================================
-       MAP SIZE
+       SIZE
     ===================================================== */
 
-    setTimeout(()=>{
-
-        map.invalidateSize(true);
-
-    },100);
-
-
-    setTimeout(()=>{
-
-        map.invalidateSize(true);
-
-    },500);
+    setTimeout(
+        ()=>map.invalidateSize(true),
+        100
+    );
 
 
-    setTimeout(()=>{
+    setTimeout(
+        ()=>map.invalidateSize(true),
+        500
+    );
 
-        map.invalidateSize(true);
 
-    },1000);
-
-
-    console.log(
-        'MAP INIT COMPLETE'
+    setTimeout(
+        ()=>map.invalidateSize(true),
+        1000
     );
 
 }
 
 
 /* =========================================================
-   START LOCATION
+   LOCATION
 ========================================================= */
 
-function startLocationTracking(){
+function startLocation(){
 
-    if(locationStarted){
-
-        console.log(
-            'LOCATION TRACKING ALREADY STARTED'
-        );
-
+    if(locationStarted)
         return;
-
-    }
 
 
     locationStarted = true;
 
 
     console.log(
-        'REQUESTING GEOLOCATION...'
+        'REQUEST TELEGRAM LOCATION'
     );
 
 
-    /* =====================================================
-       ПРОВЕРКА GEOLOCATION
-    ===================================================== */
+    /*
+     * СНАЧАЛА ОДИН РАЗ
+     * ПОЛУЧАЕМ КООРДИНАТЫ.
+     */
 
-    if(
-        !navigator.geolocation
-    ){
-
-        console.error(
-            'GEOLOCATION IS NOT SUPPORTED'
-        );
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       СРАЗУ ЗАПРАШИВАЕМ ПОЗИЦИЮ
-    ===================================================== */
-
-    getCurrentPosition()
+    requestLocation()
 
         .then(
 
             position=>{
 
+                if(!position)
+                    return;
+
+
                 console.log(
-                    'INITIAL LOCATION:',
+                    'MY INITIAL LOCATION:',
                     position
                 );
-
-
-                window.myLocation = {
-
-                    lat:
-                        position.latitude,
-
-                    lng:
-                        position.longitude
-
-                };
 
 
                 updateMyMarker(
@@ -456,31 +356,6 @@ function startLocationTracking(){
                     position.latitude,
 
                     position.longitude
-
-                );
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-
-                        'location:updated',
-
-                        {
-
-                            detail:{
-
-                                lat:
-                                    position.latitude,
-
-                                lng:
-                                    position.longitude
-
-                            }
-
-                        }
-
-                    )
 
                 );
 
@@ -493,7 +368,7 @@ function startLocationTracking(){
             error=>{
 
                 console.error(
-                    'INITIAL GEOLOCATION ERROR:',
+                    'LOCATION REQUEST FAILED:',
                     error
                 );
 
@@ -502,33 +377,17 @@ function startLocationTracking(){
         );
 
 
-    /* =====================================================
-       СЛЕДИМ ЗА ПОЗИЦИЕЙ
-    ===================================================== */
+    /*
+     * ПОТОМ СЛЕДИМ
+     * ЗА ИЗМЕНЕНИЕМ.
+     */
 
     watchLocation(
 
         position=>{
 
-            console.log(
-                'LOCATION UPDATED:',
-                position
-            );
-
-
             if(!position)
                 return;
-
-
-            window.myLocation = {
-
-                lat:
-                    position.latitude,
-
-                lng:
-                    position.longitude
-
-            };
 
 
             updateMyMarker(
@@ -536,31 +395,6 @@ function startLocationTracking(){
                 position.latitude,
 
                 position.longitude
-
-            );
-
-
-            window.dispatchEvent(
-
-                new CustomEvent(
-
-                    'location:updated',
-
-                    {
-
-                        detail:{
-
-                            lat:
-                                position.latitude,
-
-                            lng:
-                                position.longitude
-
-                        }
-
-                    }
-
-                )
 
             );
 
@@ -578,143 +412,10 @@ function startLocationTracking(){
 export function setupWorldLimits(){
 
     const map =
-        document.querySelector('#map')
-            ? requireMap()
-            : null;
+        document.querySelector('#map');
 
 
     if(!map)
         return;
 
-
-    const bounds =
-        L.latLngBounds(
-
-            [-85.05112878,-180],
-
-            [85.05112878,180]
-
-        );
-
-
-    map.setMaxBounds(
-        bounds
-    );
-
-
-    map.options.maxBoundsViscosity =
-        1.0;
-
-
-    map.options.worldCopyJump =
-        false;
-
-
-    map.eachLayer(
-
-        layer=>{
-
-            if(
-                layer instanceof L.TileLayer
-            ){
-
-                layer.options.noWrap =
-                    true;
-
-            }
-
-        }
-
-    );
-
-
-    map.on(
-
-        'drag',
-
-        ()=>{
-
-            map.panInsideBounds(
-
-                bounds,
-
-                {
-                    animate:false
-                }
-
-            );
-
-        }
-
-    );
-
-
-    map.on(
-
-        'resize',
-
-        ()=>{
-
-            map.panInsideBounds(
-
-                bounds,
-
-                {
-                    animate:false
-                }
-
-            );
-
-        }
-
-    );
-
 }
-
-
-/* =========================================================
-   GET MAP
-========================================================= */
-
-function requireMap(){
-
-    const map =
-        document.querySelector('#map');
-
-
-    if(!map)
-        return null;
-
-
-    return import('./mapService')
-
-        ? null
-        : null;
-
-}
-
-
-/* =========================================================
-   PROFILE CREATED
-========================================================= */
-
-window.addEventListener(
-
-    'profile:created',
-
-    ()=>{
-
-        console.log(
-            'PROFILE CREATED → LOCATION'
-        );
-
-
-        setTimeout(()=>{
-
-            startLocationTracking();
-
-        },300);
-
-    }
-
-);
