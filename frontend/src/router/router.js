@@ -1,5 +1,7 @@
 import {
-    getProfile
+    getProfile,
+    clearProfile,
+    setProfile
 } from '../features/profile/profileStore';
 
 
@@ -13,44 +15,235 @@ import {
 } from '../pages/Profile/Profile';
 
 
-function renderApp() {
+import {
+    getTelegramUser
+} from '../services/telegram/telegramService';
+
+
+import {
+    getProfileByUserId
+} from '../services/supabase/profileService';
+
+
+let routerInitialized = false;
+
+
+/* ========================================
+   RENDER APP
+======================================== */
+
+async function renderApp(){
 
     const app =
         document.querySelector(
             '#app'
         );
 
-    if (!app) return;
+
+    if(!app)
+        return;
 
 
-    const profile =
+    /*
+     * Сначала получаем Telegram user.
+     */
+
+    const tgUser =
+        getTelegramUser();
+
+
+    /*
+     * Если Telegram user пока недоступен,
+     * используем старую локальную логику.
+     */
+
+    if(!tgUser){
+
+        const localProfile =
+            getProfile();
+
+
+        console.log(
+            'ROUTER PROFILE:',
+            localProfile
+        );
+
+
+        if(localProfile){
+
+            app.innerHTML =
+                Home();
+
+        }
+
+        else{
+
+            app.innerHTML =
+                Profile();
+
+        }
+
+
+        return;
+
+    }
+
+
+    /*
+     * Telegram ID текущего пользователя.
+     */
+
+    const telegramId =
+        Number(
+            tgUser.telegram_id
+        );
+
+
+    /*
+     * Сначала смотрим локальный профиль.
+     */
+
+    const localProfile =
         getProfile();
 
 
     console.log(
-        'ROUTER PROFILE:',
-        profile
+        'ROUTER LOCAL PROFILE:',
+        localProfile
     );
 
 
-    if (profile) {
+    /*
+     * Если локального профиля нет —
+     * сразу показываем создание.
+     */
+
+    if(!localProfile){
+
+        app.innerHTML =
+            Profile();
+
+
+        return;
+
+    }
+
+
+    /*
+     * Проверяем профиль в Supabase.
+     *
+     * user_id локального профиля может быть
+     * id пользователя Supabase.
+     */
+
+    try{
+
+        const supabaseProfile =
+            await getProfileByUserId(
+                localProfile.user_id ||
+                localProfile.id
+            );
+
+
+        console.log(
+            'ROUTER SUPABASE PROFILE:',
+            supabaseProfile
+        );
+
+
+        /*
+         * Профиля больше нет в Supabase.
+         *
+         * Значит локальный профиль устарел.
+         */
+
+        if(!supabaseProfile){
+
+            console.log(
+                'PROFILE NOT FOUND IN SUPABASE → CLEAR LOCAL PROFILE'
+            );
+
+
+            clearProfile();
+
+
+            app.innerHTML =
+                Profile();
+
+
+            return;
+
+        }
+
+
+        /*
+         * Профиль существует.
+         *
+         * Обновляем локальный профиль
+         * актуальными данными из Supabase.
+         */
+
+        setProfile({
+
+            ...localProfile,
+
+            ...supabaseProfile
+
+        });
+
+
+        console.log(
+            'ROUTER PROFILE:',
+            supabaseProfile
+        );
+
 
         app.innerHTML =
             Home();
 
     }
 
-    else {
+    catch(error){
+
+        console.error(
+            'PROFILE CHECK ERROR:',
+            error
+        );
+
+
+        /*
+         * Если Supabase временно недоступен,
+         * не удаляем локальный профиль.
+         *
+         * Оставляем старое поведение.
+         */
 
         app.innerHTML =
-            Profile();
+            Home();
 
     }
 
 }
 
 
-export function initRouter() {
+/* ========================================
+   INIT ROUTER
+======================================== */
+
+export function initRouter(){
+
+    if(routerInitialized)
+        return;
+
+
+    routerInitialized =
+        true;
+
+
+    /*
+     * Теперь renderApp асинхронный,
+     * потому что проверяем Supabase.
+     */
 
     renderApp();
 
@@ -93,7 +286,8 @@ export function initRouter() {
                 );
 
 
-            if (!app) return;
+            if(!app)
+                return;
 
 
             /*
@@ -101,11 +295,11 @@ export function initRouter() {
              * повторно его не создаём.
              */
 
-            if (
+            if(
                 document.querySelector(
                     '.profile-modal'
                 )
-            ) {
+            ){
 
                 return;
 
@@ -147,7 +341,8 @@ export function initRouter() {
                 );
 
 
-            if (!modal) return;
+            if(!modal)
+                return;
 
 
             modal.remove();

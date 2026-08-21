@@ -1,42 +1,38 @@
 let currentProfile = null;
 
 
-
+/* ========================================
+   SET PROFILE
+======================================== */
 
 export function setProfile(profile){
 
-
     currentProfile = profile;
-
 
     localStorage.setItem(
         'profile',
         JSON.stringify(profile)
     );
 
-
 }
 
 
-
-
-
+/* ========================================
+   SAVE PROFILE
+======================================== */
 
 export function saveProfile(profile){
 
-
     setProfile(profile);
-
 
 }
 
 
-
-
-
+/* ========================================
+   GET PROFILE
+======================================== */
 
 export function getProfile(){
-
 
     if(currentProfile){
 
@@ -45,13 +41,10 @@ export function getProfile(){
     }
 
 
-
-
     const saved =
         localStorage.getItem(
             'profile'
         );
-
 
 
     if(!saved){
@@ -61,10 +54,7 @@ export function getProfile(){
     }
 
 
-
-
     try{
-
 
         currentProfile =
             JSON.parse(saved);
@@ -72,10 +62,9 @@ export function getProfile(){
 
         return currentProfile;
 
-
     }
-    catch(error){
 
+    catch(error){
 
         console.error(
             'Profile restore error',
@@ -85,40 +74,33 @@ export function getProfile(){
 
         clearProfile();
 
-
         return null;
 
-
     }
-
 
 }
 
 
-
-
-
+/* ========================================
+   CLEAR PROFILE
+======================================== */
 
 export function clearProfile(){
 
-
     currentProfile = null;
-
 
     localStorage.removeItem(
         'profile'
     );
 
-
 }
 
 
-
-
-
+/* ========================================
+   LOAD PROFILE
+======================================== */
 
 export async function loadProfile(profile){
-
 
     if(!profile){
 
@@ -131,26 +113,21 @@ export async function loadProfile(profile){
 
     setProfile(profile);
 
-
     return profile;
-
 
 }
 
 
-
-
-
+/* ========================================
+   INIT PROFILE
+======================================== */
 
 export async function initProfile(){
-
 
     const profile =
         getProfile();
 
 
-
     return profile;
-
 
 }

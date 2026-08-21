@@ -19,12 +19,18 @@ import {
     updateProfile
 } from '../../services/supabase/profileService';
 
+import {
+    showLiveRequiredNotice
+} from '../../features/route/RoutePanel';
+
+
 
 let selectedGender = null;
 
 let selectedRelationshipStatus = 'not_specified';
 
 let profileInitialized = false;
+
 
 
 /* ========================================
@@ -44,6 +50,49 @@ const RELATIONSHIP_STATUSES = {
 };
 
 
+
+/* ========================================
+   ВАЛИДАЦИЯ
+======================================== */
+
+/*
+ * Имя:
+ * только буквы Unicode + пробел + дефис + апостроф.
+ *
+ * Разрешены:
+ * Александр
+ * Олександр
+ * John
+ * Jean-Luc
+ * O'Connor
+ *
+ * Запрещены:
+ * цифры
+ * emoji
+ * специальные символы
+ */
+function sanitizeName(value) {
+
+    return value
+        .replace(/[^\p{L}\s'-]/gu, '')
+        .replace(/\s{2,}/g, ' ');
+
+}
+
+
+/*
+ * Возраст:
+ * только цифры.
+ */
+function sanitizeAge(value) {
+
+    return value
+        .replace(/\D/g, '');
+
+}
+
+
+
 /* ========================================
    PROFILE
 ======================================== */
@@ -53,21 +102,26 @@ export function Profile() {
     profileInitialized = false;
 
 
+
     const tgUser =
         getTelegramUser();
+
 
 
     const oldProfile =
         getProfile();
 
 
+
     selectedGender =
         oldProfile?.gender || null;
+
 
 
     selectedRelationshipStatus =
         oldProfile?.relationship_status ||
         'not_specified';
+
 
 
     setTimeout(
@@ -76,8 +130,10 @@ export function Profile() {
     );
 
 
+
     const isEditing =
         !!oldProfile;
+
 
 
     return `
@@ -100,6 +156,7 @@ export function Profile() {
             }
 
 
+
             <div class="profile-card">
 
                 ${
@@ -118,6 +175,7 @@ export function Profile() {
                 }
 
 
+
                 <!-- HEADER -->
 
                 <div class="profile-header">
@@ -133,6 +191,7 @@ export function Profile() {
                     >
 
 
+
                     <h1>
                         ${
                             oldProfile
@@ -142,11 +201,13 @@ export function Profile() {
                     </h1>
 
 
+
                     <p>
                         Как вас будут видеть другие
                     </p>
 
                 </div>
+
 
 
                 <!-- ИМЯ -->
@@ -156,6 +217,7 @@ export function Profile() {
                     <label>
                         Имя
                     </label>
+
 
 
                     <input
@@ -171,6 +233,7 @@ export function Profile() {
                 </div>
 
 
+
                 <!-- ВОЗРАСТ -->
 
                 <div class="profile-field">
@@ -180,9 +243,11 @@ export function Profile() {
                     </label>
 
 
+
                     <input
                         id="profile-age"
                         type="number"
+                        inputmode="numeric"
                         placeholder="Возраст"
                         value="${
                             oldProfile?.age || ''
@@ -192,6 +257,7 @@ export function Profile() {
                 </div>
 
 
+
                 <!-- ПОЛ -->
 
                 <label class="profile-label">
@@ -199,7 +265,9 @@ export function Profile() {
                 </label>
 
 
+
                 <div class="gender-box">
+
 
 
                     <button
@@ -217,6 +285,7 @@ export function Profile() {
                     </button>
 
 
+
                     <button
                         type="button"
                         class="gender-choice ${
@@ -232,7 +301,9 @@ export function Profile() {
                     </button>
 
 
+
                 </div>
+
 
 
                 <!-- СТАТУС ОТНОШЕНИЙ -->
@@ -244,10 +315,12 @@ export function Profile() {
                     </label>
 
 
+
                     <div
                         class="relationship-select"
                         id="relationship-select"
                     >
+
 
 
                         <button
@@ -267,6 +340,7 @@ export function Profile() {
                             </span>
 
 
+
                             <span class="relationship-arrow">
                                 ▾
                             </span>
@@ -274,10 +348,12 @@ export function Profile() {
                         </button>
 
 
+
                         <div
                             class="relationship-options"
                             id="relationship-options"
                         >
+
 
 
                             ${
@@ -307,13 +383,17 @@ export function Profile() {
                             }
 
 
+
                         </div>
+
 
 
                     </div>
 
 
+
                 </div>
+
 
 
                 <!-- SAVE -->
@@ -333,12 +413,14 @@ export function Profile() {
                 </button>
 
 
+
             </div>
 
         </main>
 
     `;
 }
+
 
 
 /* ========================================
@@ -352,7 +434,83 @@ function initProfile() {
     }
 
 
+
     profileInitialized = true;
+
+
+
+    /* ====================================
+       ИМЯ
+    ==================================== */
+
+    const nameInput =
+        document.querySelector(
+            '#profile-name'
+        );
+
+
+
+    nameInput?.addEventListener(
+        'input',
+        () => {
+
+            const cleanValue =
+                sanitizeName(
+                    nameInput.value
+                );
+
+
+
+            if (
+                nameInput.value !==
+                cleanValue
+            ) {
+
+                nameInput.value =
+                    cleanValue;
+
+            }
+
+        }
+    );
+
+
+
+    /* ====================================
+       ВОЗРАСТ
+    ==================================== */
+
+    const ageInput =
+        document.querySelector(
+            '#profile-age'
+        );
+
+
+
+    ageInput?.addEventListener(
+        'input',
+        () => {
+
+            const cleanValue =
+                sanitizeAge(
+                    ageInput.value
+                );
+
+
+
+            if (
+                ageInput.value !==
+                cleanValue
+            ) {
+
+                ageInput.value =
+                    cleanValue;
+
+            }
+
+        }
+    );
+
 
 
     /* ====================================
@@ -365,10 +523,12 @@ function initProfile() {
         );
 
 
+
     const backdrop =
         document.querySelector(
             '#profile-modal-backdrop'
         );
+
 
 
     const closeProfile =
@@ -383,16 +543,19 @@ function initProfile() {
         };
 
 
+
     closeButton?.addEventListener(
         'click',
         closeProfile
     );
 
 
+
     backdrop?.addEventListener(
         'click',
         closeProfile
     );
+
 
 
     /* ====================================
@@ -420,9 +583,11 @@ function initProfile() {
                     });
 
 
+
                 button.classList.add(
                     'active'
                 );
+
 
 
                 selectedGender =
@@ -431,6 +596,7 @@ function initProfile() {
             };
 
         });
+
 
 
     /* ====================================
@@ -443,10 +609,12 @@ function initProfile() {
         );
 
 
+
     const relationshipButton =
         document.querySelector(
             '#relationship-select-button'
         );
+
 
 
     const relationshipOptions =
@@ -455,10 +623,12 @@ function initProfile() {
         );
 
 
+
     const relationshipText =
         document.querySelector(
             '#relationship-selected-text'
         );
+
 
 
     if (
@@ -467,11 +637,13 @@ function initProfile() {
     ) {
 
 
+
         relationshipButton.onclick =
             event => {
 
                 event.preventDefault();
                 event.stopPropagation();
+
 
 
                 relationshipSelect
@@ -482,11 +654,13 @@ function initProfile() {
             };
 
 
+
         relationshipOptions
             .querySelectorAll(
                 '[data-relationship]'
             )
             .forEach(option => {
+
 
 
                 option.onclick =
@@ -496,14 +670,17 @@ function initProfile() {
                         event.stopPropagation();
 
 
+
                         selectedRelationshipStatus =
                             option.dataset.relationship;
+
 
 
                         relationshipText.textContent =
                             RELATIONSHIP_STATUSES[
                                 selectedRelationshipStatus
                             ];
+
 
 
                         relationshipOptions
@@ -519,9 +696,11 @@ function initProfile() {
                             });
 
 
+
                         option.classList.add(
                             'active'
                         );
+
 
 
                         relationshipSelect
@@ -532,6 +711,7 @@ function initProfile() {
                     };
 
             });
+
 
 
         document.addEventListener(
@@ -557,6 +737,7 @@ function initProfile() {
     }
 
 
+
     /* ====================================
        СОХРАНЕНИЕ
     ==================================== */
@@ -573,6 +754,7 @@ function initProfile() {
 }
 
 
+
 /* ========================================
    СОХРАНЕНИЕ ПРОФИЛЯ
 ======================================== */
@@ -581,9 +763,138 @@ async function saveProfileHandler() {
 
     try {
 
+        /* ====================================
+           ПОЛУЧАЕМ ПОЛЯ
+        ==================================== */
+
+        const nameInput =
+            document.querySelector(
+                '#profile-name'
+            );
+
+
+
+        const ageInput =
+            document.querySelector(
+                '#profile-age'
+            );
+
+
+
+        const name =
+            sanitizeName(
+                nameInput?.value || ''
+            ).trim();
+
+
+
+        const age =
+            sanitizeAge(
+                ageInput?.value || ''
+            ).trim();
+
+
+
+        /* ====================================
+           ОБЯЗАТЕЛЬНОЕ ИМЯ
+        ==================================== */
+
+        if (!name) {
+
+            showLiveRequiredNotice(
+                'Пожалуйста, укажите ваше имя'
+            );
+
+
+
+            nameInput?.focus();
+
+
+
+            return;
+
+        }
+
+
+
+        /* ====================================
+           ОБЯЗАТЕЛЬНЫЙ ВОЗРАСТ
+        ==================================== */
+
+        if (!age) {
+
+            showLiveRequiredNotice(
+                'Пожалуйста, укажите ваш возраст'
+            );
+
+
+
+            ageInput?.focus();
+
+
+
+            return;
+
+        }
+
+
+
+        /* ====================================
+           ОБЯЗАТЕЛЬНЫЙ ПОЛ
+        ==================================== */
+
+        if (!selectedGender) {
+
+            showLiveRequiredNotice(
+                'Пожалуйста, укажите ваш пол'
+            );
+
+
+
+            return;
+
+        }
+
+
+
+        /* ====================================
+           ПРОВЕРКА ВОЗРАСТА
+        ==================================== */
+
+        const ageNumber =
+            Number(age);
+
+
+
+        if (
+            !Number.isInteger(ageNumber) ||
+            ageNumber < 1 ||
+            ageNumber > 120
+        ) {
+
+            showLiveRequiredNotice(
+                'Пожалуйста, укажите корректный возраст'
+            );
+
+
+
+            ageInput?.focus();
+
+
+
+            return;
+
+        }
+
+
+
+        /* ====================================
+           TELEGRAM USER
+        ==================================== */
 
         const tgUser =
             getTelegramUser();
+
 
 
         if (!tgUser) {
@@ -592,9 +903,12 @@ async function saveProfileHandler() {
                 'Telegram user not found'
             );
 
+
+
             return;
 
         }
+
 
 
         /* ====================================
@@ -623,6 +937,7 @@ async function saveProfileHandler() {
             });
 
 
+
         /* ====================================
            ДАННЫЕ ПРОФИЛЯ
         ==================================== */
@@ -633,21 +948,10 @@ async function saveProfileHandler() {
                 user.id,
 
             name:
-                document
-                    .querySelector(
-                        '#profile-name'
-                    )
-                    ?.value
-                    ?.trim() || '',
+                name,
 
             age:
-                Number(
-                    document
-                        .querySelector(
-                            '#profile-age'
-                        )
-                        ?.value || 0
-                ),
+                ageNumber,
 
             gender:
                 selectedGender,
@@ -668,6 +972,7 @@ async function saveProfileHandler() {
         };
 
 
+
         /* ====================================
            СУЩЕСТВУЮЩИЙ ПРОФИЛЬ
         ==================================== */
@@ -678,7 +983,9 @@ async function saveProfileHandler() {
             );
 
 
+
         let profile;
+
 
 
         if (old) {
@@ -699,6 +1006,7 @@ async function saveProfileHandler() {
                 );
 
         }
+
 
 
         /* ====================================
@@ -730,6 +1038,7 @@ async function saveProfileHandler() {
         });
 
 
+
         /* ====================================
            СИГНАЛ
         ==================================== */
@@ -744,11 +1053,13 @@ async function saveProfileHandler() {
         );
 
 
+
         /* ====================================
            ПЕРЕЗАГРУЗКА
         ==================================== */
 
         window.location.reload();
+
 
 
     }
@@ -759,6 +1070,7 @@ async function saveProfileHandler() {
             'PROFILE ERROR',
             error
         );
+
 
 
         alert(

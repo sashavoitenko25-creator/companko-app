@@ -27,7 +27,9 @@ let routeLiveListenerInitialized = false;
    УВЕДОМЛЕНИЕ
 ======================================== */
 
-function showLiveRequiredNotice(){
+export function showLiveRequiredNotice(
+    text = 'Чтобы проложить маршрут, запустите Live'
+){
 
     let notice =
         document.querySelector(
@@ -40,6 +42,20 @@ function showLiveRequiredNotice(){
         clearTimeout(
             noticeTimer
         );
+
+
+        const textElement =
+            notice.querySelector(
+                '.route-live-notice__text'
+            );
+
+
+        if(textElement){
+
+            textElement.textContent =
+                text;
+
+        }
 
 
         notice.classList.remove(
@@ -79,7 +95,7 @@ function showLiveRequiredNotice(){
             </span>
 
             <span class="route-live-notice__text">
-                Чтобы проложить маршрут, запустите Live
+                ${text}
             </span>
 
         `;
