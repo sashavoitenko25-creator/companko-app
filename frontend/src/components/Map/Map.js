@@ -1,3 +1,5 @@
+import L from 'leaflet';
+
 import './Map.css';
 
 import {
@@ -194,17 +196,6 @@ function setupWorldLimits(){
         return;
 
 
-    /*
-     * Границы реального мира.
-     *
-     * Не даём карте уйти:
-     *
-     * выше Северного полюса
-     * ниже Южного полюса
-     * левее 180°
-     * правее 180°
-     */
-
     const southWest =
         L.latLng(
             -85.05112878,
@@ -226,10 +217,6 @@ function setupWorldLimits(){
         );
 
 
-    /*
-     * Жёстко ограничиваем перемещение.
-     */
-
     map.setMaxBounds(
         worldBounds
     );
@@ -238,18 +225,8 @@ function setupWorldLimits(){
     map.options.maxBoundsViscosity = 1.0;
 
 
-    /*
-     * Запрещаем бесконечное
-     * горизонтальное повторение мира.
-     */
-
     map.options.worldCopyJump = false;
 
-
-    /*
-     * На всякий случай отключаем
-     * повторение у всех TileLayer.
-     */
 
     map.eachLayer(
 
@@ -268,13 +245,6 @@ function setupWorldLimits(){
     );
 
 
-    /*
-     * Проверяем положение карты.
-     *
-     * Если пользователь каким-то образом
-     * оказался за границей — возвращаем.
-     */
-
     map.on(
 
         'drag',
@@ -282,21 +252,19 @@ function setupWorldLimits(){
         ()=>{
 
             map.panInsideBounds(
+
                 worldBounds,
+
                 {
                     animate:false
                 }
+
             );
 
         }
 
     );
 
-
-    /*
-     * После изменения размера
-     * снова применяем ограничения.
-     */
 
     map.on(
 
@@ -305,20 +273,19 @@ function setupWorldLimits(){
         ()=>{
 
             map.panInsideBounds(
+
                 worldBounds,
+
                 {
                     animate:false
                 }
+
             );
 
         }
 
     );
 
-
-    /*
-     * Перерисовываем карту.
-     */
 
     setTimeout(()=>{
 
