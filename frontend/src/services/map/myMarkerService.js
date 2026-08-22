@@ -7,18 +7,16 @@ let myMarker = null;
 
 let isLive = false;
 
-
-/* =========================================================
-   HEADING
-========================================================= */
-
 let rawHeading = null;
+
 let currentHeading = null;
 
 let orientationStarted = false;
+
 let loopStarted = false;
 
 let followMe = true;
+
 let mapEventsBound = false;
 
 let headingSource = null;
@@ -28,12 +26,11 @@ let headingSource = null;
    НАСТРОЙКИ
 ========================================================= */
 
-const HEADING_SMOOTH = 0.18;
-const HEADING_MIN_DELTA = 1.0;
-const HEADING_HISTORY_SIZE = 5;
-const HEADING_OFFSET = 0;
+const HEADING_SMOOTH = 0.22;
 
-let headingHistory = [];
+const HEADING_MIN_DELTA = 0.5;
+
+const HEADING_OFFSET = 0;
 
 
 /* =========================================================
@@ -46,7 +43,8 @@ export function initMyMarker(){
         'location:updated',
         event => {
 
-            const position = event.detail;
+            const position =
+                event.detail;
 
             if(!position)
                 return;
@@ -103,14 +101,19 @@ export function initMyMarker(){
 
     window.__headingDebug = () => {
 
-        const map = getMap();
-
         console.log({
+
             rawHeading,
+
             currentHeading,
+
             source: headingSource,
-            mapBearing: getMapBearing(map),
-            history: headingHistory
+
+            mapBearing:
+                getMapBearing(
+                    getMap()
+                )
+
         });
 
     };
@@ -119,7 +122,7 @@ export function initMyMarker(){
 
 
 /* =========================================================
-   UPDATE MY MARKER
+   UPDATE MARKER
 ========================================================= */
 
 export function updateMyMarker(
@@ -127,18 +130,17 @@ export function updateMyMarker(
     longitude
 ){
 
-    const map = getMap();
+    const map =
+        getMap();
 
     if(!map)
         return;
 
-
     if(
         latitude == null ||
         longitude == null
-    ){
+    )
         return;
-    }
 
 
     const position = [
@@ -149,7 +151,9 @@ export function updateMyMarker(
 
     if(myMarker){
 
-        myMarker.setLatLng(position);
+        myMarker.setLatLng(
+            position
+        );
 
 
         if(followMe){
@@ -157,7 +161,7 @@ export function updateMyMarker(
             map.panTo(
                 position,
                 {
-                    animate: false
+                    animate:false
                 }
             );
 
@@ -171,14 +175,20 @@ export function updateMyMarker(
     }
 
 
-    myMarker = L.marker(
-        position,
-        {
-            icon: createIcon(),
-            zIndexOffset: 1000,
-            rotateWithView: true
-        }
-    ).addTo(map);
+    myMarker =
+        L.marker(
+            position,
+            {
+                icon:
+                    createIcon(),
+
+                zIndexOffset:
+                    1000,
+
+                rotateWithView:
+                    true
+            }
+        ).addTo(map);
 
 
     bindMapEvents(map);
@@ -191,9 +201,6 @@ export function updateMyMarker(
         position,
         15
     );
-
-
-    window.__myMarkerMapCentered = true;
 
 
     applyHeadingToSector();
@@ -238,10 +245,6 @@ function bindMapEvents(map){
         'rotateend',
         () => {
 
-            if(followMe){
-                centerOnMe(false);
-            }
-
             applyHeadingToSector();
 
         }
@@ -258,14 +261,14 @@ function centerOnMe(
     animate = false
 ){
 
-    const map = getMap();
+    const map =
+        getMap();
 
     if(
         !map ||
         !myMarker
-    ){
+    )
         return;
-    }
 
 
     map.panTo(
@@ -279,7 +282,7 @@ function centerOnMe(
 
 
 /* =========================================================
-   REFRESH MARKER
+   REFRESH
 ========================================================= */
 
 function refreshMarker(){
@@ -305,7 +308,8 @@ function refreshMarker(){
 function normalizeAngle(angle){
 
     return (
-        Number(angle) + 360
+        Number(angle) +
+        360
     ) % 360;
 
 }
@@ -328,42 +332,35 @@ function angleDifference(
 
 
 /* =========================================================
-   SET HEADING
+   HEADING
 ========================================================= */
 
 function setHeading(heading){
 
     if(
         heading == null ||
-        Number.isNaN(Number(heading))
-    ){
+        Number.isNaN(
+            Number(heading)
+        )
+    )
         return;
-    }
 
 
-    heading = normalizeAngle(
-        Number(heading) +
-        HEADING_OFFSET
-    );
+    heading =
+        normalizeAngle(
+            Number(heading) +
+            HEADING_OFFSET
+        );
 
 
-    rawHeading = heading;
-
-
-    headingHistory.push(heading);
-
-
-    if(
-        headingHistory.length >
-        HEADING_HISTORY_SIZE
-    ){
-        headingHistory.shift();
-    }
+    rawHeading =
+        heading;
 
 
     if(currentHeading == null){
 
-        currentHeading = heading;
+        currentHeading =
+            heading;
 
         applyHeadingToSector();
 
@@ -372,36 +369,9 @@ function setHeading(heading){
     }
 
 
-    const normalized =
-        headingHistory.map(value => {
-
-            return (
-                currentHeading +
-                angleDifference(
-                    value,
-                    currentHeading
-                )
-            );
-
-        });
-
-
-    normalized.sort(
-        (a, b) => a - b
-    );
-
-
-    const median =
-        normalized[
-            Math.floor(
-                normalized.length / 2
-            )
-        ];
-
-
     const diff =
         angleDifference(
-            median,
+            heading,
             currentHeading
         );
 
@@ -409,43 +379,28 @@ function setHeading(heading){
     if(
         Math.abs(diff) <
         HEADING_MIN_DELTA
-    ){
+    )
         return;
-    }
 
 
-    let smooth;
+    let smooth =
+        HEADING_SMOOTH;
 
 
-    if(Math.abs(diff) > 60){
+    if(Math.abs(diff) > 60)
+        smooth = 0.65;
 
-        smooth = 0.60;
+    else if(Math.abs(diff) > 30)
+        smooth = 0.45;
 
-    }
-    else if(Math.abs(diff) > 30){
-
-        smooth = 0.42;
-
-    }
-    else if(Math.abs(diff) > 10){
-
-        smooth = 0.30;
-
-    }
-    else{
-
-        smooth = HEADING_SMOOTH;
-
-    }
-
-
-    currentHeading +=
-        diff * smooth;
+    else if(Math.abs(diff) > 10)
+        smooth = 0.32;
 
 
     currentHeading =
         normalizeAngle(
-            currentHeading
+            currentHeading +
+            diff * smooth
         );
 
 
@@ -486,38 +441,28 @@ function getMapBearing(map){
         'function'
     ){
 
-        const bearing =
+        const value =
             Number(
                 map.getBearing()
             );
 
 
-        if(!Number.isNaN(bearing)){
-
-            return normalizeAngle(
-                bearing
-            );
-
-        }
+        if(!Number.isNaN(value))
+            return normalizeAngle(value);
 
     }
 
 
     if(map._bearing != null){
 
-        const bearing =
+        const value =
             Number(
                 map._bearing
             );
 
 
-        if(!Number.isNaN(bearing)){
-
-            return normalizeAngle(
-                bearing
-            );
-
-        }
+        if(!Number.isNaN(value))
+            return normalizeAngle(value);
 
     }
 
@@ -528,21 +473,21 @@ function getMapBearing(map){
 
 
 /* =========================================================
-   APPLY HEADING TO SECTOR
+   APPLY SECTOR
 ========================================================= */
 
 function applyHeadingToSector(){
 
-    const element =
+    const el =
         getMarkerElement();
 
 
-    if(!element)
+    if(!el)
         return;
 
 
     const sector =
-        element.querySelector(
+        el.querySelector(
             '.my-heading-sector-inner'
         );
 
@@ -563,16 +508,18 @@ function applyHeadingToSector(){
     sector.style.opacity = '1';
 
 
-    const map = getMap();
+    const map =
+        getMap();
 
-    const mapBearing =
+
+    const bearing =
         getMapBearing(map);
 
 
     const relativeHeading =
         normalizeAngle(
             currentHeading -
-            mapBearing
+            bearing
         );
 
 
@@ -583,7 +530,7 @@ function applyHeadingToSector(){
 
 
 /* =========================================================
-   UPDATE LOOP
+   LOOP
 ========================================================= */
 
 function startUpdateLoop(){
@@ -595,22 +542,26 @@ function startUpdateLoop(){
     loopStarted = true;
 
 
-    const frame = () => {
+    function frame(){
 
         applyHeadingToSector();
 
-        requestAnimationFrame(frame);
+        requestAnimationFrame(
+            frame
+        );
 
-    };
+    }
 
 
-    requestAnimationFrame(frame);
+    requestAnimationFrame(
+        frame
+    );
 
 }
 
 
 /* =========================================================
-   COMPASS CALCULATION
+   COMPASS
 ========================================================= */
 
 function compassHeadingFromOrientation(
@@ -623,19 +574,33 @@ function compassHeadingFromOrientation(
         Math.PI / 180;
 
 
-    const a = alpha * deg;
-    const b = beta * deg;
-    const g = gamma * deg;
+    const a =
+        alpha * deg;
+
+    const b =
+        beta * deg;
+
+    const g =
+        gamma * deg;
 
 
-    const cA = Math.cos(a);
-    const sA = Math.sin(a);
+    const cA =
+        Math.cos(a);
 
-    const cB = Math.cos(b);
-    const sB = Math.sin(b);
+    const sA =
+        Math.sin(a);
 
-    const cG = Math.cos(g);
-    const sG = Math.sin(g);
+    const cB =
+        Math.cos(b);
+
+    const sB =
+        Math.sin(b);
+
+    const cG =
+        Math.cos(g);
+
+    const sG =
+        Math.sin(g);
 
 
     const rA =
@@ -655,12 +620,9 @@ function compassHeadingFromOrientation(
         );
 
 
-    if(heading < 0){
-
+    if(heading < 0)
         heading +=
             2 * Math.PI;
-
-    }
 
 
     heading =
@@ -668,26 +630,15 @@ function compassHeadingFromOrientation(
         (180 / Math.PI);
 
 
-    let screenAngle = 0;
-
-
-    if(
+    const screenAngle =
         screen.orientation &&
         typeof screen.orientation.angle === 'number'
-    ){
-
-        screenAngle =
-            screen.orientation.angle;
-
-    }
-    else if(
-        typeof window.orientation === 'number'
-    ){
-
-        screenAngle =
-            window.orientation;
-
-    }
+            ? screen.orientation.angle
+            : (
+                typeof window.orientation === 'number'
+                    ? window.orientation
+                    : 0
+            );
 
 
     return normalizeAngle(
@@ -718,9 +669,7 @@ function startDeviceOrientation(){
        BROWSER
     ===================================================== */
 
-    const handleBrowserOrientation = (
-        event
-    ) => {
+    function handleBrowserOrientation(event){
 
         if(telegramStarted)
             return;
@@ -746,11 +695,15 @@ function startDeviceOrientation(){
                 headingSource =
                     'browser-ios';
 
-                setHeading(heading);
 
-                return;
+                setHeading(
+                    heading
+                );
 
             }
+
+
+            return;
 
         }
 
@@ -765,9 +718,13 @@ function startDeviceOrientation(){
 
             heading =
                 compassHeadingFromOrientation(
+
                     Number(event.alpha),
+
                     Number(event.beta),
+
                     Number(event.gamma)
+
                 );
 
 
@@ -776,18 +733,17 @@ function startDeviceOrientation(){
                 headingSource =
                     'browser';
 
-                setHeading(heading);
+
+                setHeading(
+                    heading
+                );
 
             }
 
         }
 
-    };
+    }
 
-
-    /*
-     * Сразу подключаем orientation.
-     */
 
     window.addEventListener(
         'deviceorientationabsolute',
@@ -819,52 +775,74 @@ function startDeviceOrientation(){
 
         try{
 
-            const onTelegramOrientation =
-                data => {
+            const readTelegramOrientation = () => {
 
-                    if(
-                        !data ||
-                        data.alpha == null
-                    ){
-                        return;
-                    }
+                const data =
+                    tg.DeviceOrientation;
 
 
-                    const alpha =
-                        Number(data.alpha) *
-                        (180 / Math.PI);
+                if(!data)
+                    return;
 
 
-                    const beta =
-                        data.beta != null
-                            ? Number(data.beta) *
-                              (180 / Math.PI)
-                            : 0;
+                if(
+                    data.alpha == null ||
+                    data.beta == null ||
+                    data.gamma == null
+                )
+                    return;
 
 
-                    const gamma =
-                        data.gamma != null
-                            ? Number(data.gamma) *
-                              (180 / Math.PI)
-                            : 0;
+                /*
+                 * Telegram → радианы
+                 */
+
+                const alpha =
+                    Number(data.alpha) *
+                    180 /
+                    Math.PI;
 
 
-                    const heading =
-                        compassHeadingFromOrientation(
-                            alpha,
-                            beta,
-                            gamma
-                        );
+                const beta =
+                    Number(data.beta) *
+                    180 /
+                    Math.PI;
 
 
-                    headingSource =
-                        'telegram';
+                const gamma =
+                    Number(data.gamma) *
+                    180 /
+                    Math.PI;
 
 
-                    setHeading(heading);
+                const heading =
+                    compassHeadingFromOrientation(
 
-                };
+                        alpha,
+                        beta,
+                        gamma
 
+                    );
+
+
+                if(Number.isNaN(heading))
+                    return;
+
+
+                headingSource =
+                    'telegram';
+
+
+                setHeading(
+                    heading
+                );
+
+            };
+
+
+            /*
+             * Telegram событие
+             */
 
             if(
                 typeof tg.onEvent ===
@@ -873,24 +851,27 @@ function startDeviceOrientation(){
 
                 tg.onEvent(
                     'deviceOrientationChanged',
-                    onTelegramOrientation
+                    readTelegramOrientation
                 );
 
             }
 
 
             /*
-             * Запускаем Telegram Compass.
+             * Запуск
              */
 
             tg.DeviceOrientation.start(
+
                 {
-                    need_absolute: true
+                    refresh_rate:50,
+                    need_absolute:true
                 },
+
                 ok => {
 
                     console.log(
-                        '[compass] Telegram DeviceOrientation:',
+                        '[COMPASS] Telegram:',
                         ok
                     );
 
@@ -904,16 +885,20 @@ function startDeviceOrientation(){
                         headingSource =
                             'telegram';
 
+
+                        readTelegramOrientation();
+
                     }
 
                 }
+
             );
 
         }
         catch(error){
 
-            console.warn(
-                '[compass] Telegram error:',
+            console.error(
+                '[COMPASS] Telegram ERROR:',
                 error
             );
 
@@ -923,11 +908,43 @@ function startDeviceOrientation(){
 
 
     /* =====================================================
-       ПОВТОРНЫЙ ЗАПУСК ПО НАЖАТИЮ
-       Нужно для iPhone / разрешений
+       IOS PERMISSION
     ===================================================== */
 
-    const startAfterUserAction = () => {
+    async function requestCompassPermission(){
+
+        try{
+
+            if(
+                typeof DeviceOrientationEvent !==
+                'undefined' &&
+
+                typeof DeviceOrientationEvent.requestPermission ===
+                'function'
+            ){
+
+                const permission =
+                    await DeviceOrientationEvent
+                        .requestPermission();
+
+
+                console.log(
+                    '[COMPASS] iOS permission:',
+                    permission
+                );
+
+            }
+
+        }
+        catch(error){
+
+            console.warn(
+                '[COMPASS] permission:',
+                error
+            );
+
+        }
+
 
         try{
 
@@ -937,13 +954,16 @@ function startDeviceOrientation(){
             ){
 
                 tg.DeviceOrientation.start(
+
                     {
-                        need_absolute: true
+                        refresh_rate:50,
+                        need_absolute:true
                     },
+
                     ok => {
 
                         console.log(
-                            '[compass] start after tap:',
+                            '[COMPASS] Telegram after tap:',
                             ok
                         );
 
@@ -959,6 +979,7 @@ function startDeviceOrientation(){
                         }
 
                     }
+
                 );
 
             }
@@ -967,82 +988,30 @@ function startDeviceOrientation(){
         catch(error){
 
             console.warn(
-                '[compass] permission error:',
+                '[COMPASS] Telegram after tap:',
                 error
             );
 
         }
 
-
-        if(
-            typeof DeviceOrientationEvent !==
-            'undefined' &&
-            typeof DeviceOrientationEvent.requestPermission ===
-            'function'
-        ){
-
-            DeviceOrientationEvent
-                .requestPermission()
-                .then(permission => {
-
-                    console.log(
-                        '[compass] iOS permission:',
-                        permission
-                    );
-
-                    if(
-                        permission === 'granted'
-                    ){
-
-                        window.addEventListener(
-                            'deviceorientation',
-                            handleBrowserOrientation,
-                            true
-                        );
-
-                    }
-
-                })
-                .catch(error => {
-
-                    console.warn(
-                        '[compass] iOS permission error:',
-                        error
-                    );
-
-                });
-
-        }
-
-
-        document.removeEventListener(
-            'touchstart',
-            startAfterUserAction
-        );
-
-        document.removeEventListener(
-            'click',
-            startAfterUserAction
-        );
-
-    };
+    }
 
 
     document.addEventListener(
-        'touchstart',
-        startAfterUserAction,
+        'click',
+        requestCompassPermission,
         {
-            once: true,
-            passive: true
+            once:true
         }
     );
 
 
     document.addEventListener(
-        'click',
-        startAfterUserAction,
+        'touchstart',
+        requestCompassPermission,
         {
-            once: true
+            once:true,
+            passive:true
         }
     );
 
@@ -1072,13 +1041,17 @@ function createIcon(){
                 'my-marker-wrapper',
 
 
-            html: `
+            html:`
 
                 <div class="my-marker-root">
 
-                    <div class="my-heading-sector-inner">
+                    <div
+                        class="my-heading-sector-inner"
+                    >
 
-                        <div class="my-heading-sector__fan"></div>
+                        <div
+                            class="my-heading-sector__fan"
+                        ></div>
 
                     </div>
 
@@ -1096,13 +1069,13 @@ function createIcon(){
             `,
 
 
-            iconSize: [
+            iconSize:[
                 40,
                 40
             ],
 
 
-            iconAnchor: [
+            iconAnchor:[
                 20,
                 20
             ]
@@ -1118,20 +1091,26 @@ function createIcon(){
             'my-marker-wrapper',
 
 
-        html: `
+        html:`
 
             <div class="my-marker-root">
 
-                <div class="my-heading-sector-inner">
+                <div
+                    class="my-heading-sector-inner"
+                >
 
-                    <div class="my-heading-sector__fan"></div>
+                    <div
+                        class="my-heading-sector__fan"
+                    ></div>
 
                 </div>
 
 
                 <div class="my-location">
 
-                    <div class="my-location__pulse"></div>
+                    <div
+                        class="my-location__pulse"
+                    ></div>
 
                 </div>
 
@@ -1140,13 +1119,13 @@ function createIcon(){
         `,
 
 
-        iconSize: [
+        iconSize:[
             24,
             24
         ],
 
 
-        iconAnchor: [
+        iconAnchor:[
             12,
             12
         ]
