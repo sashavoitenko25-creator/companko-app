@@ -62,12 +62,11 @@ function initMapSafe(){
 
     if(!initialized){
 
-        initialized = true;
-
-
         try{
 
             initMap();
+
+            initialized = true;
 
         }
 
@@ -87,13 +86,22 @@ function initMapSafe(){
     }
 
 
-    /*
-     * Даём Leaflet закончить создание карты.
-     */
-
     setTimeout(()=>{
 
+        const map =
+            getMap();
+
+        if(!map)
+            return;
+
+
         setupWorldLimits();
+
+
+        map.invalidateSize(
+            true
+        );
+
 
     },100);
 
@@ -102,27 +110,14 @@ function initMapSafe(){
        LIVE REFRESH
     ===================================================== */
 
-    window.addEventListener(
-
+    window.removeEventListener(
         'live:refresh',
+        handleLiveRefresh
+    );
 
-        ()=>{
-
-            const map =
-                getMap();
-
-            if(!map)
-                return;
-
-
-            setTimeout(()=>{
-
-                map.invalidateSize();
-
-            },100);
-
-        }
-
+    window.addEventListener(
+        'live:refresh',
+        handleLiveRefresh
     );
 
 
@@ -130,26 +125,14 @@ function initMapSafe(){
        LIVE STARTED
     ===================================================== */
 
-    window.addEventListener(
-
+    window.removeEventListener(
         'live:started',
+        handleLiveStarted
+    );
 
-        ()=>{
-
-            setTimeout(()=>{
-
-                window.dispatchEvent(
-
-                    new Event(
-                        'live:refresh'
-                    )
-
-                );
-
-            },300);
-
-        }
-
+    window.addEventListener(
+        'live:started',
+        handleLiveStarted
     );
 
 
@@ -157,27 +140,81 @@ function initMapSafe(){
        LIVE STOPPED
     ===================================================== */
 
-    window.addEventListener(
-
+    window.removeEventListener(
         'live:stopped',
-
-        ()=>{
-
-            setTimeout(()=>{
-
-                window.dispatchEvent(
-
-                    new Event(
-                        'live:refresh'
-                    )
-
-                );
-
-            },300);
-
-        }
-
+        handleLiveStopped
     );
+
+    window.addEventListener(
+        'live:stopped',
+        handleLiveStopped
+    );
+
+}
+
+
+/* =========================================================
+   LIVE REFRESH
+========================================================= */
+
+function handleLiveRefresh(){
+
+    const map =
+        getMap();
+
+    if(!map)
+        return;
+
+
+    setTimeout(()=>{
+
+        map.invalidateSize(
+            true
+        );
+
+    },100);
+
+}
+
+
+/* =========================================================
+   LIVE STARTED
+========================================================= */
+
+function handleLiveStarted(){
+
+    setTimeout(()=>{
+
+        window.dispatchEvent(
+
+            new Event(
+                'live:refresh'
+            )
+
+        );
+
+    },300);
+
+}
+
+
+/* =========================================================
+   LIVE STOPPED
+========================================================= */
+
+function handleLiveStopped(){
+
+    setTimeout(()=>{
+
+        window.dispatchEvent(
+
+            new Event(
+                'live:refresh'
+            )
+
+        );
+
+    },300);
 
 }
 
@@ -222,10 +259,12 @@ function setupWorldLimits(){
     );
 
 
-    map.options.maxBoundsViscosity = 1.0;
+    map.options.maxBoundsViscosity =
+        1.0;
 
 
-    map.options.worldCopyJump = false;
+    map.options.worldCopyJump =
+        false;
 
 
     map.eachLayer(
@@ -236,7 +275,8 @@ function setupWorldLimits(){
                 layer instanceof L.TileLayer
             ){
 
-                layer.options.noWrap = true;
+                layer.options.noWrap =
+                    true;
 
             }
 
@@ -245,51 +285,61 @@ function setupWorldLimits(){
     );
 
 
-    map.on(
+    if(!map.__worldLimitsBound){
 
-        'drag',
-
-        ()=>{
-
-            map.panInsideBounds(
-
-                worldBounds,
-
-                {
-                    animate:false
-                }
-
-            );
-
-        }
-
-    );
+        map.__worldLimitsBound =
+            true;
 
 
-    map.on(
+        map.on(
 
-        'resize',
+            'drag',
 
-        ()=>{
+            ()=>{
 
-            map.panInsideBounds(
+                map.panInsideBounds(
 
-                worldBounds,
+                    worldBounds,
 
-                {
-                    animate:false
-                }
+                    {
+                        animate:false
+                    }
 
-            );
+                );
 
-        }
+            }
 
-    );
+        );
+
+
+        map.on(
+
+            'resize',
+
+            ()=>{
+
+                map.panInsideBounds(
+
+                    worldBounds,
+
+                    {
+                        animate:false
+                    }
+
+                );
+
+            }
+
+        );
+
+    }
 
 
     setTimeout(()=>{
 
-        map.invalidateSize();
+        map.invalidateSize(
+            true
+        );
 
     },100);
 
@@ -312,7 +362,7 @@ window.addEventListener(
 
             initMapSafe();
 
-        },100);
+        },300);
 
     }
 

@@ -9,56 +9,29 @@ let isLive = false;
 
 
 /* =========================================================
-   HEADING STATE
+   HEADING
 ========================================================= */
 
 let rawHeading = null;
-
 let currentHeading = null;
 
 let orientationStarted = false;
-
 let loopStarted = false;
 
 let followMe = true;
-
 let mapEventsBound = false;
 
-
-/*
- * Источник направления.
- *
- * gps       → не используем как основной compass
- * telegram  → приоритетный источник в Telegram
- * browser   → fallback
- */
 let headingSource = null;
 
 
-/*
- * Настройки сглаживания.
- */
+/* =========================================================
+   НАСТРОЙКИ
+========================================================= */
 
-const HEADING_SMOOTH = 0.16;
-
+const HEADING_SMOOTH = 0.18;
 const HEADING_MIN_DELTA = 1.0;
-
 const HEADING_HISTORY_SIZE = 5;
-
-
-/*
- * ВАЖНО:
- *
- * Никакого искусственного смещения.
- *
- * Если после проверки окажется,
- * что именно конкретное устройство
- * систематически показывает +X градусов,
- * можно будет изменить это число.
- */
-
 const HEADING_OFFSET = 0;
-
 
 let headingHistory = [];
 
@@ -70,81 +43,56 @@ let headingHistory = [];
 export function initMyMarker(){
 
     window.addEventListener(
-
         'location:updated',
+        event => {
 
-        event=>{
-
-            const position =
-                event.detail;
-
+            const position = event.detail;
 
             if(!position)
                 return;
-
 
             updateMyMarker(
                 position.lat,
                 position.lng
             );
 
-
-            /*
-             * НЕ используем position.heading
-             * как compass heading.
-             *
-             * GPS heading показывает направление
-             * движения автомобиля/человека,
-             * а не направление телефона.
-             */
-
         }
-
     );
 
 
     window.addEventListener(
-
         'live:started',
-
-        ()=>{
+        () => {
 
             isLive = true;
 
             refreshMarker();
 
         }
-
     );
 
 
     window.addEventListener(
-
         'live:stopped',
-
-        ()=>{
+        () => {
 
             isLive = false;
 
             refreshMarker();
 
         }
-
     );
 
 
     window.addEventListener(
-
         'map:follow-me',
-
-        ()=>{
+        () => {
 
             followMe = true;
 
             centerOnMe(false);
 
         }
-
     );
 
 
@@ -153,37 +101,16 @@ export function initMyMarker(){
     startUpdateLoop();
 
 
-    /*
-     * DEBUG
-     */
+    window.__headingDebug = () => {
 
-    window.__headingDebug = ()=>{
-
-        const map =
-            getMap();
-
+        const map = getMap();
 
         console.log({
-
             rawHeading,
-
-            heading:
-                currentHeading,
-
-            source:
-                headingSource,
-
-            bearing:
-                getMapBearing(map),
-
-            followMe,
-
-            rotateWithView:
-                myMarker?.options?.rotateWithView,
-
-            history:
-                headingHistory.slice()
-
+            currentHeading,
+            source: headingSource,
+            mapBearing: getMapBearing(map),
+            history: headingHistory
         });
 
     };
@@ -192,7 +119,7 @@ export function initMyMarker(){
 
 
 /* =========================================================
-   UPDATE MARKER
+   UPDATE MY MARKER
 ========================================================= */
 
 export function updateMyMarker(
@@ -200,9 +127,7 @@ export function updateMyMarker(
     longitude
 ){
 
-    const map =
-        getMap();
-
+    const map = getMap();
 
     if(!map)
         return;
@@ -212,37 +137,28 @@ export function updateMyMarker(
         latitude == null ||
         longitude == null
     ){
-
         return;
-
     }
 
 
     const position = [
-
         latitude,
         longitude
-
     ];
 
 
     if(myMarker){
 
-        myMarker.setLatLng(
-            position
-        );
+        myMarker.setLatLng(position);
 
 
         if(followMe){
 
             map.panTo(
-
                 position,
-
                 {
-                    animate:false
+                    animate: false
                 }
-
             );
 
         }
@@ -255,41 +171,14 @@ export function updateMyMarker(
     }
 
 
-    /*
-     * rotateWithView:true
-     *
-     * Маркер остаётся связанным
-     * с вращением карты.
-     */
-
-    myMarker =
-        L.marker(
-
-            position,
-
-            {
-
-                icon:
-                    createIcon(),
-
-                zIndexOffset:
-                    1000,
-
-                rotateWithView:
-                    true
-
-            }
-
-        ).addTo(map);
-
-
-    document
-        .querySelectorAll(
-            '.my-heading-sector, #my-heading-overlay'
-        )
-        .forEach(
-            el=>el.remove()
-        );
+    myMarker = L.marker(
+        position,
+        {
+            icon: createIcon(),
+            zIndexOffset: 1000,
+            rotateWithView: true
+        }
+    ).addTo(map);
 
 
     bindMapEvents(map);
@@ -304,8 +193,7 @@ export function updateMyMarker(
     );
 
 
-    window.__myMarkerMapCentered =
-        true;
+    window.__myMarkerMapCentered = true;
 
 
     applyHeadingToSector();
@@ -327,52 +215,36 @@ function bindMapEvents(map){
 
 
     map.on(
-
         'dragstart',
-
-        ()=>{
+        () => {
 
             followMe = false;
 
         }
-
     );
 
 
     map.on(
-
         'rotate',
-
-        ()=>{
-
-            /*
-             * При каждом вращении карты
-             * немедленно пересчитываем сектор.
-             */
+        () => {
 
             applyHeadingToSector();
 
         }
-
     );
 
 
     map.on(
-
         'rotateend',
-
-        ()=>{
+        () => {
 
             if(followMe){
-
                 centerOnMe(false);
-
             }
 
             applyHeadingToSector();
 
         }
-
     );
 
 }
@@ -386,28 +258,21 @@ function centerOnMe(
     animate = false
 ){
 
-    const map =
-        getMap();
-
+    const map = getMap();
 
     if(
         !map ||
         !myMarker
     ){
-
         return;
-
     }
 
 
     map.panTo(
-
         myMarker.getLatLng(),
-
         {
             animate
         }
-
     );
 
 }
@@ -434,30 +299,17 @@ function refreshMarker(){
 
 
 /* =========================================================
-   NORMALIZE ANGLE
+   ANGLES
 ========================================================= */
 
-function normalizeAngle(
-    angle
-){
+function normalizeAngle(angle){
 
     return (
-        Number(angle) +
-        360
+        Number(angle) + 360
     ) % 360;
 
 }
 
-
-/*
- * Разница между двумя углами.
- *
- * Например:
- *
- * 359 → 1 = +2°
- *
- * а не -358°.
- */
 
 function angleDifference(
     target,
@@ -465,13 +317,11 @@ function angleDifference(
 ){
 
     return (
-
         (
             target -
             current +
             540
         ) % 360
-
     ) - 180;
 
 }
@@ -481,57 +331,39 @@ function angleDifference(
    SET HEADING
 ========================================================= */
 
-function setHeading(
-    heading
-){
+function setHeading(heading){
 
     if(
         heading == null ||
-        Number.isNaN(
-            Number(heading)
-        )
+        Number.isNaN(Number(heading))
     ){
-
         return;
-
     }
 
 
-    heading =
-        normalizeAngle(
-            Number(heading) +
-            HEADING_OFFSET
-        );
-
-
-    rawHeading =
-        heading;
-
-
-    headingHistory.push(
-        heading
+    heading = normalizeAngle(
+        Number(heading) +
+        HEADING_OFFSET
     );
+
+
+    rawHeading = heading;
+
+
+    headingHistory.push(heading);
 
 
     if(
         headingHistory.length >
         HEADING_HISTORY_SIZE
     ){
-
         headingHistory.shift();
-
     }
 
 
-    /*
-     * Первое значение.
-     */
-
     if(currentHeading == null){
 
-        currentHeading =
-            heading;
-
+        currentHeading = heading;
 
         applyHeadingToSector();
 
@@ -540,32 +372,22 @@ function setHeading(
     }
 
 
-    /*
-     * Переводим значения относительно
-     * текущего направления.
-     */
-
     const normalized =
-        headingHistory.map(
-            value=>{
+        headingHistory.map(value => {
 
-                return (
+            return (
+                currentHeading +
+                angleDifference(
+                    value,
+                    currentHeading
+                )
+            );
 
-                    currentHeading +
-
-                    angleDifference(
-                        value,
-                        currentHeading
-                    )
-
-                );
-
-            }
-        );
+        });
 
 
     normalized.sort(
-        (a,b)=>a-b
+        (a, b) => a - b
     );
 
 
@@ -584,57 +406,35 @@ function setHeading(
         );
 
 
-    /*
-     * Убираем очень маленькое
-     * дрожание датчика.
-     */
-
     if(
         Math.abs(diff) <
         HEADING_MIN_DELTA
     ){
-
         return;
-
     }
 
-
-    /*
-     * Большой поворот →
-     * быстрее реагируем.
-     */
 
     let smooth;
 
 
-    if(
-        Math.abs(diff) > 60
-    ){
+    if(Math.abs(diff) > 60){
 
-        smooth = 0.55;
+        smooth = 0.60;
 
     }
+    else if(Math.abs(diff) > 30){
 
-    else if(
-        Math.abs(diff) > 30
-    ){
-
-        smooth = 0.35;
+        smooth = 0.42;
 
     }
+    else if(Math.abs(diff) > 10){
 
-    else if(
-        Math.abs(diff) > 10
-    ){
-
-        smooth = 0.24;
+        smooth = 0.30;
 
     }
-
     else{
 
-        smooth =
-            HEADING_SMOOTH;
+        smooth = HEADING_SMOOTH;
 
     }
 
@@ -675,18 +475,11 @@ function getMarkerElement(){
    MAP BEARING
 ========================================================= */
 
-function getMapBearing(
-    map
-){
+function getMapBearing(map){
 
     if(!map)
         return 0;
 
-
-    /*
-     * Leaflet plugins для rotation
-     * могут предоставлять getBearing().
-     */
 
     if(
         typeof map.getBearing ===
@@ -699,9 +492,7 @@ function getMapBearing(
             );
 
 
-        if(
-            !Number.isNaN(bearing)
-        ){
+        if(!Number.isNaN(bearing)){
 
             return normalizeAngle(
                 bearing
@@ -712,14 +503,7 @@ function getMapBearing(
     }
 
 
-    /*
-     * Некоторые реализации
-     * используют map._bearing.
-     */
-
-    if(
-        map._bearing != null
-    ){
+    if(map._bearing != null){
 
         const bearing =
             Number(
@@ -727,9 +511,7 @@ function getMapBearing(
             );
 
 
-        if(
-            !Number.isNaN(bearing)
-        ){
+        if(!Number.isNaN(bearing)){
 
             return normalizeAngle(
                 bearing
@@ -746,21 +528,21 @@ function getMapBearing(
 
 
 /* =========================================================
-   APPLY HEADING
+   APPLY HEADING TO SECTOR
 ========================================================= */
 
 function applyHeadingToSector(){
 
-    const el =
+    const element =
         getMarkerElement();
 
 
-    if(!el)
+    if(!element)
         return;
 
 
     const sector =
-        el.querySelector(
+        element.querySelector(
             '.my-heading-sector-inner'
         );
 
@@ -771,34 +553,17 @@ function applyHeadingToSector(){
 
     if(currentHeading == null){
 
-        sector.style.opacity =
-            '0';
-
+        sector.style.opacity = '0';
 
         return;
 
     }
 
 
-    sector.style.opacity =
-        '1';
+    sector.style.opacity = '1';
 
 
-    const map =
-        getMap();
-
-
-    /*
-     * currentHeading =
-     * абсолютное направление телефона.
-     *
-     * Если карта повернута, маркер
-     * rotateWithView уже повернул
-     * его вместе с картой.
-     *
-     * Поэтому внутреннему сектору
-     * нужно компенсировать bearing карты.
-     */
+    const map = getMap();
 
     const mapBearing =
         getMapBearing(map);
@@ -806,15 +571,12 @@ function applyHeadingToSector(){
 
     const relativeHeading =
         normalizeAngle(
-
             currentHeading -
             mapBearing
-
         );
 
 
     sector.style.transform =
-
         `translate(-50%, -100%) rotate(${relativeHeading}deg)`;
 
 }
@@ -833,26 +595,22 @@ function startUpdateLoop(){
     loopStarted = true;
 
 
-    const frame = ()=>{
+    const frame = () => {
 
         applyHeadingToSector();
 
-        requestAnimationFrame(
-            frame
-        );
+        requestAnimationFrame(frame);
 
     };
 
 
-    requestAnimationFrame(
-        frame
-    );
+    requestAnimationFrame(frame);
 
 }
 
 
 /* =========================================================
-   COMPASS FROM ALPHA/BETA/GAMMA
+   COMPASS CALCULATION
 ========================================================= */
 
 function compassHeadingFromOrientation(
@@ -865,66 +623,30 @@ function compassHeadingFromOrientation(
         Math.PI / 180;
 
 
-    const a =
-        alpha * deg;
+    const a = alpha * deg;
+    const b = beta * deg;
+    const g = gamma * deg;
 
 
-    const b =
-        beta * deg;
+    const cA = Math.cos(a);
+    const sA = Math.sin(a);
 
+    const cB = Math.cos(b);
+    const sB = Math.sin(b);
 
-    const g =
-        gamma * deg;
-
-
-    const cA =
-        Math.cos(a);
-
-
-    const sA =
-        Math.sin(a);
-
-
-    const cB =
-        Math.cos(b);
-
-
-    const sB =
-        Math.sin(b);
-
-
-    const cG =
-        Math.cos(g);
-
-
-    const sG =
-        Math.sin(g);
+    const cG = Math.cos(g);
+    const sG = Math.sin(g);
 
 
     const rA =
-
         -cA * sG -
-
-        sA *
-        sB *
-        cG;
+        sA * sB * cG;
 
 
     const rB =
-
         -sA * sG +
+        cA * sB * cG;
 
-        cA *
-        sB *
-        cG;
-
-
-    /*
-     * ВАЖНО:
-     *
-     * atan2 намного надёжнее,
-     * чем atan(rA / rB).
-     */
 
     let heading =
         Math.atan2(
@@ -933,9 +655,7 @@ function compassHeadingFromOrientation(
         );
 
 
-    if(
-        heading < 0
-    ){
+    if(heading < 0){
 
         heading +=
             2 * Math.PI;
@@ -948,48 +668,32 @@ function compassHeadingFromOrientation(
         (180 / Math.PI);
 
 
-    /*
-     * Ориентация экрана.
-     */
-
-    const screenAngle =
-
-        (
-            screen.orientation &&
-            typeof screen.orientation.angle ===
-                'number'
-        )
-
-            ?
-
-            screen.orientation.angle
-
-            :
-
-            (
-                typeof window.orientation ===
-                    'number'
-
-                    ?
-
-                    window.orientation
-
-                    :
-
-                    0
-            );
+    let screenAngle = 0;
 
 
-    heading =
-        normalizeAngle(
+    if(
+        screen.orientation &&
+        typeof screen.orientation.angle === 'number'
+    ){
 
-            heading +
-            screenAngle
+        screenAngle =
+            screen.orientation.angle;
 
-        );
+    }
+    else if(
+        typeof window.orientation === 'number'
+    ){
+
+        screenAngle =
+            window.orientation;
+
+    }
 
 
-    return heading;
+    return normalizeAngle(
+        heading +
+        screenAngle
+    );
 
 }
 
@@ -1007,55 +711,28 @@ function startDeviceOrientation(){
     orientationStarted = true;
 
 
-    let browserOrientationReceived =
-        false;
+    let telegramStarted = false;
 
 
-    let telegramStarted =
-        false;
-
-
-    /*
-     * ================================================
-     * BROWSER ORIENTATION
-     * ================================================
-     */
+    /* =====================================================
+       BROWSER
+    ===================================================== */
 
     const handleBrowserOrientation = (
-        event,
-        isAbsolute = false
-    )=>{
-
-        /*
-         * Если Telegram уже успешно
-         * предоставляет compass,
-         * browser-данные не смешиваем.
-         */
+        event
+    ) => {
 
         if(telegramStarted)
             return;
 
 
-        let heading =
-            null;
+        let heading = null;
 
 
-        /*
-         * iOS.
-         */
+        /* iPhone */
 
         if(
-
-            event.webkitCompassHeading != null &&
-
-            !Number.isNaN(
-
-                Number(
-                    event.webkitCompassHeading
-                )
-
-            )
-
+            event.webkitCompassHeading != null
         ){
 
             heading =
@@ -1064,211 +741,71 @@ function startDeviceOrientation(){
                 );
 
 
-            const screenAngle =
+            if(!Number.isNaN(heading)){
 
-                (
-                    screen.orientation &&
-                    typeof screen.orientation.angle ===
-                        'number'
-                )
+                headingSource =
+                    'browser-ios';
 
-                    ?
+                setHeading(heading);
 
-                    screen.orientation.angle
+                return;
 
-                    :
-
-                    (
-                        typeof window.orientation ===
-                            'number'
-
-                            ?
-
-                            window.orientation
-
-                            :
-
-                            0
-                    );
-
-
-            heading =
-                normalizeAngle(
-
-                    heading +
-                    screenAngle
-
-                );
+            }
 
         }
 
 
-        /*
-         * Android absolute.
-         */
+        /* Android */
 
-        else if(
-
+        if(
             event.alpha != null &&
-
             event.beta != null &&
-
-            event.gamma != null &&
-
-            !Number.isNaN(
-                Number(event.alpha)
-            )
-
+            event.gamma != null
         ){
 
             heading =
-
                 compassHeadingFromOrientation(
-
                     Number(event.alpha),
-
                     Number(event.beta),
-
                     Number(event.gamma)
-
                 );
 
-        }
 
+            if(!Number.isNaN(heading)){
 
-        /*
-         * Простой fallback.
-         */
+                headingSource =
+                    'browser';
 
-        else if(
+                setHeading(heading);
 
-            event.alpha != null &&
-
-            !Number.isNaN(
-                Number(event.alpha)
-            )
-
-        ){
-
-            heading =
-
-                normalizeAngle(
-
-                    360 -
-                    Number(event.alpha)
-
-                );
+            }
 
         }
-
-
-        if(
-
-            heading == null ||
-
-            Number.isNaN(
-                Number(heading)
-            )
-
-        ){
-
-            return;
-
-        }
-
-
-        browserOrientationReceived =
-            true;
-
-
-        headingSource =
-            isAbsolute
-                ? 'browser-absolute'
-                : 'browser';
-
-
-        setHeading(
-            heading
-        );
 
     };
 
 
     /*
-     * Absolute orientation.
+     * Сразу подключаем orientation.
      */
 
     window.addEventListener(
-
         'deviceorientationabsolute',
-
-        event=>{
-
-            handleBrowserOrientation(
-                event,
-                true
-            );
-
-        },
-
+        handleBrowserOrientation,
         true
-
     );
 
 
-    /*
-     * Обычный orientation —
-     * fallback.
-     */
-
-    setTimeout(
-
-        ()=>{
-
-            if(
-
-                !browserOrientationReceived &&
-
-                !telegramStarted
-
-            ){
-
-                console.log(
-                    '[compass] using browser deviceorientation fallback'
-                );
-
-
-                window.addEventListener(
-
-                    'deviceorientation',
-
-                    event=>{
-
-                        handleBrowserOrientation(
-                            event,
-                            false
-                        );
-
-                    },
-
-                    true
-
-                );
-
-            }
-
-        },
-
-        1500
-
+    window.addEventListener(
+        'deviceorientation',
+        handleBrowserOrientation,
+        true
     );
 
 
-    /*
-     * ================================================
-     * TELEGRAM DEVICE ORIENTATION
-     * ================================================
-     */
+    /* =====================================================
+       TELEGRAM
+    ===================================================== */
 
     const tg =
         window.Telegram &&
@@ -1282,68 +819,41 @@ function startDeviceOrientation(){
 
         try{
 
-            const onTg =
-                data=>{
+            const onTelegramOrientation =
+                data => {
 
                     if(
                         !data ||
                         data.alpha == null
                     ){
-
                         return;
-
                     }
 
 
-                    /*
-                     * Telegram отдаёт alpha/beta/gamma
-                     * в радианах.
-                     */
-
-                    const alphaDeg =
-
+                    const alpha =
                         Number(data.alpha) *
                         (180 / Math.PI);
 
 
-                    const betaDeg =
-
+                    const beta =
                         data.beta != null
-
-                            ?
-
-                            Number(data.beta) *
-                            (180 / Math.PI)
-
-                            :
-
-                            0;
+                            ? Number(data.beta) *
+                              (180 / Math.PI)
+                            : 0;
 
 
-                    const gammaDeg =
-
+                    const gamma =
                         data.gamma != null
-
-                            ?
-
-                            Number(data.gamma) *
-                            (180 / Math.PI)
-
-                            :
-
-                            0;
+                            ? Number(data.gamma) *
+                              (180 / Math.PI)
+                            : 0;
 
 
                     const heading =
-
                         compassHeadingFromOrientation(
-
-                            alphaDeg,
-
-                            betaDeg,
-
-                            gammaDeg
-
+                            alpha,
+                            beta,
+                            gamma
                         );
 
 
@@ -1351,49 +861,39 @@ function startDeviceOrientation(){
                         'telegram';
 
 
-                    setHeading(
-                        heading
-                    );
+                    setHeading(heading);
 
                 };
 
 
-            tg.onEvent?.(
+            if(
+                typeof tg.onEvent ===
+                'function'
+            ){
 
-                'deviceOrientationChanged',
+                tg.onEvent(
+                    'deviceOrientationChanged',
+                    onTelegramOrientation
+                );
 
-                onTg
-
-            );
+            }
 
 
-            tg.onEvent?.(
-
-                'device_orientation_changed',
-
-                onTg
-
-            );
-
+            /*
+             * Запускаем Telegram Compass.
+             */
 
             tg.DeviceOrientation.start(
-
                 {
-                    need_absolute:true
+                    need_absolute: true
                 },
-
-                ok=>{
+                ok => {
 
                     console.log(
-                        '[compass] Telegram DeviceOrientation →',
+                        '[compass] Telegram DeviceOrientation:',
                         ok
                     );
 
-
-                    /*
-                     * Только успешный запуск
-                     * делает Telegram источником.
-                     */
 
                     if(ok){
 
@@ -1407,21 +907,144 @@ function startDeviceOrientation(){
                     }
 
                 }
-
             );
 
         }
-
         catch(error){
 
             console.warn(
-                '[compass] Telegram DeviceOrientation error',
+                '[compass] Telegram error:',
                 error
             );
 
         }
 
     }
+
+
+    /* =====================================================
+       ПОВТОРНЫЙ ЗАПУСК ПО НАЖАТИЮ
+       Нужно для iPhone / разрешений
+    ===================================================== */
+
+    const startAfterUserAction = () => {
+
+        try{
+
+            if(
+                tg &&
+                tg.DeviceOrientation
+            ){
+
+                tg.DeviceOrientation.start(
+                    {
+                        need_absolute: true
+                    },
+                    ok => {
+
+                        console.log(
+                            '[compass] start after tap:',
+                            ok
+                        );
+
+
+                        if(ok){
+
+                            telegramStarted =
+                                true;
+
+                            headingSource =
+                                'telegram';
+
+                        }
+
+                    }
+                );
+
+            }
+
+        }
+        catch(error){
+
+            console.warn(
+                '[compass] permission error:',
+                error
+            );
+
+        }
+
+
+        if(
+            typeof DeviceOrientationEvent !==
+            'undefined' &&
+            typeof DeviceOrientationEvent.requestPermission ===
+            'function'
+        ){
+
+            DeviceOrientationEvent
+                .requestPermission()
+                .then(permission => {
+
+                    console.log(
+                        '[compass] iOS permission:',
+                        permission
+                    );
+
+                    if(
+                        permission === 'granted'
+                    ){
+
+                        window.addEventListener(
+                            'deviceorientation',
+                            handleBrowserOrientation,
+                            true
+                        );
+
+                    }
+
+                })
+                .catch(error => {
+
+                    console.warn(
+                        '[compass] iOS permission error:',
+                        error
+                    );
+
+                });
+
+        }
+
+
+        document.removeEventListener(
+            'touchstart',
+            startAfterUserAction
+        );
+
+        document.removeEventListener(
+            'click',
+            startAfterUserAction
+        );
+
+    };
+
+
+    document.addEventListener(
+        'touchstart',
+        startAfterUserAction,
+        {
+            once: true,
+            passive: true
+        }
+    );
+
+
+    document.addEventListener(
+        'click',
+        startAfterUserAction,
+        {
+            once: true
+        }
+    );
 
 }
 
@@ -1438,13 +1061,18 @@ function createIcon(){
             getProfile();
 
 
+        const photo =
+            profile?.photo_url ||
+            'https://i.pravatar.cc/150';
+
+
         return L.divIcon({
 
             className:
                 'my-marker-wrapper',
 
 
-            html:`
+            html: `
 
                 <div class="my-marker-root">
 
@@ -1458,10 +1086,7 @@ function createIcon(){
                     <div class="my-live-marker">
 
                         <img
-                            src="${
-                                profile?.photo_url ||
-                                'https://i.pravatar.cc/150'
-                            }"
+                            src="${photo}"
                         >
 
                     </div>
@@ -1471,13 +1096,13 @@ function createIcon(){
             `,
 
 
-            iconSize:[
+            iconSize: [
                 40,
                 40
             ],
 
 
-            iconAnchor:[
+            iconAnchor: [
                 20,
                 20
             ]
@@ -1493,7 +1118,7 @@ function createIcon(){
             'my-marker-wrapper',
 
 
-        html:`
+        html: `
 
             <div class="my-marker-root">
 
@@ -1515,13 +1140,13 @@ function createIcon(){
         `,
 
 
-        iconSize:[
+        iconSize: [
             24,
             24
         ],
 
 
-        iconAnchor:[
+        iconAnchor: [
             12,
             12
         ]
