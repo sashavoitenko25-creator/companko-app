@@ -20,9 +20,7 @@ let noticeTimer = null;
 
 let routeLiveListenerInitialized = false;
 
-let routeUpdateTimer = null;
-
-let routeBuildInProgress = false;
+let routeInfoListenerInitialized = false;
 
 
 /* ========================================
@@ -134,6 +132,7 @@ export function showLiveRequiredNotice(
 export function RoutePanel(){
 
     initRouteLiveAutoClose();
+    initRouteInfoListener();
 
 
     return `
@@ -188,10 +187,6 @@ export function RoutePanel(){
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true">
 
-        <!--
-            Внешняя стрелка.
-            Смотрит строго вверх.
-        -->
         <path
             class="route-open-button__arrow"
             d="
@@ -211,10 +206,6 @@ export function RoutePanel(){
             stroke-linecap="round"
         />
 
-        <!--
-            Внутренняя часть стрелки.
-            Без центральной полоски.
-        -->
         <path
             class="route-open-button__arrow-inner"
             d="
@@ -239,136 +230,62 @@ export function RoutePanel(){
 
 
 /* ========================================
-   ОСТАНОВКА АВТООБНОВЛЕНИЯ
+   ОБНОВЛЕНИЕ ИНФО (без перерисовки линии)
 ======================================== */
 
-function stopRouteAutoUpdate(){
+function initRouteInfoListener(){
 
-    if(routeUpdateTimer){
-
-        clearInterval(
-            routeUpdateTimer
-        );
-
-        routeUpdateTimer = null;
-
-    }
-
-}
-
-
-/* ========================================
-   ЗАПУСК АВТООБНОВЛЕНИЯ
-======================================== */
-
-function startRouteAutoUpdate(){
-
-    stopRouteAutoUpdate();
-
-
-    routeUpdateTimer =
-        setInterval(
-            () => {
-
-                updateRoute();
-
-            },
-            2000
-        );
-
-}
-
-
-/* ========================================
-   ДИНАМИЧЕСКОЕ ОБНОВЛЕНИЕ МАРШРУТА
-======================================== */
-
-async function updateRoute(){
-
-    if(!currentUser)
+    if(routeInfoListenerInitialized)
         return;
 
-
-    if(routeBuildInProgress)
-        return;
+    routeInfoListenerInitialized = true;
 
 
-    const live =
-        getLiveState();
+    window.addEventListener(
+
+        'route:updated',
+
+        event => {
+
+            if(!currentUser)
+                return;
 
 
-    if(
-        !live ||
-        !live.session_id
-    ){
-
-        stopRouteAutoUpdate();
-
-        return;
-
-    }
+            const result =
+                event.detail;
 
 
-    routeBuildInProgress = true;
+            if(!result)
+                return;
 
 
-    try{
-
-        const routeTarget =
-            currentUser;
-
-
-        const result =
-            await startRoute(
-                routeTarget,
-                currentMode
-            );
+            const info =
+                document.querySelector(
+                    '#route-info'
+                );
 
 
-        if(
-            currentUser !== routeTarget
-        ){
+            if(!info)
+                return;
 
-            return;
+
+            info.innerHTML = `
+                <div class="route-user">
+                    ${currentUser.name || ''}
+                </div>
+
+                <div class="route-stat">
+                    📍 ${(result.distance / 1000).toFixed(1)} км
+                </div>
+
+                <div class="route-stat">
+                    ⏱ ${result.duration} мин
+                </div>
+            `;
 
         }
 
-
-        if(!result)
-            return;
-
-
-        const info =
-            document.querySelector(
-                '#route-info'
-            );
-
-
-        if(!info)
-            return;
-
-
-        info.innerHTML = `
-            <div class="route-user">
-                ${currentUser.name || ''}
-            </div>
-
-            <div class="route-stat">
-                📍 ${(result.distance / 1000).toFixed(1)} км
-            </div>
-
-            <div class="route-stat">
-                ⏱ ${result.duration} мин
-            </div>
-        `;
-
-    }
-
-    finally{
-
-        routeBuildInProgress = false;
-
-    }
+    );
 
 }
 
@@ -565,9 +482,6 @@ function getUserId(user){
 
 function closeRouteAutomatically(){
 
-    stopRouteAutoUpdate();
-
-
     const panel =
         document.querySelector(
             '#route-panel'
@@ -644,9 +558,6 @@ export function showRoute(user){
     }
 
 
-    stopRouteAutoUpdate();
-
-
     currentUser =
         user;
 
@@ -710,13 +621,6 @@ export function showRoute(user){
             return;
 
 
-        if(routeBuildInProgress)
-            return;
-
-
-        routeBuildInProgress = true;
-
-
         info.innerHTML =
             `<div>Строим маршрут...</div>`;
 
@@ -725,55 +629,45 @@ export function showRoute(user){
             currentUser;
 
 
-        try{
-
-            const result =
-                await startRoute(
-                    routeTarget,
-                    currentMode
-                );
+        const result =
+            await startRoute(
+                routeTarget,
+                currentMode
+            );
 
 
-            if(
-                currentUser !== routeTarget
-            ){
+        if(
+            currentUser !== routeTarget
+        ){
 
-                return;
-
-            }
-
-
-            if(!result){
-
-                info.innerHTML =
-                    'Не удалось построить маршрут';
-
-                return;
-
-            }
-
-
-            info.innerHTML = `
-                <div class="route-user">
-                    ${currentUser.name || ''}
-                </div>
-
-                <div class="route-stat">
-                    📍 ${(result.distance / 1000).toFixed(1)} км
-                </div>
-
-                <div class="route-stat">
-                    ⏱ ${result.duration} мин
-                </div>
-            `;
+            return;
 
         }
 
-        finally{
 
-            routeBuildInProgress = false;
+        if(!result){
+
+            info.innerHTML =
+                'Не удалось построить маршрут';
+
+            return;
 
         }
+
+
+        info.innerHTML = `
+            <div class="route-user">
+                ${currentUser.name || ''}
+            </div>
+
+            <div class="route-stat">
+                📍 ${(result.distance / 1000).toFixed(1)} км
+            </div>
+
+            <div class="route-stat">
+                ⏱ ${result.duration} мин
+            </div>
+        `;
 
     }
 
@@ -832,13 +726,6 @@ export function showRoute(user){
 
 
     /* ========================================
-       АВТООБНОВЛЕНИЕ
-    ======================================== */
-
-    startRouteAutoUpdate();
-
-
-    /* ========================================
        ОТМЕНА
     ======================================== */
 
@@ -852,8 +739,6 @@ export function showRoute(user){
 
         cancelButton.onclick =
             () => {
-
-                stopRouteAutoUpdate();
 
                 stopRoute();
 
@@ -899,9 +784,6 @@ export function showRoute(user){
                 ){
 
                     showLiveRequiredNotice();
-
-
-                    stopRouteAutoUpdate();
 
 
                     panel.classList.remove(
