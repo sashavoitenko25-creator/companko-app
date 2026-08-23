@@ -1,105 +1,87 @@
 import L from 'leaflet';
+
 import { getMap } from '../../services/map/mapService';
+
 import { supabase } from '../../services/supabase/supabaseClient';
+
 import {
     getCurrentPosition,
     watchLocation
 } from '../../services/location/locationService';
 
+
 let routeLine = null;
 let activeUser = null;
 let activeMode = 'car';
+
 let locationWatch = null;
 let targetRefreshTimer = null;
 let routeUpdateTimer = null;
+
 let routeBuilding = false;
-let latestOwnPosition = null;
+let lastRouteBuildTime = 0;
+
 let lastFromLat = null;
 let lastFromLng = null;
 let lastToLat = null;
 let lastToLng = null;
-let lastRouteBuildTime = 0;
-let routeSession = 0;
 
-const TARGET_REFRESH_INTERVAL = 3000;
+let latestOwnPosition = null;
+
+
 const ROUTE_UPDATE_INTERVAL = 4000;
+const TARGET_REFRESH_INTERVAL = 3000;
 const MIN_ROUTE_REBUILD_INTERVAL = 4000;
 const MIN_MOVEMENT_METERS = 8;
+
 
 /* =========================================================
    START ROUTE
 ========================================================= */
 
 export async function startRoute(user, mode = 'car') {
-    const map = getMap();
+    stopRoute();
 
-    if (!map || !user)
+    activeUser = { ...user };
+    activeMode = mode;
+
+    if (
+        activeUser.lat == null ||
+        activeUser.lng == null
+    ) {
+        console.warn('Target has no coordinates');
         return null;
-
-    const userId = getUserId(user);
-
-    if (!userId)
-        return null;
-
-    const isNewRoute =
-        !activeUser ||
-        String(getUserId(activeUser)) !== String(userId) ||
-        activeMode !== mode;
-
-    if (isNewRoute) {
-        stopRoute();
-
-        activeUser = { ...user };
-        activeMode = mode;
-        routeSession++;
-
-        if (
-            activeUser.lat == null ||
-            activeUser.lng == null
-        ) {
-            console.warn('Target has no coordinates');
-            return null;
-        }
-
-        const position = await getCurrentPosition();
-
-        if (!position)
-            return null;
-
-        latestOwnPosition = position;
-
-        const session = routeSession;
-
-        const result = await buildRoute(
-            position.latitude,
-            position.longitude,
-            activeUser.lat,
-            activeUser.lng,
-            true,
-            session
-        );
-
-        if (!result)
-            return null;
-
-        startDynamicRoute();
-
-        return result;
     }
 
-    return getCurrentRouteInfo();
+    const position = await getCurrentPosition();
+
+    if (!position)
+        return null;
+
+    latestOwnPosition = position;
+
+    const result = await buildRoute(
+        position.latitude,
+        position.longitude,
+        activeUser.lat,
+        activeUser.lng
+    );
+
+    if (!result)
+        return null;
+
+    startDynamicRoute();
+
+    return result;
 }
+
 
 /* =========================================================
    STOP ROUTE
 ========================================================= */
 
 export function stopRoute() {
-    routeSession++;
-
     stopDynamicRoute();
-
-    routeBuilding = false;
 
     const map = getMap();
 
@@ -116,8 +98,11 @@ export function stopRoute() {
     lastFromLng = null;
     lastToLat = null;
     lastToLng = null;
+
     lastRouteBuildTime = 0;
+    routeBuilding = false;
 }
+
 
 /* =========================================================
    BUILD ROUTE
@@ -127,24 +112,11 @@ async function buildRoute(
     fromLat,
     fromLng,
     toLat,
-    toLng,
-    fitMap = false,
-    session = routeSession
+    toLng
 ) {
     const map = getMap();
 
-    if (!map)
-        return null;
-
-    if (!Number.isFinite(fromLat) ||
-        !Number.isFinite(fromLng) ||
-        !Number.isFinite(toLat) ||
-        !Number.isFinite(toLng)
-    ) {
-        return null;
-    }
-
-    if (routeBuilding)
+    if (!map || routeBuilding)
         return null;
 
     routeBuilding = true;
@@ -164,9 +136,6 @@ async function buildRoute(
                 }
             );
 
-        if (session !== routeSession || !activeUser)
-            return null;
-
         if (error) {
             console.error(
                 'Route function error:',
@@ -175,7 +144,7 @@ async function buildRoute(
             return null;
         }
 
-        if (!data?.geometry?.coordinates) {
+        if (!data?.geometry) {
             console.error(
                 'No route geometry:',
                 data
@@ -183,14 +152,19 @@ async function buildRoute(
             return null;
         }
 
-        const fullPath =
+        const path =
             data.geometry.coordinates.map(
                 ([lng, lat]) => [lat, lng]
             );
 
+
+        /* ==========================================
+           СОЗДАЁМ POLYLINE ТОЛЬКО ОДИН РАЗ
+        ========================================== */
+
         if (!routeLine) {
             routeLine = L.polyline(
-                fullPath,
+                path,
                 {
                     color: '#7c3aed',
                     weight: 6,
@@ -199,36 +173,43 @@ async function buildRoute(
                     lineJoin: 'round'
                 }
             ).addTo(map);
-        } else {
-            routeLine.setLatLngs(fullPath);
-        }
 
-        /*
-         * Масштабируем карту ТОЛЬКО
-         * при первом построении.
-         */
-        if (fitMap) {
             map.fitBounds(
                 routeLine.getBounds(),
                 {
                     padding: [80, 80],
                     animate: true,
-                    duration: 0.8
+                    duration: 1
                 }
             );
+        } else {
+
+            /* ======================================
+               ОБНОВЛЯЕМ ТУ ЖЕ ЛИНИЮ
+
+               Leaflet сам переместит её
+               вместе с картой.
+            ====================================== */
+
+            routeLine.setLatLngs(path);
         }
+
 
         lastFromLat = fromLat;
         lastFromLng = fromLng;
+
         lastToLat = toLat;
         lastToLng = toLng;
+
         lastRouteBuildTime = Date.now();
+
 
         const distance =
             Number(data.distance) || 0;
 
         const duration =
             Number(data.duration) || 0;
+
 
         const result = {
             distance,
@@ -237,6 +218,7 @@ async function buildRoute(
                 Math.round(duration / 60)
             )
         };
+
 
         window.dispatchEvent(
             new CustomEvent(
@@ -247,9 +229,11 @@ async function buildRoute(
             )
         );
 
+
         return result;
 
     } catch (error) {
+
         console.error(
             'Route error:',
             error
@@ -258,9 +242,12 @@ async function buildRoute(
         return null;
 
     } finally {
+
         routeBuilding = false;
+
     }
 }
+
 
 /* =========================================================
    DYNAMIC ROUTE
@@ -269,9 +256,10 @@ async function buildRoute(
 function startDynamicRoute() {
     stopDynamicRoute();
 
-    locationWatch =
-        watchLocation(position => {
-            if (!position || !activeUser)
+
+    locationWatch = watchLocation(
+        position => {
+            if (!position)
                 return;
 
             latestOwnPosition = {
@@ -282,22 +270,25 @@ function startDynamicRoute() {
             };
 
             checkRouteUpdate();
-        });
+        }
+    );
 
-    targetRefreshTimer =
-        setInterval(
-            refreshTargetPosition,
-            TARGET_REFRESH_INTERVAL
-        );
 
-    routeUpdateTimer =
-        setInterval(
-            checkRouteUpdate,
-            ROUTE_UPDATE_INTERVAL
-        );
+    targetRefreshTimer = setInterval(
+        refreshTargetPosition,
+        TARGET_REFRESH_INTERVAL
+    );
+
+
+    routeUpdateTimer = setInterval(
+        checkRouteUpdate,
+        ROUTE_UPDATE_INTERVAL
+    );
+
 
     refreshTargetPosition();
 }
+
 
 /* =========================================================
    STOP DYNAMIC ROUTE
@@ -313,10 +304,12 @@ function stopDynamicRoute() {
 
     locationWatch = null;
 
+
     if (targetRefreshTimer) {
         clearInterval(targetRefreshTimer);
         targetRefreshTimer = null;
     }
+
 
     if (routeUpdateTimer) {
         clearInterval(routeUpdateTimer);
@@ -324,8 +317,9 @@ function stopDynamicRoute() {
     }
 }
 
+
 /* =========================================================
-   REFRESH TARGET POSITION
+   REFRESH TARGET
 ========================================================= */
 
 async function refreshTargetPosition() {
@@ -338,23 +332,23 @@ async function refreshTargetPosition() {
     if (!targetId)
         return;
 
+
     try {
-        const {
-            data,
-            error
-        } = await supabase
-            .from('live_sessions')
-            .select('*')
-            .eq('user_id', targetId)
-            .eq('status', 'active')
-            .order(
-                'created_at',
-                {
-                    ascending: false
-                }
-            )
-            .limit(1)
-            .maybeSingle();
+        const { data, error } =
+            await supabase
+                .from('live_sessions')
+                .select('*')
+                .eq('user_id', targetId)
+                .eq('status', 'active')
+                .order(
+                    'created_at',
+                    {
+                        ascending: false
+                    }
+                )
+                .limit(1)
+                .maybeSingle();
+
 
         if (error) {
             console.warn(
@@ -364,21 +358,18 @@ async function refreshTargetPosition() {
             return;
         }
 
-        /*
-         * Live цели завершился.
-         */
+
+        /* ==========================================
+           LIVE ЗАКОНЧИЛСЯ
+        ========================================== */
+
         if (!data) {
-            const endedUserId =
-                targetId;
-
-            stopRoute();
-
             window.dispatchEvent(
                 new CustomEvent(
                     'live:user-ended',
                     {
                         detail: {
-                            userId: endedUserId
+                            userId: targetId
                         }
                     }
                 )
@@ -386,6 +377,7 @@ async function refreshTargetPosition() {
 
             return;
         }
+
 
         const lat = Number(
             data.lat ??
@@ -399,6 +391,7 @@ async function refreshTargetPosition() {
             activeUser.lng
         );
 
+
         if (
             !Number.isFinite(lat) ||
             !Number.isFinite(lng)
@@ -406,21 +399,26 @@ async function refreshTargetPosition() {
             return;
         }
 
+
         activeUser = {
             ...activeUser,
             lat,
             lng
         };
 
+
         checkRouteUpdate();
 
     } catch (error) {
+
         console.warn(
             'Target position refresh error:',
             error
         );
+
     }
 }
+
 
 /* =========================================================
    CHECK ROUTE UPDATE
@@ -436,6 +434,7 @@ async function checkRouteUpdate() {
     if (routeBuilding)
         return;
 
+
     const fromLat =
         latestOwnPosition.latitude;
 
@@ -448,6 +447,7 @@ async function checkRouteUpdate() {
     const toLng =
         Number(activeUser.lng);
 
+
     if (
         !Number.isFinite(fromLat) ||
         !Number.isFinite(fromLng) ||
@@ -457,9 +457,11 @@ async function checkRouteUpdate() {
         return;
     }
 
-    /*
-     * Если маршрут ещё не построен.
-     */
+
+    /* ==========================================
+       ПЕРВОЕ ПОСТРОЕНИЕ
+    ========================================== */
+
     if (
         lastFromLat === null ||
         lastToLat === null
@@ -474,6 +476,7 @@ async function checkRouteUpdate() {
         return;
     }
 
+
     const ownMoved =
         distanceMeters(
             fromLat,
@@ -481,6 +484,7 @@ async function checkRouteUpdate() {
             lastFromLat,
             lastFromLng
         );
+
 
     const targetMoved =
         distanceMeters(
@@ -490,6 +494,7 @@ async function checkRouteUpdate() {
             lastToLng
         );
 
+
     if (
         ownMoved < MIN_MOVEMENT_METERS &&
         targetMoved < MIN_MOVEMENT_METERS
@@ -497,14 +502,14 @@ async function checkRouteUpdate() {
         return;
     }
 
-    const now = Date.now();
 
     if (
-        now - lastRouteBuildTime <
+        Date.now() - lastRouteBuildTime <
         MIN_ROUTE_REBUILD_INTERVAL
     ) {
         return;
     }
+
 
     await rebuildDynamicRoute(
         fromLat,
@@ -514,8 +519,9 @@ async function checkRouteUpdate() {
     );
 }
 
+
 /* =========================================================
-   REBUILD DYNAMIC ROUTE
+   REBUILD ROUTE
 ========================================================= */
 
 async function rebuildDynamicRoute(
@@ -527,18 +533,15 @@ async function rebuildDynamicRoute(
     if (routeBuilding)
         return;
 
-    const session =
-        routeSession;
 
     const result =
         await buildRoute(
             fromLat,
             fromLng,
             toLat,
-            toLng,
-            false,
-            session
+            toLng
         );
+
 
     if (result) {
         console.log(
@@ -548,16 +551,6 @@ async function rebuildDynamicRoute(
     }
 }
 
-/* =========================================================
-   CURRENT ROUTE INFO
-========================================================= */
-
-function getCurrentRouteInfo() {
-    if (!routeLine)
-        return null;
-
-    return null;
-}
 
 /* =========================================================
    GET USER ID
@@ -574,6 +567,7 @@ function getUserId(user) {
         null
     );
 }
+
 
 /* =========================================================
    DISTANCE
@@ -600,10 +594,14 @@ function distanceMeters(
     const a =
         Math.sin(dLat / 2) ** 2 +
         Math.cos(
-            lat1 * Math.PI / 180
+            lat1 *
+            Math.PI /
+            180
         ) *
         Math.cos(
-            lat2 * Math.PI / 180
+            lat2 *
+            Math.PI /
+            180
         ) *
         Math.sin(dLng / 2) ** 2;
 
