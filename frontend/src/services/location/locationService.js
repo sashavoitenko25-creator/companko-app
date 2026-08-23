@@ -4,287 +4,382 @@ import {
 
 
 let locationId = null;
+
 let watcherId = null;
+
+let locationStarted = false;
+
+let latestLocation = null;
+
+let locationPromise = null;
+
+let telegramManager = null;
+
+let telegramInitPromise = null;
 
 
 /* =========================================================
-   TELEGRAM LOCATION
+   SAVE LOCATION TO GLOBAL
 ========================================================= */
 
-export function requestLocation(){
+function publishLocation(result){
 
-    return new Promise((resolve,reject)=>{
-
-        const tg =
-            window.Telegram?.WebApp;
+    if(!result)
+        return;
 
 
-        /*
-         * TELEGRAM MINI APP
-         */
+    latestLocation = {
 
-        if(
-            tg &&
-            tg.LocationManager
-        ){
+        latitude:
+            Number(result.latitude),
 
-            console.log(
-                'TELEGRAM LOCATION MANAGER'
-            );
+        longitude:
+            Number(result.longitude),
 
+        accuracy:
+            result.accuracy ?? null,
+
+        heading:
+            result.heading ?? null
+
+    };
+
+
+    window.myLocation = {
+
+        lat:
+            latestLocation.latitude,
+
+        lng:
+            latestLocation.longitude
+
+    };
+
+
+    window.dispatchEvent(
+
+        new CustomEvent(
+            'location:updated',
+
+            {
+
+                detail:{
+
+                    lat:
+                        latestLocation.latitude,
+
+                    lng:
+                        latestLocation.longitude,
+
+                    accuracy:
+                        latestLocation.accuracy,
+
+                    heading:
+                        latestLocation.heading
+
+                }
+
+            }
+
+        )
+
+    );
+
+}
+
+
+/* =========================================================
+   TELEGRAM MANAGER
+========================================================= */
+
+async function getTelegramManager(){
+
+    const tg =
+        window.Telegram?.WebApp;
+
+
+    if(
+        !tg ||
+        !tg.LocationManager
+    ){
+
+        return null;
+
+    }
+
+
+    if(telegramManager){
+
+        return telegramManager;
+
+    }
+
+
+    if(telegramInitPromise){
+
+        return telegramInitPromise;
+
+    }
+
+
+    telegramInitPromise =
+        new Promise(resolve=>{
 
             const manager =
                 tg.LocationManager;
 
 
-            const initManager = ()=>{
+            if(manager.isInited){
 
-                console.log(
-                    'LOCATION MANAGER:',
-                    {
-                        available:
-                            manager.isLocationAvailable,
+                telegramManager =
+                    manager;
 
-                        requested:
-                            manager.isAccessRequested,
+                resolve(manager);
 
-                        granted:
-                            manager.isAccessGranted
-                    }
-                );
+                return;
 
+            }
+
+
+            manager.init(()=>{
+
+                telegramManager =
+                    manager;
+
+                resolve(manager);
+
+            });
+
+        });
+
+
+    return telegramInitPromise;
+
+}
+
+
+/* =========================================================
+   REQUEST LOCATION
+   ОДИН ОБЩИЙ ЗАПРОС
+========================================================= */
+
+export function requestLocation(){
+
+    if(locationPromise){
+
+        return locationPromise;
+
+    }
+
+
+    locationPromise =
+        new Promise(async(resolve,reject)=>{
+
+            try{
 
                 /*
-                 * Запрашиваем разрешение
+                 * ==========================================
+                 * TELEGRAM MINI APP
+                 * ==========================================
                  */
 
-                manager.getLocation(
-
-                    location=>{
-
-                        console.log(
-                            'TELEGRAM LOCATION:',
-                            location
-                        );
+                const manager =
+                    await getTelegramManager();
 
 
-                        if(!location){
+                if(manager){
 
-                            reject(
-                                new Error(
-                                    'Telegram location permission denied'
-                                )
+                    console.log(
+                        'TELEGRAM LOCATION MANAGER'
+                    );
+
+
+                    /*
+                     * Если Telegram уже дал разрешение,
+                     * просто получаем координаты.
+                     */
+
+                    manager.getLocation(
+
+                        location=>{
+
+                            if(!location){
+
+                                locationPromise =
+                                    null;
+
+
+                                reject(
+
+                                    new Error(
+                                        'Telegram location permission denied'
+                                    )
+
+                                );
+
+                                return;
+
+                            }
+
+
+                            const result = {
+
+                                latitude:
+                                    Number(
+                                        location.latitude
+                                    ),
+
+                                longitude:
+                                    Number(
+                                        location.longitude
+                                    ),
+
+                                accuracy:
+                                    location.horizontal_accuracy ??
+                                    null,
+
+                                heading:
+                                    location.course ??
+                                    null
+
+                            };
+
+
+                            publishLocation(
+                                result
                             );
 
-                            return;
+
+                            resolve(
+                                result
+                            );
 
                         }
 
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                 * ==========================================
+                 * ОБЫЧНЫЙ БРАУЗЕР
+                 * ==========================================
+                 */
+
+                if(!navigator.geolocation){
+
+                    locationPromise =
+                        null;
+
+
+                    reject(
+
+                        new Error(
+                            'Geolocation is not supported'
+                        )
+
+                    );
+
+                    return;
+
+                }
+
+
+                navigator.geolocation.getCurrentPosition(
+
+                    position=>{
 
                         const result = {
 
                             latitude:
-                                Number(
-                                    location.latitude
-                                ),
+                                position.coords.latitude,
 
                             longitude:
-                                Number(
-                                    location.longitude
-                                ),
+                                position.coords.longitude,
 
                             accuracy:
-                                location.horizontal_accuracy ??
-                                null,
+                                position.coords.accuracy,
 
                             heading:
-                                location.course ??
-                                null
+                                position.coords.heading
 
                         };
 
 
-                        window.myLocation = {
-
-                            lat:
-                                result.latitude,
-
-                            lng:
-                                result.longitude
-
-                        };
-
-
-                        window.dispatchEvent(
-
-                            new CustomEvent(
-                                'location:updated',
-
-                                {
-                                    detail:{
-
-                                        lat:
-                                            result.latitude,
-
-                                        lng:
-                                            result.longitude
-
-                                    }
-
-                                }
-
-                            )
-
+                        publishLocation(
+                            result
                         );
 
 
-                        resolve(result);
+                        resolve(
+                            result
+                        );
+
+                    },
+
+                    error=>{
+
+                        console.error(
+                            'BROWSER GEOLOCATION ERROR:',
+                            error
+                        );
+
+
+                        locationPromise =
+                            null;
+
+
+                        reject(
+                            error
+                        );
+
+                    },
+
+                    {
+
+                        enableHighAccuracy:true,
+
+                        timeout:30000,
+
+                        maximumAge:5000
 
                     }
 
                 );
 
-            };
-
-
-            /*
-             * Telegram LocationManager
-             * сначала нужно инициализировать.
-             */
-
-            if(manager.isInited){
-
-                initManager();
-
             }
 
-            else{
-
-                manager.init(
-
-                    ()=>{
-
-                        initManager();
-
-                    }
-
-                );
-
-            }
-
-
-            return;
-
-        }
-
-
-        /*
-         * FALLBACK ДЛЯ ОБЫЧНОГО БРАУЗЕРА
-         */
-
-        if(!navigator.geolocation){
-
-            reject(
-                new Error(
-                    'Geolocation is not supported'
-                )
-            );
-
-            return;
-
-        }
-
-
-        navigator.geolocation.getCurrentPosition(
-
-            position=>{
-
-                const result = {
-
-                    latitude:
-                        position.coords.latitude,
-
-                    longitude:
-                        position.coords.longitude,
-
-                    accuracy:
-                        position.coords.accuracy,
-
-                    heading:
-                        position.coords.heading
-
-                };
-
-
-                window.myLocation = {
-
-                    lat:
-                        result.latitude,
-
-                    lng:
-                        result.longitude
-
-                };
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        'location:updated',
-
-                        {
-                            detail:{
-
-                                lat:
-                                    result.latitude,
-
-                                lng:
-                                    result.longitude
-
-                            }
-
-                        }
-
-                    )
-
-                );
-
-
-                resolve(result);
-
-            },
-
-            error=>{
+            catch(error){
 
                 console.error(
-                    'BROWSER GEOLOCATION ERROR:',
+                    'REQUEST LOCATION ERROR:',
                     error
                 );
 
 
+                locationPromise =
+                    null;
+
+
                 reject(error);
-
-            },
-
-            {
-
-                enableHighAccuracy:true,
-
-                timeout:30000,
-
-                maximumAge:0
 
             }
 
-        );
+        });
 
-    });
+
+    return locationPromise;
 
 }
 
 
 /* =========================================================
    WATCH LOCATION
+   ЕДИНСТВЕННЫЙ WATCHER В ПРИЛОЖЕНИИ
 ========================================================= */
 
 export function watchLocation(callback){
@@ -294,11 +389,87 @@ export function watchLocation(callback){
 
 
     /*
-     * В Telegram LocationManager
-     * не имеет watchPosition.
-     *
-     * Поэтому периодически запрашиваем
-     * актуальную позицию.
+     * Уже запущен.
+     */
+
+    if(locationStarted){
+
+        /*
+         * Сразу отдаём последнюю координату.
+         */
+
+        if(latestLocation){
+
+            callback(
+                latestLocation
+            );
+
+        }
+
+
+        /*
+         * Подписываем callback на обновления.
+         */
+
+        const handler =
+            event=>{
+
+                if(event.detail){
+
+                    callback({
+
+                        latitude:
+                            event.detail.lat,
+
+                        longitude:
+                            event.detail.lng,
+
+                        accuracy:
+                            event.detail.accuracy ??
+                            null,
+
+                        heading:
+                            event.detail.heading ??
+                            null
+
+                    });
+
+                }
+
+            };
+
+
+        window.addEventListener(
+            'location:updated',
+            handler
+        );
+
+
+        return {
+
+            shared:true,
+
+            stop:()=>{
+
+                window.removeEventListener(
+                    'location:updated',
+                    handler
+                );
+
+            }
+
+        };
+
+    }
+
+
+    locationStarted = true;
+
+
+    /*
+     * ==========================================
+     * TELEGRAM
+     * ==========================================
      */
 
     const tg =
@@ -313,7 +484,13 @@ export function watchLocation(callback){
         let stopped = false;
 
 
-        const update = async()=>{
+        /*
+         * Получаем первую позицию.
+         * Здесь Telegram покажет разрешение,
+         * если его ещё нет.
+         */
+
+        const firstUpdate = async()=>{
 
             if(stopped)
                 return;
@@ -325,8 +502,14 @@ export function watchLocation(callback){
                     await requestLocation();
 
 
-                if(stopped)
+                if(
+                    stopped ||
+                    !position
+                ){
+
                     return;
+
+                }
 
 
                 callback(
@@ -334,10 +517,11 @@ export function watchLocation(callback){
                 );
 
             }
+
             catch(error){
 
                 console.error(
-                    'TELEGRAM LOCATION UPDATE ERROR:',
+                    'TELEGRAM LOCATION ERROR:',
                     error
                 );
 
@@ -346,34 +530,88 @@ export function watchLocation(callback){
         };
 
 
-        update();
+        firstUpdate();
 
+
+        /*
+         * Telegram LocationManager не имеет
+         * watchPosition.
+         *
+         * Поэтому после ОДНОГО разрешения
+         * периодически получаем свежую позицию.
+         *
+         * Новый popup разрешения Telegram
+         * при уже выданном доступе не показывает.
+         */
 
         watcherId =
             setInterval(
-                update,
-                5000
+
+                ()=>{
+
+                    if(!stopped){
+
+                        requestLocation()
+
+                            .then(position=>{
+
+                                if(
+                                    !stopped &&
+                                    position
+                                ){
+
+                                    callback(
+                                        position
+                                    );
+
+                                }
+
+                            })
+
+                            .catch(error=>{
+
+                                console.warn(
+                                    'TELEGRAM LOCATION UPDATE ERROR:',
+                                    error
+                                );
+
+                            });
+
+                    }
+
+                },
+
+                3000
+
             );
 
 
-        return watcherId;
+        return {
+
+            shared:true,
+
+            stop:()=>{
+
+                stopped = true;
+
+            }
+
+        };
 
     }
 
 
     /*
-     * Обычный браузер
+     * ==========================================
+     * ОБЫЧНЫЙ БРАУЗЕР
+     * ==========================================
      */
 
-    if(!navigator.geolocation)
+    if(!navigator.geolocation){
+
+        locationStarted = false;
+
         return null;
-
-
-    if(watcherId){
-
-        navigator.geolocation.clearWatch(
-            watcherId
-        );
 
     }
 
@@ -400,42 +638,13 @@ export function watchLocation(callback){
                 };
 
 
-                window.myLocation = {
-
-                    lat:
-                        result.latitude,
-
-                    lng:
-                        result.longitude
-
-                };
-
-
-                callback(
+                publishLocation(
                     result
                 );
 
 
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        'location:updated',
-
-                        {
-                            detail:{
-
-                                lat:
-                                    result.latitude,
-
-                                lng:
-                                    result.longitude
-
-                            }
-
-                        }
-
-                    )
-
+                callback(
+                    result
                 );
 
             },
@@ -455,7 +664,7 @@ export function watchLocation(callback){
 
                 timeout:30000,
 
-                maximumAge:0
+                maximumAge:3000
 
             }
 
@@ -473,8 +682,13 @@ export function watchLocation(callback){
 
 export function stopWatchingLocation(){
 
-    if(!watcherId)
+    if(!watcherId){
+
+        locationStarted = false;
+
         return;
+
+    }
 
 
     const tg =
@@ -505,16 +719,37 @@ export function stopWatchingLocation(){
 
     watcherId = null;
 
+    locationStarted = false;
+
+}
+
+
+/* =========================================================
+   GET CACHED LOCATION
+========================================================= */
+
+export function getCachedLocation(){
+
+    return latestLocation;
+
 }
 
 
 /* =========================================================
    GET CURRENT POSITION
+   НЕ СОЗДАЁТ НОВЫЙ WATCHER
 ========================================================= */
 
-export function getCurrentPosition(){
+export async function getCurrentPosition(){
 
-    return requestLocation();
+    if(latestLocation){
+
+        return latestLocation;
+
+    }
+
+
+    return await requestLocation();
 
 }
 
@@ -525,11 +760,19 @@ export function getCurrentPosition(){
 
 export async function initLocation(){
 
+    if(latestLocation){
+
+        return latestLocation;
+
+    }
+
+
     try{
 
         return await requestLocation();
 
     }
+
     catch(error){
 
         console.error(
@@ -606,6 +849,7 @@ export async function saveMyLocation(
             user_id:userId,
 
             latitude,
+
             longitude
 
         })

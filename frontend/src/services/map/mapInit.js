@@ -1,33 +1,42 @@
 import L from 'leaflet';
 
 import 'leaflet/dist/leaflet.css';
+
 import 'leaflet-rotate';
 
+
 import {
-    setMap
+    setMap,
+    getMap
 } from './mapService';
+
 
 import {
     loadLiveMarkers,
     clearLiveMarkers
 } from './liveMarkerService';
 
+
 import {
     initLocationRealtime
 } from '../supabase/locationRealtimeService';
 
+
 import {
     watchLocation
 } from '../location/locationService';
+
 
 import {
     initMyMarker,
     updateMyMarker
 } from './myMarkerService';
 
+
 import {
     initLocationEvents
 } from './locationEvents';
+
 
 import {
     getTileUrl,
@@ -41,6 +50,8 @@ let tileLayer = null;
 
 let locationStarted = false;
 
+let locationSubscription = null;
+
 
 /* =========================================================
    INIT MAP
@@ -53,22 +64,29 @@ export function initMap(){
 
 
     const mapElement =
-        document.querySelector('#map');
+        document.querySelector(
+            '#map'
+        );
 
 
     if(!mapElement){
 
-        console.error('MAP ELEMENT NOT FOUND');
+        console.error(
+            'MAP ELEMENT NOT FOUND'
+        );
 
         return;
 
     }
 
 
-    initialized = true;
+    initialized =
+        true;
 
 
-    console.log('MAP INIT');
+    console.log(
+        'MAP INIT'
+    );
 
 
     /* =====================================================
@@ -103,8 +121,17 @@ export function initMap(){
                 zoomDelta:1,
 
                 maxBounds:[
-                    [-85.05112878, -180],
-                    [ 85.05112878,  180]
+
+                    [
+                        -85.05112878,
+                        -180
+                    ],
+
+                    [
+                        85.05112878,
+                        180
+                    ]
+
                 ],
 
                 maxBoundsViscosity:1.0
@@ -126,7 +153,9 @@ export function initMap(){
     );
 
 
-    setMap(map);
+    setMap(
+        map
+    );
 
 
     /* =====================================================
@@ -166,10 +195,14 @@ export function initMap(){
         );
 
 
-    tileLayer.addTo(map);
+    tileLayer.addTo(
+        map
+    );
 
 
-    setCurrentTileLayer(tileLayer);
+    setCurrentTileLayer(
+        tileLayer
+    );
 
 
     /* =====================================================
@@ -183,11 +216,20 @@ export function initMap(){
         ()=>{
 
             window.dispatchEvent(
-                new Event('ui:close-all')
+
+                new Event(
+                    'ui:close-all'
+                )
+
             );
 
+
             window.dispatchEvent(
-                new Event('route:collapse')
+
+                new Event(
+                    'route:collapse'
+                )
+
             );
 
         }
@@ -211,6 +253,7 @@ export function initMap(){
 
     /* =====================================================
        GEOLOCATION
+       ОДИН ОБЩИЙ WATCHER
     ===================================================== */
 
     startLocation();
@@ -227,7 +270,11 @@ export function initMap(){
         ()=>{
 
             window.dispatchEvent(
-                new Event('route:collapse')
+
+                new Event(
+                    'route:collapse'
+                )
+
             );
 
         }
@@ -292,18 +339,29 @@ export function initMap(){
     ===================================================== */
 
     setTimeout(
+
         ()=>map.invalidateSize(true),
+
         100
+
     );
 
+
     setTimeout(
+
         ()=>map.invalidateSize(true),
+
         500
+
     );
 
+
     setTimeout(
+
         ()=>map.invalidateSize(true),
+
         1000
+
     );
 
 }
@@ -319,91 +377,75 @@ function startLocation(){
         return;
 
 
-    locationStarted = true;
+    locationStarted =
+        true;
 
 
     console.log(
-        'STARTING GEOLOCATION'
+        'STARTING GLOBAL GEOLOCATION'
     );
-
-
-    if(!navigator.geolocation){
-
-        console.error(
-            'GEOLOCATION NOT SUPPORTED'
-        );
-
-        return;
-
-    }
 
 
     /*
-     * watchPosition вызывает системный
-     * запрос разрешения на геолокацию.
+     * ВАЖНО:
+     *
+     * Здесь запускается единственный watcher
+     * всего приложения.
+     *
+     * Он будет:
+     *
+     * - один раз запросить разрешение;
+     * - получать новые координаты;
+     * - обновлять marker;
+     * - отправлять location:updated.
      */
 
-    watchLocation(
+    locationSubscription =
+        watchLocation(
 
-        position=>{
+            position=>{
 
-            if(!position)
-                return;
-
-
-            console.log(
-                'LOCATION UPDATED:',
-                position
-            );
+                if(!position)
+                    return;
 
 
-            window.myLocation = {
+                console.log(
+                    'LOCATION UPDATED:',
+                    position
+                );
 
-                lat:
+
+                window.myLocation = {
+
+                    lat:
+                        position.latitude,
+
+                    lng:
+                        position.longitude
+
+                };
+
+
+                updateMyMarker(
+
                     position.latitude,
 
-                lng:
                     position.longitude
 
-            };
+                );
 
 
-            updateMyMarker(
+                /*
+                 * locationService уже отправляет
+                 * location:updated.
+                 *
+                 * Поэтому здесь второй раз
+                 * отправлять событие НЕ нужно.
+                 */
 
-                position.latitude,
+            }
 
-                position.longitude
-
-            );
-
-
-            window.dispatchEvent(
-
-                new CustomEvent(
-
-                    'location:updated',
-
-                    {
-
-                        detail:{
-
-                            lat:
-                                position.latitude,
-
-                            lng:
-                                position.longitude
-
-                        }
-
-                    }
-
-                )
-
-            );
-
-        }
-
-    );
+        );
 
 }
 
@@ -415,7 +457,7 @@ function startLocation(){
 export function setupWorldLimits(){
 
     const map =
-        getMapSafe();
+        getMap();
 
 
     if(!map)
@@ -424,22 +466,28 @@ export function setupWorldLimits(){
 
     const southWest =
         L.latLng(
+
             -85.05112878,
             -180
+
         );
 
 
     const northEast =
         L.latLng(
+
             85.05112878,
             180
+
         );
 
 
     const worldBounds =
         L.latLngBounds(
+
             southWest,
             northEast
+
         );
 
 
@@ -448,10 +496,12 @@ export function setupWorldLimits(){
     );
 
 
-    map.options.maxBoundsViscosity = 1.0;
+    map.options.maxBoundsViscosity =
+        1.0;
 
 
-    map.options.worldCopyJump = false;
+    map.options.worldCopyJump =
+        false;
 
 
     map.eachLayer(
@@ -459,10 +509,12 @@ export function setupWorldLimits(){
         layer=>{
 
             if(
-                layer instanceof L.TileLayer
+                layer instanceof
+                L.TileLayer
             ){
 
-                layer.options.noWrap = true;
+                layer.options.noWrap =
+                    true;
 
             }
 
@@ -514,42 +566,12 @@ export function setupWorldLimits(){
 
 
     setTimeout(
+
         ()=>map.invalidateSize(true),
+
         100
+
     );
-
-}
-
-
-/* =========================================================
-   SAFE MAP
-========================================================= */
-
-function getMapSafe(){
-
-    try{
-
-        const mapService =
-            window.__compankoMapService;
-
-        if(mapService)
-            return mapService;
-
-    }
-    catch(error){
-
-        console.error(error);
-
-    }
-
-
-    const element =
-        document.querySelector('#map');
-
-
-    return element
-        ? null
-        : null;
 
 }
 
@@ -568,12 +590,21 @@ window.addEventListener(
 
             ()=>{
 
-                initialized = false;
+                /*
+                 * Не сбрасываем геолокацию.
+                 *
+                 * При пересоздании карты
+                 * разрешение повторно не нужно.
+                 */
 
-                locationStarted = false;
+                initialized =
+                    false;
+
 
                 const mapElement =
-                    document.querySelector('#map');
+                    document.querySelector(
+                        '#map'
+                    );
 
 
                 if(mapElement){
