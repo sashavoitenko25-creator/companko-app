@@ -1,42 +1,34 @@
 import L from 'leaflet';
 
 import 'leaflet/dist/leaflet.css';
-
 import 'leaflet-rotate';
-
 
 import {
     setMap,
     getMap
 } from './mapService';
 
-
 import {
     loadLiveMarkers,
     clearLiveMarkers
 } from './liveMarkerService';
 
-
 import {
     initLocationRealtime
 } from '../supabase/locationRealtimeService';
 
-
 import {
     watchLocation
 } from '../location/locationService';
-
 
 import {
     initMyMarker,
     updateMyMarker
 } from './myMarkerService';
 
-
 import {
     initLocationEvents
 } from './locationEvents';
-
 
 import {
     getTileUrl,
@@ -50,8 +42,6 @@ let tileLayer = null;
 
 let locationStarted = false;
 
-let locationSubscription = null;
-
 
 /* =========================================================
    INIT MAP
@@ -64,9 +54,7 @@ export function initMap(){
 
 
     const mapElement =
-        document.querySelector(
-            '#map'
-        );
+        document.querySelector('#map');
 
 
     if(!mapElement){
@@ -80,8 +68,7 @@ export function initMap(){
     }
 
 
-    initialized =
-        true;
+    initialized = true;
 
 
     console.log(
@@ -104,6 +91,11 @@ export function initMap(){
 
                 attributionControl:false,
 
+
+                /*
+                 * ROTATION
+                 */
+
                 rotate:true,
 
                 touchRotate:true,
@@ -111,6 +103,22 @@ export function initMap(){
                 bearing:0,
 
                 rotateControl:false,
+
+
+                /*
+                 * ВАЖНО:
+                 * отключаем лишнее вмешательство
+                 * в границы карты.
+                 */
+
+                worldCopyJump:false,
+
+                inertia:false,
+
+
+                /*
+                 * ZOOM
+                 */
 
                 minZoom:2,
 
@@ -120,26 +128,25 @@ export function initMap(){
 
                 zoomDelta:1,
 
-                maxBounds:[
 
-                    [
-                        -85.05112878,
-                        -180
-                    ],
+                /*
+                 * Не ставим maxBounds здесь.
+                 *
+                 * При rotate это может вызывать
+                 * скачки карты.
+                 */
 
-                    [
-                        85.05112878,
-                        180
-                    ]
+                maxBoundsViscosity:0
 
-                ],
-
-                maxBoundsViscosity:1.0
 
             }
 
         );
 
+
+    /*
+     * Начальная позиция
+     */
 
     map.setView(
 
@@ -148,14 +155,16 @@ export function initMap(){
             30.5234
         ],
 
-        14
+        14,
+
+        {
+            animate:false
+        }
 
     );
 
 
-    setMap(
-        map
-    );
+    setMap(map);
 
 
     /* =====================================================
@@ -175,17 +184,32 @@ export function initMap(){
 
                 maxNativeZoom:19,
 
+
                 tileSize:256,
 
-                updateWhenIdle:false,
 
-                updateWhenZooming:true,
+                /*
+                 * Более стабильная загрузка
+                 * при zoom / rotate.
+                 */
 
-                keepBuffer:3,
+                updateWhenIdle:true,
+
+                updateWhenZooming:false,
+
+                keepBuffer:5,
 
                 detectRetina:false,
 
+
+                /*
+                 * Оставляем noWrap,
+                 * но больше НЕ ограничиваем
+                 * карту через maxBounds.
+                 */
+
                 noWrap:true,
+
 
                 attribution:
                     '&copy; OpenStreetMap contributors'
@@ -195,9 +219,7 @@ export function initMap(){
         );
 
 
-    tileLayer.addTo(
-        map
-    );
+    tileLayer.addTo(map);
 
 
     setCurrentTileLayer(
@@ -216,20 +238,16 @@ export function initMap(){
         ()=>{
 
             window.dispatchEvent(
-
                 new Event(
                     'ui:close-all'
                 )
-
             );
 
 
             window.dispatchEvent(
-
                 new Event(
                     'route:collapse'
                 )
-
             );
 
         }
@@ -253,7 +271,6 @@ export function initMap(){
 
     /* =====================================================
        GEOLOCATION
-       ОДИН ОБЩИЙ WATCHER
     ===================================================== */
 
     startLocation();
@@ -270,11 +287,9 @@ export function initMap(){
         ()=>{
 
             window.dispatchEvent(
-
                 new Event(
                     'route:collapse'
                 )
-
             );
 
         }
@@ -340,7 +355,16 @@ export function initMap(){
 
     setTimeout(
 
-        ()=>map.invalidateSize(true),
+        ()=>{
+
+            if(!map)
+                return;
+
+            map.invalidateSize({
+                pan:false
+            });
+
+        },
 
         100
 
@@ -349,7 +373,16 @@ export function initMap(){
 
     setTimeout(
 
-        ()=>map.invalidateSize(true),
+        ()=>{
+
+            if(!map)
+                return;
+
+            map.invalidateSize({
+                pan:false
+            });
+
+        },
 
         500
 
@@ -358,10 +391,28 @@ export function initMap(){
 
     setTimeout(
 
-        ()=>map.invalidateSize(true),
+        ()=>{
+
+            if(!map)
+                return;
+
+            map.invalidateSize({
+                pan:false
+            });
+
+        },
 
         1000
 
+    );
+
+
+    /* =====================================================
+       ROTATION SAFETY
+    ===================================================== */
+
+    setupRotationSafety(
+        map
     );
 
 }
@@ -377,75 +428,261 @@ function startLocation(){
         return;
 
 
-    locationStarted =
-        true;
+    locationStarted = true;
 
 
     console.log(
-        'STARTING GLOBAL GEOLOCATION'
+        'STARTING GEOLOCATION'
+    );
+
+
+    if(!navigator.geolocation){
+
+        console.error(
+            'GEOLOCATION NOT SUPPORTED'
+        );
+
+        return;
+
+    }
+
+
+    watchLocation(
+
+        position=>{
+
+            if(!position)
+                return;
+
+
+            console.log(
+                'LOCATION UPDATED:',
+                position
+            );
+
+
+            window.myLocation = {
+
+                lat:
+                    position.latitude,
+
+                lng:
+                    position.longitude
+
+            };
+
+
+            updateMyMarker(
+
+                position.latitude,
+
+                position.longitude
+
+            );
+
+
+            window.dispatchEvent(
+
+                new CustomEvent(
+
+                    'location:updated',
+
+                    {
+
+                        detail:{
+
+                            lat:
+                                position.latitude,
+
+                            lng:
+                                position.longitude
+
+                        }
+
+                    }
+
+                )
+
+            );
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   ROTATION SAFETY
+========================================================= */
+
+function setupRotationSafety(map){
+
+    if(!map)
+        return;
+
+
+    /*
+     * После вращения Leaflet иногда
+     * может оставить неправильный
+     * viewport / tile transform.
+     *
+     * invalidateSize заставляет Leaflet
+     * пересчитать карту без перемещения
+     * центра.
+     */
+
+    let resizeTimer = null;
+
+
+    const refreshMap = ()=>{
+
+        clearTimeout(
+            resizeTimer
+        );
+
+
+        resizeTimer =
+            setTimeout(
+
+                ()=>{
+
+                    if(!map)
+                        return;
+
+
+                    const center =
+                        map.getCenter();
+
+
+                    const zoom =
+                        map.getZoom();
+
+
+                    map.invalidateSize({
+                        pan:false
+                    });
+
+
+                    /*
+                     * Если центр внезапно стал
+                     * невалидным — возвращаем
+                     * последнюю нормальную позицию.
+                     */
+
+                    const lat =
+                        Number(
+                            center?.lat
+                        );
+
+
+                    const lng =
+                        Number(
+                            center?.lng
+                        );
+
+
+                    if(
+
+                        !Number.isFinite(lat) ||
+
+                        !Number.isFinite(lng) ||
+
+                        Math.abs(lat) > 90 ||
+
+                        Math.abs(lng) > 180
+
+                    ){
+
+                        console.warn(
+                            'INVALID MAP CENTER - RECOVERING'
+                        );
+
+
+                        map.setView(
+
+                            [
+                                50.4501,
+                                30.5234
+                            ],
+
+                            zoom || 14,
+
+                            {
+                                animate:false
+                            }
+
+                        );
+
+                    }
+
+                },
+
+                80
+
+            );
+
+    };
+
+
+    /*
+     * После zoom
+     */
+
+    map.on(
+        'zoomend',
+        refreshMap
     );
 
 
     /*
-     * ВАЖНО:
-     *
-     * Здесь запускается единственный watcher
-     * всего приложения.
-     *
-     * Он будет:
-     *
-     * - один раз запросить разрешение;
-     * - получать новые координаты;
-     * - обновлять marker;
-     * - отправлять location:updated.
+     * После rotation
      */
 
-    locationSubscription =
-        watchLocation(
-
-            position=>{
-
-                if(!position)
-                    return;
+    map.on(
+        'rotateend',
+        refreshMap
+    );
 
 
-                console.log(
-                    'LOCATION UPDATED:',
-                    position
-                );
+    /*
+     * После движения
+     */
+
+    map.on(
+        'moveend',
+        refreshMap
+    );
 
 
-                window.myLocation = {
+    /*
+     * При изменении размеров окна
+     */
 
-                    lat:
-                        position.latitude,
-
-                    lng:
-                        position.longitude
-
-                };
-
-
-                updateMyMarker(
-
-                    position.latitude,
-
-                    position.longitude
-
-                );
+    window.addEventListener(
+        'resize',
+        refreshMap
+    );
 
 
-                /*
-                 * locationService уже отправляет
-                 * location:updated.
-                 *
-                 * Поэтому здесь второй раз
-                 * отправлять событие НЕ нужно.
-                 */
+    /*
+     * При смене ориентации телефона
+     */
 
-            }
+    window.addEventListener(
 
-        );
+        'orientationchange',
+
+        ()=>{
+
+            setTimeout(
+                refreshMap,
+                300
+            );
+
+        }
+
+    );
 
 }
 
@@ -464,53 +701,33 @@ export function setupWorldLimits(){
         return;
 
 
-    const southWest =
-        L.latLng(
-
-            -85.05112878,
-            -180
-
-        );
-
-
-    const northEast =
-        L.latLng(
-
-            85.05112878,
-            180
-
-        );
-
-
-    const worldBounds =
-        L.latLngBounds(
-
-            southWest,
-            northEast
-
-        );
-
-
-    map.setMaxBounds(
-        worldBounds
-    );
-
-
-    map.options.maxBoundsViscosity =
-        1.0;
-
+    /*
+     * ВАЖНО:
+     *
+     * Раньше здесь был panInsideBounds()
+     * на каждом drag / resize.
+     *
+     * При rotate это могло насильно
+     * перемещать карту в другую точку.
+     *
+     * Поэтому больше ничего не двигаем.
+     */
 
     map.options.worldCopyJump =
         false;
 
+
+    /*
+     * Только запрещаем повторение
+     * мировых тайлов.
+     */
 
     map.eachLayer(
 
         layer=>{
 
             if(
-                layer instanceof
-                L.TileLayer
+                layer instanceof L.TileLayer
             ){
 
                 layer.options.noWrap =
@@ -523,55 +740,36 @@ export function setupWorldLimits(){
     );
 
 
-    map.on(
-
-        'drag',
-
-        ()=>{
-
-            map.panInsideBounds(
-
-                worldBounds,
-
-                {
-                    animate:false
-                }
-
-            );
-
-        }
-
-    );
-
-
-    map.on(
-
-        'resize',
-
-        ()=>{
-
-            map.panInsideBounds(
-
-                worldBounds,
-
-                {
-                    animate:false
-                }
-
-            );
-
-        }
-
-    );
-
+    /*
+     * Просто обновляем размер.
+     *
+     * Никакого panInsideBounds().
+     */
 
     setTimeout(
 
-        ()=>map.invalidateSize(true),
+        ()=>{
+
+            map.invalidateSize({
+                pan:false
+            });
+
+        },
 
         100
 
     );
+
+}
+
+
+/* =========================================================
+   SAFE MAP
+========================================================= */
+
+function getMapSafe(){
+
+    return getMap();
 
 }
 
@@ -591,25 +789,20 @@ window.addEventListener(
             ()=>{
 
                 /*
-                 * Не сбрасываем геолокацию.
+                 * Не уничтожаем карту.
                  *
-                 * При пересоздании карты
-                 * разрешение повторно не нужно.
+                 * Просто проверяем её состояние.
                  */
 
-                initialized =
-                    false;
+                const map =
+                    getMap();
 
 
-                const mapElement =
-                    document.querySelector(
-                        '#map'
-                    );
+                if(map){
 
-
-                if(mapElement){
-
-                    initMap();
+                    map.invalidateSize({
+                        pan:false
+                    });
 
                 }
 

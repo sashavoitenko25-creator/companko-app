@@ -50,6 +50,29 @@ let lastToLng = null;
 let latestOwnPosition = null;
 
 
+/*
+ * =========================================================
+ * ROUTE SESSION
+ * =========================================================
+ *
+ * Каждый новый маршрут получает новый ID.
+ *
+ * Если старый async-запрос закончится после stopRoute(),
+ * он больше не имеет права создавать линию.
+ */
+
+let routeSessionId = 0;
+
+
+/*
+ * Текущий async-build.
+ *
+ * Нужен для дополнительной защиты от старых запросов.
+ */
+
+let activeBuildSessionId = 0;
+
+
 const ROUTE_UPDATE_INTERVAL = 4000;
 
 const TARGET_REFRESH_INTERVAL = 3000;
@@ -71,7 +94,19 @@ export async function startRoute(
 
 ){
 
+    /*
+     * Полностью завершаем предыдущий маршрут.
+     */
+
     stopRoute();
+
+
+    /*
+     * Создаём новую сессию маршрута.
+     */
+
+    const sessionId =
+        routeSessionId;
 
 
     activeUser = {
@@ -101,6 +136,21 @@ export async function startRoute(
         await getCurrentPosition();
 
 
+    /*
+     * За время получения GPS маршрут
+     * мог быть уже закрыт.
+     */
+
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
+
+        return null;
+
+    }
+
+
     if(!position){
 
         return null;
@@ -119,9 +169,25 @@ export async function startRoute(
             position.longitude,
 
             activeUser.lat,
-            activeUser.lng
+            activeUser.lng,
+
+            sessionId
 
         );
+
+
+    /*
+     * buildRoute мог закончиться после stopRoute().
+     */
+
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
+
+        return null;
+
+    }
 
 
     if(!result){
@@ -131,7 +197,9 @@ export async function startRoute(
     }
 
 
-    startDynamicRoute();
+    startDynamicRoute(
+        sessionId
+    );
 
 
     return result;
@@ -145,12 +213,28 @@ export async function startRoute(
 
 export function stopRoute(){
 
+    /*
+     * Самое важное:
+     *
+     * инвалидируем все старые async-запросы.
+     */
+
+    routeSessionId++;
+
+    activeBuildSessionId =
+        routeSessionId;
+
+
+    /*
+     * Останавливаем динамическое обновление.
+     */
+
     stopDynamicRoute();
 
 
-    const map =
-        getMap();
-
+    /*
+     * Останавливаем animation frame.
+     */
 
     if(animationFrame){
 
@@ -163,20 +247,62 @@ export function stopRoute(){
     }
 
 
-    if(
-        routeLine &&
-        map
-    ){
+    /*
+     * Получаем карту.
+     */
 
-        map.removeLayer(
-            routeLine
-        );
+    const map =
+        getMap();
+
+
+    /*
+     * Удаляем маршрут с карты.
+     */
+
+    if(routeLine){
+
+        try{
+
+            /*
+             * Если линия всё ещё принадлежит карте,
+             * удаляем её через removeLayer.
+             */
+
+            if(
+                map &&
+                map.hasLayer &&
+                map.hasLayer(routeLine)
+            ){
+
+                map.removeLayer(
+                    routeLine
+                );
+
+            }
+
+        }
+        catch(error){
+
+            console.warn(
+                'Route layer remove error:',
+                error
+            );
+
+        }
 
     }
 
 
+    /*
+     * В любом случае полностью забываем линию.
+     */
+
     routeLine = null;
 
+
+    /*
+     * Удаляем слушатели карты.
+     */
 
     if(map){
 
@@ -186,6 +312,10 @@ export function stopRoute(){
 
     }
 
+
+    /*
+     * Полностью очищаем состояние.
+     */
 
     activeUser = null;
 
@@ -200,6 +330,8 @@ export function stopRoute(){
 
     lastRouteBuildTime = 0;
 
+    routeBuilding = false;
+
 }
 
 
@@ -213,7 +345,9 @@ async function buildRoute(
     fromLng,
 
     toLat,
-    toLng
+    toLng,
+
+    sessionId = routeSessionId
 
 ){
 
@@ -222,6 +356,21 @@ async function buildRoute(
 
 
     if(!map){
+
+        return null;
+
+    }
+
+
+    /*
+     * Если маршрут уже был закрыт —
+     * старый build запрещён.
+     */
+
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
 
         return null;
 
@@ -237,6 +386,9 @@ async function buildRoute(
 
     routeBuilding = true;
 
+    activeBuildSessionId =
+        sessionId;
+
 
     try{
 
@@ -251,7 +403,9 @@ async function buildRoute(
                 toLng,
 
                 mode:
-                    activeMode
+                    activeMode,
+
+                sessionId
 
             }
         );
@@ -285,6 +439,29 @@ async function buildRoute(
             );
 
 
+        /*
+         * ==========================================
+         * ПРОВЕРКА ПОСЛЕ ASYNC ЗАПРОСА
+         * ==========================================
+         *
+         * Это ключевой момент.
+         */
+
+        if(
+            sessionId !== routeSessionId ||
+            activeBuildSessionId !== sessionId ||
+            !activeUser
+        ){
+
+            console.log(
+                'Ignoring outdated route build'
+            );
+
+            return null;
+
+        }
+
+
         if(error){
 
             console.error(
@@ -312,7 +489,7 @@ async function buildRoute(
         const fullPath =
             data.geometry.coordinates.map(
 
-                ([lng,lat])=>[
+                ([lng, lat]) => [
 
                     lat,
                     lng
@@ -322,8 +499,35 @@ async function buildRoute(
             );
 
 
+        if(
+            !fullPath.length
+        ){
+
+            return null;
+
+        }
+
+
         /*
-         * Создаём линию один раз.
+         * ==========================================
+         * ЕЩЁ ОДНА ПРОВЕРКА
+         * ==========================================
+         */
+
+        if(
+            sessionId !== routeSessionId ||
+            !activeUser
+        ){
+
+            return null;
+
+        }
+
+
+        /*
+         * ==========================================
+         * СОЗДАНИЕ ЛИНИИ
+         * ==========================================
          */
 
         if(!routeLine){
@@ -361,7 +565,54 @@ async function buildRoute(
 
 
         /*
-         * Перерисовываем текущий маршрут.
+         * ==========================================
+         * ПРОВЕРКА ПЕРЕД РИСОВАНИЕМ
+         * ==========================================
+         */
+
+        if(
+            sessionId !== routeSessionId ||
+            !activeUser
+        ){
+
+            if(routeLine){
+
+                try{
+
+                    if(
+                        map.hasLayer &&
+                        map.hasLayer(routeLine)
+                    ){
+
+                        map.removeLayer(
+                            routeLine
+                        );
+
+                    }
+
+                }
+                catch(error){
+
+                    console.warn(
+                        'Old route cleanup error:',
+                        error
+                    );
+
+                }
+
+                routeLine = null;
+
+            }
+
+            return null;
+
+        }
+
+
+        /*
+         * ==========================================
+         * ОСТАНАВЛИВАЕМ СТАРУЮ АНИМАЦИЮ
+         * ==========================================
          */
 
         if(animationFrame){
@@ -376,8 +627,9 @@ async function buildRoute(
 
 
         /*
-         * При обновлении маршрута
-         * сразу показываем новую линию.
+         * ==========================================
+         * ОБНОВЛЯЕМ ЛИНИЮ
+         * ==========================================
          */
 
         routeLine.setLatLngs(
@@ -389,40 +641,65 @@ async function buildRoute(
 
 
         /*
-         * Только первое построение
-         * меняет масштаб карты.
+         * ==========================================
+         * FIT BOUNDS ТОЛЬКО ПРИ ПЕРВОМ ПОСТРОЕНИИ
+         * ==========================================
          */
 
         if(
-            lastFromLat === null
+            lastFromLat === null &&
+            sessionId === routeSessionId
         ){
 
-            map.fitBounds(
+            /*
+             * Проверяем ещё раз перед изменением карты.
+             */
 
-                fullPath,
+            if(
+                activeUser &&
+                sessionId === routeSessionId
+            ){
 
-                {
+                map.fitBounds(
 
-                    padding:[
-                        80,
-                        80
-                    ],
+                    fullPath,
 
-                    animate:true,
+                    {
 
-                    duration:1
+                        padding:[
+                            80,
+                            80
+                        ],
 
-                }
+                        animate:true,
 
-            );
+                        duration:1
+
+                    }
+
+                );
+
+            }
 
         }
 
+
+        /*
+         * ==========================================
+         * LISTENERS
+         * ==========================================
+         */
 
         attachMapListeners(
             map
         );
 
+
+        /*
+         * ==========================================
+         * СОХРАНЯЕМ КООРДИНАТЫ
+         * ==========================================
+         */
 
         lastFromLat =
             fromLat;
@@ -439,6 +716,12 @@ async function buildRoute(
         lastToLng =
             toLng;
 
+
+        /*
+         * ==========================================
+         * РЕЗУЛЬТАТ
+         * ==========================================
+         */
 
         const distance =
             Number(
@@ -470,22 +753,34 @@ async function buildRoute(
         };
 
 
-        window.dispatchEvent(
+        /*
+         * Отправляем событие только если
+         * маршрут всё ещё активен.
+         */
 
-            new CustomEvent(
+        if(
+            sessionId === routeSessionId &&
+            activeUser
+        ){
 
-                'route:updated',
+            window.dispatchEvent(
 
-                {
+                new CustomEvent(
 
-                    detail:
-                        result
+                    'route:updated',
 
-                }
+                    {
 
-            )
+                        detail:
+                            result
 
-        );
+                    }
+
+                )
+
+            );
+
+        }
 
 
         return result;
@@ -493,6 +788,21 @@ async function buildRoute(
     }
 
     catch(error){
+
+        /*
+         * Если маршрут уже закрыт,
+         * не показываем ошибку как активную.
+
+         */
+
+        if(
+            sessionId !== routeSessionId
+        ){
+
+            return null;
+
+        }
+
 
         console.error(
             'Route error:',
@@ -505,8 +815,19 @@ async function buildRoute(
 
     finally{
 
-        routeBuilding =
-            false;
+        /*
+         * Важно:
+         * только текущий build может менять routeBuilding.
+         */
+
+        if(
+            activeBuildSessionId === sessionId
+        ){
+
+            routeBuilding =
+                false;
+
+        }
 
     }
 
@@ -517,7 +838,24 @@ async function buildRoute(
    DYNAMIC ROUTE
 ========================================================= */
 
-function startDynamicRoute(){
+function startDynamicRoute(
+    sessionId
+){
+
+    /*
+     * Если маршрут уже закрыт —
+     * ничего не запускаем.
+     */
+
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
+
+        return;
+
+    }
+
 
     stopDynamicRoute();
 
@@ -526,17 +864,27 @@ function startDynamicRoute(){
      * ==========================================
      * ОБЩАЯ ГЕОЛОКАЦИЯ
      * ==========================================
-     *
-     * Здесь больше НЕТ navigator.geolocation.watchPosition.
-     *
-     * Используем уже запущенный watcher
-     * из locationService.
      */
 
     locationWatch =
         watchLocation(
 
-            position=>{
+            position => {
+
+                /*
+                 * Старый watcher больше не должен
+                 * менять закрытый маршрут.
+                 */
+
+                if(
+                    sessionId !== routeSessionId ||
+                    !activeUser
+                ){
+
+                    return;
+
+                }
+
 
                 if(!position)
                     return;
@@ -559,7 +907,9 @@ function startDynamicRoute(){
                 };
 
 
-                checkRouteUpdate();
+                checkRouteUpdate(
+                    sessionId
+                );
 
             }
 
@@ -575,7 +925,22 @@ function startDynamicRoute(){
     targetRefreshTimer =
         setInterval(
 
-            refreshTargetPosition,
+            () => {
+
+                if(
+                    sessionId !== routeSessionId
+                ){
+
+                    return;
+
+                }
+
+
+                refreshTargetPosition(
+                    sessionId
+                );
+
+            },
 
             TARGET_REFRESH_INTERVAL
 
@@ -591,14 +956,31 @@ function startDynamicRoute(){
     routeUpdateTimer =
         setInterval(
 
-            checkRouteUpdate,
+            () => {
+
+                if(
+                    sessionId !== routeSessionId
+                ){
+
+                    return;
+
+                }
+
+
+                checkRouteUpdate(
+                    sessionId
+                );
+
+            },
 
             ROUTE_UPDATE_INTERVAL
 
         );
 
 
-    refreshTargetPosition();
+    refreshTargetPosition(
+        sessionId
+    );
 
 }
 
@@ -610,7 +992,7 @@ function startDynamicRoute(){
 function stopDynamicRoute(){
 
     /*
-     * Не останавливаем общий watcher!
+     * Не останавливаем общий watcher.
      *
      * Только отписываемся от него.
      */
@@ -620,7 +1002,19 @@ function stopDynamicRoute(){
         typeof locationWatch.stop === 'function'
     ){
 
-        locationWatch.stop();
+        try{
+
+            locationWatch.stop();
+
+        }
+        catch(error){
+
+            console.warn(
+                'Location watcher stop error:',
+                error
+            );
+
+        }
 
     }
 
@@ -659,9 +1053,14 @@ function stopDynamicRoute(){
    REFRESH TARGET POSITION
 ========================================================= */
 
-async function refreshTargetPosition(){
+async function refreshTargetPosition(
+    sessionId = routeSessionId
+){
 
-    if(!activeUser){
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
 
         return;
 
@@ -714,6 +1113,20 @@ async function refreshTargetPosition(){
                 .maybeSingle();
 
 
+        /*
+         * За время запроса маршрут мог быть закрыт.
+         */
+
+        if(
+            sessionId !== routeSessionId ||
+            !activeUser
+        ){
+
+            return;
+
+        }
+
+
         if(error){
 
             console.warn(
@@ -727,7 +1140,9 @@ async function refreshTargetPosition(){
 
 
         /*
-         * Live закончился.
+         * ==========================================
+         * LIVE ЗАКОНЧИЛСЯ
+         * ==========================================
          */
 
         if(!data){
@@ -798,11 +1213,22 @@ async function refreshTargetPosition(){
         };
 
 
-        checkRouteUpdate();
+        checkRouteUpdate(
+            sessionId
+        );
 
     }
 
     catch(error){
+
+        if(
+            sessionId !== routeSessionId
+        ){
+
+            return;
+
+        }
+
 
         console.warn(
             'Target position refresh error:',
@@ -818,7 +1244,18 @@ async function refreshTargetPosition(){
    CHECK ROUTE UPDATE
 ========================================================= */
 
-async function checkRouteUpdate(){
+async function checkRouteUpdate(
+    sessionId = routeSessionId
+){
+
+    if(
+        sessionId !== routeSessionId
+    ){
+
+        return;
+
+    }
+
 
     if(!activeUser)
         return;
@@ -866,7 +1303,9 @@ async function checkRouteUpdate(){
 
 
     /*
-     * Первое обновление.
+     * ==========================================
+     * ПЕРВОЕ ОБНОВЛЕНИЕ
+     * ==========================================
      */
 
     if(
@@ -880,7 +1319,9 @@ async function checkRouteUpdate(){
             fromLng,
 
             toLat,
-            toLng
+            toLng,
+
+            sessionId
 
         );
 
@@ -948,7 +1389,9 @@ async function checkRouteUpdate(){
         fromLng,
 
         toLat,
-        toLng
+        toLng,
+
+        sessionId
 
     );
 
@@ -965,9 +1408,21 @@ async function rebuildDynamicRoute(
     fromLng,
 
     toLat,
-    toLng
+    toLng,
+
+    sessionId = routeSessionId
 
 ){
+
+    if(
+        sessionId !== routeSessionId ||
+        !activeUser
+    ){
+
+        return;
+
+    }
+
 
     if(routeBuilding)
         return;
@@ -984,9 +1439,20 @@ async function rebuildDynamicRoute(
             fromLng,
 
             toLat,
-            toLng
+            toLng,
+
+            sessionId
 
         );
+
+
+    if(
+        sessionId !== routeSessionId
+    ){
+
+        return;
+
+    }
 
 
     if(result){
@@ -1199,13 +1665,24 @@ function removeMapListeners(map){
 
 
 /* =========================================================
-   REFRESH RENDERER
+   REFRESH ROUTE RENDERER
 ========================================================= */
 
 function refreshRouteRenderer(){
 
-    if(!routeLine)
+    /*
+     * Если маршрут уже закрыт,
+     * ничего не перерисовываем.
+     */
+
+    if(
+        !routeLine ||
+        !activeUser
+    ){
+
         return;
+
+    }
 
 
     const renderer =
@@ -1217,7 +1694,19 @@ function refreshRouteRenderer(){
         typeof renderer._update === 'function'
     ){
 
-        renderer._update();
+        try{
+
+            renderer._update();
+
+        }
+        catch(error){
+
+            console.warn(
+                'Route renderer update error:',
+                error
+            );
+
+        }
 
     }
 
@@ -1226,7 +1715,19 @@ function refreshRouteRenderer(){
         typeof routeLine.redraw === 'function'
     ){
 
-        routeLine.redraw();
+        try{
+
+            routeLine.redraw();
+
+        }
+        catch(error){
+
+            console.warn(
+                'Route redraw error:',
+                error
+            );
+
+        }
 
     }
 
