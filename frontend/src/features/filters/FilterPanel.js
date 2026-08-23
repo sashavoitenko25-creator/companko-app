@@ -240,9 +240,7 @@ export function FilterPanel(){
         <span id="filters-open-label">
             Фильтры
         </span>
-        <span
-            class="filters-trigger__arrow"
-        >
+        <span class="filters-trigger__arrow">
             ▾
         </span>
     </button>
@@ -250,6 +248,49 @@ export function FilterPanel(){
 </div>
 
 `;
+
+}
+
+
+/* ========================================
+   BOTTOM BAR HIDE / SHOW
+======================================== */
+
+function hideBottomBar(){
+
+    const bar =
+        document.querySelector(
+            '.bottom-bar'
+        );
+
+
+    if(!bar)
+        return;
+
+
+    bar.style.opacity = '0';
+    bar.style.pointerEvents = 'none';
+    bar.style.transform = 'translateY(20px)';
+    bar.style.transition = 'opacity .2s ease, transform .2s ease';
+
+}
+
+
+function showBottomBar(){
+
+    const bar =
+        document.querySelector(
+            '.bottom-bar'
+        );
+
+
+    if(!bar)
+        return;
+
+
+    bar.style.opacity = '';
+    bar.style.pointerEvents = '';
+    bar.style.transform = '';
 
 }
 
@@ -274,6 +315,8 @@ export function openFilterPanel(){
 
     syncDraftToUI();
 
+    hideBottomBar();
+
     panel.classList.add(
         'open'
     );
@@ -290,6 +333,9 @@ export function closeFilterPanel(){
         ?.classList.remove(
             'open'
         );
+
+
+    showBottomBar();
 
 }
 
@@ -396,9 +442,6 @@ function initFilterPanel(){
     );
 
 
-    /*
-     * Чипы активностей
-     */
     document
         .querySelectorAll(
             '#filter-activities [data-activity]'
@@ -446,9 +489,6 @@ function initFilterPanel(){
         });
 
 
-    /*
-     * Чипы отношений
-     */
     document
         .querySelectorAll(
             '#filter-relationships [data-relationship]'
@@ -496,9 +536,6 @@ function initFilterPanel(){
         });
 
 
-    /*
-     * Радиус
-     */
     document
         .querySelectorAll(
             '#filter-radius [data-radius]'
