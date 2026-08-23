@@ -149,7 +149,9 @@ export function RoutePanel(){
         Маршрут
     </div>
 
+
     <div id="route-info"></div>
+
 
     <div class="transport-buttons">
 
@@ -161,62 +163,93 @@ export function RoutePanel(){
             🚲 Велосипед
         </button>
 
-        <button data-mode="car" class="active">
+        <button
+            data-mode="car"
+            class="active">
             🚗 Машина
         </button>
 
     </div>
 
-    <button id="route-cancel">
+
+    <button
+        id="route-cancel"
+        type="button">
+
         Отменить
+
     </button>
 
 </div>
 
 
+<!-- =====================================
+     КНОПКА СВЁРНУТОГО МАРШРУТА
+===================================== -->
+
 <button
     id="route-open-button"
     class="route-open-button"
-    aria-label="Открыть маршрут">
+    type="button"
+    aria-label="Открыть маршрут"
+    title="Открыть маршрут">
+
 
     <svg
         class="route-open-button__icon"
-        viewBox="0 0 24 24"
+        viewBox="0 0 32 32"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true">
 
+
+        <!--
+            Внешняя стрелка.
+            Смотрит строго вверх.
+        -->
+
         <path
-            d="M12 2
-               L14.7 9.3
-               L22 12
-               L14.7 14.7
-               L12 22
-               L9.3 14.7
-               L2 12
-               L9.3 9.3
-               Z"
+            class="route-open-button__arrow"
+            d="
+                M16 4
+                L25 15
+                H20.2
+                V27
+                H11.8
+                V15
+                H7
+                Z
+            "
             fill="none"
             stroke="currentColor"
-            stroke-width="1.9"
+            stroke-width="2.1"
             stroke-linejoin="round"
             stroke-linecap="round"
         />
 
+
+        <!--
+            Внутренняя часть стрелки.
+            Без центральной полоски.
+        -->
+
         <path
-            d="M12 7
-               L13.6 10.4
-               L17 12
-               L13.6 13.6
-               L12 17
-               L10.4 13.6
-               L7 12
-               L10.4 10.4
-               Z"
+            class="route-open-button__arrow-inner"
+            d="
+                M16 7.2
+                L21.1 13.4
+                H18.1
+                V24
+                H13.9
+                V13.4
+                H10.9
+                Z
+            "
             fill="currentColor"
-            opacity=".9"
         />
 
+
     </svg>
+
 
 </button>
 
@@ -348,11 +381,13 @@ async function updateRoute(){
 
             </div>
 
+
             <div class="route-stat">
 
                 📍 ${(result.distance / 1000).toFixed(1)} км
 
             </div>
+
 
             <div class="route-stat">
 
@@ -440,9 +475,7 @@ function initRouteLiveAutoClose(){
 
 
     /*
-     * Если Live-сервис отправляет
-     * обновление координат пользователя,
-     * сразу обновляем currentUser.
+     * Обновление координат цели.
      */
 
     window.addEventListener(
@@ -746,11 +779,13 @@ export function showRoute(user){
 
                 </div>
 
+
                 <div class="route-stat">
 
                     📍 ${(result.distance / 1000).toFixed(1)} км
 
                 </div>
+
 
                 <div class="route-stat">
 
@@ -825,7 +860,7 @@ export function showRoute(user){
 
 
     /* ========================================
-       ЗАПУСК АВТООБНОВЛЕНИЯ
+       АВТООБНОВЛЕНИЕ
     ======================================== */
 
     startRouteAutoUpdate();

@@ -1,3 +1,7 @@
+/* ========================================
+   ROUTE PANEL
+======================================== */
+
 .route-panel{
 
     position:absolute;
@@ -12,11 +16,15 @@
     background:rgba(17,20,37,.96);
 
     backdrop-filter:blur(26px);
+    -webkit-backdrop-filter:blur(26px);
 
     border-radius:28px;
 
+    border:1px solid rgba(255,255,255,.08);
+
     box-shadow:
-        0 18px 45px rgba(0,0,0,.45);
+        0 18px 45px rgba(0,0,0,.45),
+        0 4px 18px rgba(124,99,255,.08);
 
     color:white;
 
@@ -24,13 +32,19 @@
 
     transform:translateY(150%);
 
-    transition:.35s ease;
+    transition:
+        transform .35s cubic-bezier(.22,.8,.25,1);
 
     display:flex;
+
     flex-direction:column;
 
 }
 
+
+/* ========================================
+   OPEN
+======================================== */
 
 .route-panel--open{
 
@@ -39,19 +53,31 @@
 }
 
 
+/* ========================================
+   TITLE
+======================================== */
+
 .route-panel__title{
 
     font-size:30px;
+
     font-weight:700;
+
+    letter-spacing:-.5px;
 
     margin-bottom:18px;
 
 }
 
 
+/* ========================================
+   ROUTE INFO
+======================================== */
+
 #route-info{
 
     display:flex;
+
     flex-direction:column;
 
     gap:12px;
@@ -61,32 +87,53 @@
 }
 
 
+/* ========================================
+   USER
+======================================== */
+
 .route-user{
 
     font-size:24px;
+
     font-weight:700;
+
+    letter-spacing:-.3px;
 
     margin-bottom:6px;
 
 }
 
 
+/* ========================================
+   ROUTE STAT
+======================================== */
+
 .route-stat{
 
     display:flex;
+
     align-items:center;
 
     padding:14px 16px;
 
-    background:#1f2337;
+    background:
+        rgba(255,255,255,.055);
+
+    border:1px solid
+        rgba(255,255,255,.055);
 
     border-radius:18px;
 
     font-size:18px;
+
     font-weight:600;
 
 }
 
+
+/* ========================================
+   TRANSPORT BUTTONS
+======================================== */
 
 .transport-buttons{
 
@@ -114,11 +161,15 @@
     color:white;
 
     font-size:16px;
+
     font-weight:600;
 
     cursor:pointer;
 
-    transition:.2s;
+    transition:
+        background .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
 
 }
 
@@ -130,20 +181,32 @@
 }
 
 
+.transport-buttons button:active{
+
+    transform:scale(.97);
+
+}
+
+
 .transport-buttons button.active{
 
     background:
         linear-gradient(
-            90deg,
+            135deg,
             #6E35FF,
             #9B4DFF
         );
 
     box-shadow:
-        0 0 20px rgba(124,99,255,.45);
+        0 7px 20px
+        rgba(124,99,255,.28);
 
 }
 
+
+/* ========================================
+   CANCEL
+======================================== */
 
 #route-cancel{
 
@@ -157,7 +220,7 @@
 
     background:
         linear-gradient(
-            90deg,
+            135deg,
             #ff5470,
             #ff3558
         );
@@ -165,16 +228,30 @@
     color:white;
 
     font-size:20px;
+
     font-weight:700;
 
     cursor:pointer;
 
-    transition:.2s;
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
 
 }
 
 
 #route-cancel:hover{
+
+    transform:translateY(-1px);
+
+    box-shadow:
+        0 8px 22px
+        rgba(255,53,88,.25);
+
+}
+
+
+#route-cancel:active{
 
     transform:scale(.98);
 
@@ -182,7 +259,7 @@
 
 
 /* ========================================
-   УВЕДОМЛЕНИЕ О LIVE
+   LIVE NOTICE
 ======================================== */
 
 .route-live-notice{
@@ -208,10 +285,10 @@
     background:rgba(17,20,37,.96);
 
     backdrop-filter:blur(18px);
-
     -webkit-backdrop-filter:blur(18px);
 
-    border:1px solid rgba(255,255,255,.10);
+    border:1px solid
+        rgba(255,255,255,.10);
 
     border-radius:16px;
 
@@ -278,7 +355,7 @@
 
 
 /* ========================================
-   КНОПКА ОТКРЫТИЯ МАРШРУТА
+   КНОПКА СВЁРНУТОГО МАРШРУТА
 ======================================== */
 
 .route-open-button{
@@ -289,19 +366,25 @@
 
     bottom:118px;
 
-    width:58px;
+    width:60px;
 
-    height:58px;
+    height:60px;
 
     border:none;
 
     border-radius:50%;
 
+    /*
+     * Такой же визуальный язык,
+     * как у остальных элементов приложения.
+     */
+
     background:
         linear-gradient(
-            135deg,
-            #6E35FF,
-            #9B4DFF
+            145deg,
+            #7040ff 0%,
+            #8d4cff 48%,
+            #a35cff 100%
         );
 
     color:white;
@@ -316,21 +399,43 @@
 
     padding:0;
 
+    /*
+     * Мягкое свечение + глубина.
+     */
+
     box-shadow:
-        0 10px 30px rgba(0,0,0,.35);
+
+        0 12px 30px
+        rgba(0,0,0,.38),
+
+        0 4px 14px
+        rgba(124,99,255,.30),
+
+        inset 0 1px 1px
+        rgba(255,255,255,.22);
 
     opacity:0;
 
     pointer-events:none;
 
-    transform:scale(.8);
+    transform:
+        scale(.78)
+        translateY(8px);
 
-    transition:.25s;
+    transition:
+        opacity .25s ease,
+        transform .30s
+        cubic-bezier(.22,.8,.25,1),
+        box-shadow .25s ease;
 
     z-index:9999;
 
 }
 
+
+/* ========================================
+   SHOW BUTTON
+======================================== */
 
 .route-open-button--show{
 
@@ -338,65 +443,133 @@
 
     pointer-events:auto;
 
-    transform:scale(1);
-
-}
-
-
-.route-open-button:hover{
-
-    transform:scale(1.08);
-
-}
-
-
-.route-open-button:active{
-
-    transform:scale(.96);
+    transform:
+        scale(1)
+        translateY(0);
 
 }
 
 
 /* ========================================
-   SVG НАВИГАЦИОННАЯ СТРЕЛКА
+   HOVER
+======================================== */
+
+.route-open-button:hover{
+
+    transform:
+        scale(1.06)
+        translateY(-1px);
+
+    box-shadow:
+
+        0 15px 34px
+        rgba(0,0,0,.42),
+
+        0 5px 20px
+        rgba(124,99,255,.40),
+
+        inset 0 1px 1px
+        rgba(255,255,255,.25);
+
+}
+
+
+/* ========================================
+   ACTIVE
+======================================== */
+
+.route-open-button:active{
+
+    transform:
+        scale(.94);
+
+    box-shadow:
+
+        0 7px 18px
+        rgba(0,0,0,.30),
+
+        0 3px 10px
+        rgba(124,99,255,.25);
+
+}
+
+
+/* ========================================
+   SVG
 ======================================== */
 
 .route-open-button__icon{
 
-    width:24px;
+    width:30px;
 
-    height:24px;
+    height:30px;
 
     display:block;
 
     flex-shrink:0;
 
-    color:white;
+    color:#ffffff;
+
+    overflow:visible;
 
     filter:
         drop-shadow(
-            0 1px 3px
-            rgba(0,0,0,.25)
+            0 2px 4px
+            rgba(0,0,0,.22)
         );
 
     transition:
-        transform .25s ease;
+        transform .25s
+        cubic-bezier(.22,.8,.25,1);
 
 }
 
+
+/* ========================================
+   ARROW
+======================================== */
+
+.route-open-button__arrow{
+
+    opacity:.72;
+
+}
+
+
+/* ========================================
+   INNER ARROW
+======================================== */
+
+.route-open-button__arrow-inner{
+
+    opacity:.98;
+
+}
+
+
+/* ========================================
+   HOVER ARROW
+======================================== */
 
 .route-open-button:hover
 .route-open-button__icon{
 
-    transform:rotate(8deg);
+    transform:
+        translateY(-1px)
+        scale(1.04);
 
 }
 
 
+/* ========================================
+   ACTIVE ARROW
+======================================== */
+
 .route-open-button:active
 .route-open-button__icon{
 
-    transform:scale(.90);
+    transform:
+        scale(.91);
 
 }
 
@@ -410,6 +583,7 @@
     .route-panel{
 
         left:12px;
+
         right:12px;
 
         bottom:102px;
@@ -453,19 +627,25 @@
 
         bottom:112px;
 
+        width:58px;
+
+        height:58px;
+
     }
 
 
     .route-open-button__icon{
 
-        width:24px;
+        width:29px;
 
-        height:24px;
+        height:29px;
 
     }
 
 
-    /* Уведомление на телефоне */
+    /* ====================================
+       MOBILE NOTICE
+    ==================================== */
 
     .route-live-notice{
 
