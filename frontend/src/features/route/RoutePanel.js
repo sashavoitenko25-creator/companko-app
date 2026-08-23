@@ -91,15 +91,12 @@ export function showLiveRequiredNotice(
 
 
         notice.innerHTML = `
-
             <span class="route-live-notice__icon">
                 🔴
             </span>
-
             <span class="route-live-notice__text">
                 ${text}
             </span>
-
         `;
 
 
@@ -124,9 +121,7 @@ export function showLiveRequiredNotice(
                 );
 
             },
-
             2500
-
         );
 
 }
@@ -142,16 +137,13 @@ export function RoutePanel(){
 
 
     return `
-
 <div id="route-panel" class="route-panel">
 
     <div class="route-panel__title">
         Маршрут
     </div>
 
-
     <div id="route-info"></div>
-
 
     <div class="transport-buttons">
 
@@ -171,17 +163,13 @@ export function RoutePanel(){
 
     </div>
 
-
     <button
         id="route-cancel"
         type="button">
-
         Отменить
-
     </button>
 
 </div>
-
 
 <!-- =====================================
      КНОПКА СВЁРНУТОГО МАРШРУТА
@@ -194,19 +182,16 @@ export function RoutePanel(){
     aria-label="Открыть маршрут"
     title="Открыть маршрут">
 
-
     <svg
         class="route-open-button__icon"
         viewBox="0 0 32 32"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true">
 
-
         <!--
             Внешняя стрелка.
             Смотрит строго вверх.
         -->
-
         <path
             class="route-open-button__arrow"
             d="
@@ -226,12 +211,10 @@ export function RoutePanel(){
             stroke-linecap="round"
         />
 
-
         <!--
             Внутренняя часть стрелки.
             Без центральной полоски.
         -->
-
         <path
             class="route-open-button__arrow-inner"
             d="
@@ -247,12 +230,9 @@ export function RoutePanel(){
             fill="currentColor"
         />
 
-
     </svg>
 
-
 </button>
-
 `;
 
 }
@@ -293,9 +273,7 @@ function startRouteAutoUpdate(){
                 updateRoute();
 
             },
-
             2000
-
         );
 
 }
@@ -342,11 +320,8 @@ async function updateRoute(){
 
         const result =
             await startRoute(
-
                 routeTarget,
-
                 currentMode
-
             );
 
 
@@ -374,27 +349,17 @@ async function updateRoute(){
 
 
         info.innerHTML = `
-
             <div class="route-user">
-
                 ${currentUser.name || ''}
-
             </div>
 
-
             <div class="route-stat">
-
                 📍 ${(result.distance / 1000).toFixed(1)} км
-
             </div>
-
 
             <div class="route-stat">
-
                 ⏱ ${result.duration} мин
-
             </div>
-
         `;
 
     }
@@ -422,6 +387,10 @@ function initRouteLiveAutoClose(){
         true;
 
 
+    /*
+     * Когда цель (другой пользователь) закончила Live —
+     * закрываем маршрут.
+     */
     window.addEventListener(
 
         'live:user-ended',
@@ -475,9 +444,30 @@ function initRouteLiveAutoClose(){
 
 
     /*
+     * Когда МЫ заканчиваем свой Live —
+     * маршрут тоже должен исчезнуть.
+     */
+    window.addEventListener(
+
+        'live:stopped',
+
+        () => {
+
+            console.log(
+                'OWN LIVE STOPPED - CLOSING ROUTE'
+            );
+
+
+            closeRouteAutomatically();
+
+        }
+
+    );
+
+
+    /*
      * Обновление координат цели.
      */
-
     window.addEventListener(
 
         'live:user-updated',
@@ -514,8 +504,10 @@ function initRouteLiveAutoClose(){
 
 
             if(
+
                 String(updatedId) !==
                 String(currentId)
+
             ){
 
                 return;
@@ -524,20 +516,18 @@ function initRouteLiveAutoClose(){
 
 
             if(
+
                 updatedUser.lat != null &&
                 updatedUser.lng != null
+
             ){
 
                 currentUser = {
-
                     ...currentUser,
-
                     lat:
                         updatedUser.lat,
-
                     lng:
                         updatedUser.lng
-
                 };
 
             }
@@ -560,15 +550,10 @@ function getUserId(user){
 
 
     return (
-
         user.user_id ||
-
         user.id ||
-
         user.profile_id ||
-
         null
-
     );
 
 }
@@ -631,7 +616,7 @@ function closeRouteAutomatically(){
 
 
     console.log(
-        'ROUTE CLOSED BECAUSE TARGET LIVE ENDED'
+        'ROUTE CLOSED'
     );
 
 }
@@ -744,11 +729,8 @@ export function showRoute(user){
 
             const result =
                 await startRoute(
-
                     routeTarget,
-
                     currentMode
-
                 );
 
 
@@ -772,27 +754,17 @@ export function showRoute(user){
 
 
             info.innerHTML = `
-
                 <div class="route-user">
-
                     ${currentUser.name || ''}
-
                 </div>
 
-
                 <div class="route-stat">
-
                     📍 ${(result.distance / 1000).toFixed(1)} км
-
                 </div>
-
 
                 <div class="route-stat">
-
                     ⏱ ${result.duration} мин
-
                 </div>
-
             `;
 
         }
