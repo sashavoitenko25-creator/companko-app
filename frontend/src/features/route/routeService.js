@@ -1,29 +1,53 @@
 import L from 'leaflet';
 
-
 import {
     getMap
 } from '../../services/map/mapService';
-
 
 import {
     supabase
 } from '../../services/supabase/supabaseClient';
 
 
-
+/* =========================================================
+   STATE
+========================================================= */
 
 let routeLine = null;
 
 let activeUser = null;
 
-let animationFrame = null;
-
 let activeMode = 'car';
+
+let animationFrame = null;
 
 let mapListenersAttached = false;
 
+let locationWatchId = null;
 
+let targetRefreshTimer = null;
+
+let routeUpdateTimer = null;
+
+let routeBuilding = false;
+
+let lastRouteBuildTime = 0;
+
+let lastFromLat = null;
+let lastFromLng = null;
+
+let lastToLat = null;
+let lastToLng = null;
+
+let latestOwnPosition = null;
+
+const ROUTE_UPDATE_INTERVAL = 4000;
+
+const TARGET_REFRESH_INTERVAL = 3000;
+
+const MIN_ROUTE_REBUILD_INTERVAL = 4000;
+
+const MIN_MOVEMENT_METERS = 8;
 
 
 /* =========================================================
@@ -35,15 +59,22 @@ export async function startRoute(
     mode = 'car'
 ){
 
-    activeUser = user;
+    stopRoute();
+
+    activeUser = {
+        ...user
+    };
 
     activeMode = mode;
 
-
     if(
-        user.lat == null ||
-        user.lng == null
+        activeUser.lat == null ||
+        activeUser.lng == null
     ){
+
+        console.warn(
+            'Target has no coordinates'
+        );
 
         return null;
 
@@ -61,21 +92,34 @@ export async function startRoute(
     }
 
 
-    return await buildRoute(
+    latestOwnPosition = position;
 
-        position.latitude,
 
-        position.longitude,
+    const result =
+        await buildRoute(
 
-        user.lat,
+            position.latitude,
+            position.longitude,
 
-        user.lng
+            activeUser.lat,
+            activeUser.lng
 
-    );
+        );
+
+
+    if(!result){
+
+        return null;
+
+    }
+
+
+    startDynamicRoute();
+
+
+    return result;
 
 }
-
-
 
 
 /* =========================================================
@@ -83,6 +127,9 @@ export async function startRoute(
 ========================================================= */
 
 export function stopRoute(){
+
+    stopDynamicRoute();
+
 
     const map =
         getMap();
@@ -113,13 +160,6 @@ export function stopRoute(){
 
     routeLine = null;
 
-    activeUser = null;
-
-
-    /*
-     * После удаления маршрута
-     * отключаем наши слушатели.
-     */
 
     if(map){
 
@@ -129,9 +169,19 @@ export function stopRoute(){
 
     }
 
+
+    activeUser = null;
+
+    latestOwnPosition = null;
+
+
+    lastFromLat = null;
+    lastFromLng = null;
+
+    lastToLat = null;
+    lastToLng = null;
+
 }
-
-
 
 
 /* =========================================================
@@ -159,12 +209,14 @@ async function buildRoute(
     }
 
 
-    /*
-     * Удаляем старый маршрут
-     * перед созданием нового.
-     */
+    if(routeBuilding){
 
-    stopRoute();
+        return null;
+
+    }
+
+
+    routeBuilding = true;
 
 
     try{
@@ -172,18 +224,11 @@ async function buildRoute(
         console.log(
             'Building route:',
             {
-
                 fromLat,
-
                 fromLng,
-
                 toLat,
-
                 toLng,
-
-                mode:
-                    activeMode
-
+                mode: activeMode
             }
         );
 
@@ -221,11 +266,8 @@ async function buildRoute(
         if(error){
 
             console.error(
-
                 'Route function error:',
-
                 error
-
             );
 
             return null;
@@ -233,22 +275,11 @@ async function buildRoute(
         }
 
 
-        console.log(
-            'Route response:',
-            data
-        );
-
-
-        if(
-            !data?.geometry
-        ){
+        if(!data?.geometry){
 
             console.error(
-
                 'No route geometry:',
-
                 data
-
             );
 
             return null;
@@ -257,13 +288,11 @@ async function buildRoute(
 
 
         const fullPath =
-
             data.geometry.coordinates.map(
 
                 ([lng, lat]) => [
 
                     lat,
-
                     lng
 
                 ]
@@ -272,103 +301,107 @@ async function buildRoute(
 
 
         /*
-         * =====================================================
-         * ROUTE LINE
-         * =====================================================
+         * Первый запуск создаёт линию.
          *
-         * ВАЖНО:
-         *
-         * Используем Canvas renderer.
-         *
-         * Это значительно лучше работает
-         * вместе с leaflet-rotate во время
-         * вращения и перемещения карты.
+         * При последующих обновлениях
+         * просто меняем координаты линии.
          */
 
-        routeLine =
-            L.polyline(
+        if(!routeLine){
 
-                [],
+            routeLine =
+                L.polyline(
 
-                {
+                    [],
 
-                    color:
-                        '#7c3aed',
+                    {
 
-                    weight:
-                        6,
+                        color:
+                            '#7c3aed',
 
-                    opacity:
-                        0.95,
+                        weight:
+                            6,
 
-                    lineCap:
-                        'round',
+                        opacity:
+                            0.95,
 
-                    lineJoin:
-                        'round',
+                        lineCap:
+                            'round',
 
-                    renderer:
-                        L.canvas()
+                        lineJoin:
+                            'round',
 
-                }
+                        renderer:
+                            L.canvas()
 
-            ).addTo(map);
+                    }
+
+                ).addTo(map);
+
+        }
 
 
         /*
-         * =====================================================
-         * FIT BOUNDS
-         * =====================================================
+         * Обновляем маршрут.
          */
 
-        map.fitBounds(
+        if(animationFrame){
 
-            fullPath,
+            cancelAnimationFrame(
+                animationFrame
+            );
 
-            {
+            animationFrame = null;
 
-                padding:[
-                    80,
-                    80
-                ],
+        }
 
-                animate:true,
 
-                duration:1
-
-            }
-
+        animateRoute(
+            fullPath
         );
 
 
         /*
-         * =====================================================
-         * СИНХРОНИЗАЦИЯ С КАРТОЙ
-         * =====================================================
-         *
-         * Во время:
-         *
-         * - вращения
-         * - перемещения
-         * - zoom
-         *
-         * принудительно обновляем renderer.
+         * Только при первом построении
+         * двигаем карту.
          */
+
+        if(
+            lastFromLat === null
+        ){
+
+            map.fitBounds(
+
+                fullPath,
+
+                {
+
+                    padding:[
+                        80,
+                        80
+                    ],
+
+                    animate:true,
+
+                    duration:1
+
+                }
+
+            );
+
+        }
+
 
         attachMapListeners(
             map
         );
 
 
-        /*
-         * =====================================================
-         * АНИМАЦИЯ МАРШРУТА
-         * =====================================================
-         */
+        lastFromLat = fromLat;
+        lastFromLng = fromLng;
 
-        animateRoute(
-            fullPath
-        );
+        lastToLat = toLat;
+        lastToLng = toLng;
 
 
         const distance =
@@ -383,7 +416,7 @@ async function buildRoute(
             ) || 0;
 
 
-        return {
+        const result = {
 
             distance,
 
@@ -401,39 +434,639 @@ async function buildRoute(
         };
 
 
+        /*
+         * Сообщаем RoutePanel,
+         * что маршрут обновился.
+         */
+
+        window.dispatchEvent(
+
+            new CustomEvent(
+                'route:updated',
+
+                {
+                    detail: result
+                }
+
+            )
+
+        );
+
+
+        return result;
+
     }
 
     catch(error){
 
         console.error(
-
             'Route error:',
-
             error
-
         );
 
-
         return null;
+
+    }
+
+    finally{
+
+        routeBuilding = false;
 
     }
 
 }
 
 
+/* =========================================================
+   DYNAMIC ROUTE
+========================================================= */
+
+function startDynamicRoute(){
+
+    stopDynamicRoute();
+
+
+    /*
+     * Следим за своей позицией.
+     */
+
+    if(
+        navigator.geolocation
+    ){
+
+        locationWatchId =
+            navigator.geolocation.watchPosition(
+
+                position => {
+
+                    latestOwnPosition = {
+
+                        latitude:
+                            position.coords.latitude,
+
+                        longitude:
+                            position.coords.longitude
+
+                    };
+
+                    checkRouteUpdate();
+
+                },
+
+                error => {
+
+                    console.warn(
+                        'Route location watch error:',
+                        error
+                    );
+
+                },
+
+                {
+
+                    enableHighAccuracy:true,
+
+                    maximumAge:2000,
+
+                    timeout:10000
+
+                }
+
+            );
+
+    }
+
+
+    /*
+     * Периодически получаем
+     * актуальную позицию цели.
+     */
+
+    targetRefreshTimer =
+        setInterval(
+
+            refreshTargetPosition,
+
+            TARGET_REFRESH_INTERVAL
+
+        );
+
+
+    /*
+     * Дополнительная проверка.
+     */
+
+    routeUpdateTimer =
+        setInterval(
+
+            checkRouteUpdate,
+
+            ROUTE_UPDATE_INTERVAL
+
+        );
+
+
+    /*
+     * Сразу проверяем цель.
+     */
+
+    refreshTargetPosition();
+
+}
+
+
+/* =========================================================
+   STOP DYNAMIC ROUTE
+========================================================= */
+
+function stopDynamicRoute(){
+
+    if(locationWatchId !== null){
+
+        navigator.geolocation?.clearWatch(
+            locationWatchId
+        );
+
+        locationWatchId = null;
+
+    }
+
+
+    if(targetRefreshTimer){
+
+        clearInterval(
+            targetRefreshTimer
+        );
+
+        targetRefreshTimer = null;
+
+    }
+
+
+    if(routeUpdateTimer){
+
+        clearInterval(
+            routeUpdateTimer
+        );
+
+        routeUpdateTimer = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   REFRESH TARGET POSITION
+========================================================= */
+
+async function refreshTargetPosition(){
+
+    if(!activeUser){
+
+        return;
+
+    }
+
+
+    const targetId =
+        getUserId(
+            activeUser
+        );
+
+
+    if(!targetId){
+
+        return;
+
+    }
+
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+            await supabase
+
+                .from('live_sessions')
+
+                .select('*')
+
+                .eq(
+                    'user_id',
+                    targetId
+                )
+
+                .eq(
+                    'status',
+                    'active'
+                )
+
+                .order(
+                    'created_at',
+                    {
+                        ascending:false
+                    }
+                )
+
+                .limit(1)
+                .maybeSingle();
+
+
+        if(error){
+
+            console.warn(
+                'Target live position error:',
+                error
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Live больше нет.
+         */
+
+        if(!data){
+
+            return;
+
+        }
+
+
+        /*
+         * Поддерживаем разные названия
+         * координат в таблице.
+         */
+
+        const lat =
+            Number(
+                data.lat ??
+                data.latitude ??
+                activeUser.lat
+            );
+
+
+        const lng =
+            Number(
+                data.lng ??
+                data.longitude ??
+                activeUser.lng
+            );
+
+
+        if(
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng)
+        ){
+
+            return;
+
+        }
+
+
+        activeUser = {
+
+            ...activeUser,
+
+            lat,
+
+            lng
+
+        };
+
+
+        checkRouteUpdate();
+
+    }
+
+    catch(error){
+
+        console.warn(
+            'Target position refresh error:',
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CHECK ROUTE UPDATE
+========================================================= */
+
+async function checkRouteUpdate(){
+
+    if(!activeUser){
+
+        return;
+
+    }
+
+
+    if(!latestOwnPosition){
+
+        return;
+
+    }
+
+
+    if(routeBuilding){
+
+        return;
+
+    }
+
+
+    const fromLat =
+        latestOwnPosition.latitude;
+
+
+    const fromLng =
+        latestOwnPosition.longitude;
+
+
+    const toLat =
+        Number(
+            activeUser.lat
+        );
+
+
+    const toLng =
+        Number(
+            activeUser.lng
+        );
+
+
+    if(
+        !Number.isFinite(fromLat) ||
+        !Number.isFinite(fromLng) ||
+        !Number.isFinite(toLat) ||
+        !Number.isFinite(toLng)
+    ){
+
+        return;
+
+    }
+
+
+    /*
+     * Первый запуск.
+     */
+
+    if(
+        lastFromLat === null ||
+        lastToLat === null
+    ){
+
+        await rebuildDynamicRoute(
+
+            fromLat,
+            fromLng,
+
+            toLat,
+            toLng
+
+        );
+
+        return;
+
+    }
+
+
+    const ownMoved =
+        distanceMeters(
+
+            fromLat,
+            fromLng,
+
+            lastFromLat,
+            lastFromLng
+
+        );
+
+
+    const targetMoved =
+        distanceMeters(
+
+            toLat,
+            toLng,
+
+            lastToLat,
+            lastToLng
+
+        );
+
+
+    /*
+     * Если никто заметно не сдвинулся,
+     * маршрут не трогаем.
+     */
+
+    if(
+        ownMoved < MIN_MOVEMENT_METERS &&
+        targetMoved < MIN_MOVEMENT_METERS
+    ){
+
+        return;
+
+    }
+
+
+    const now =
+        Date.now();
+
+
+    if(
+        now - lastRouteBuildTime <
+        MIN_ROUTE_REBUILD_INTERVAL
+    ){
+
+        return;
+
+    }
+
+
+    await rebuildDynamicRoute(
+
+        fromLat,
+        fromLng,
+
+        toLat,
+        toLng
+
+    );
+
+}
+
+
+/* =========================================================
+   REBUILD DYNAMIC ROUTE
+========================================================= */
+
+async function rebuildDynamicRoute(
+
+    fromLat,
+    fromLng,
+
+    toLat,
+    toLng
+
+){
+
+    if(routeBuilding){
+
+        return;
+
+    }
+
+
+    lastRouteBuildTime =
+        Date.now();
+
+
+    const result =
+        await buildRoute(
+
+            fromLat,
+            fromLng,
+
+            toLat,
+            toLng
+
+        );
+
+
+    if(result){
+
+        console.log(
+            'DYNAMIC ROUTE UPDATED',
+            result
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GET USER ID
+========================================================= */
+
+function getUserId(user){
+
+    if(!user){
+
+        return null;
+
+    }
+
+
+    return (
+
+        user.user_id ||
+
+        user.id ||
+
+        user.profile_id ||
+
+        null
+
+    );
+
+}
+
+
+/* =========================================================
+   DISTANCE
+========================================================= */
+
+function distanceMeters(
+
+    lat1,
+    lng1,
+
+    lat2,
+    lng2
+
+){
+
+    const R =
+        6371000;
+
+
+    const dLat =
+        (
+            lat2 - lat1
+        ) *
+        Math.PI /
+        180;
+
+
+    const dLng =
+        (
+            lng2 - lng1
+        ) *
+        Math.PI /
+        180;
+
+
+    const a =
+
+        Math.sin(
+            dLat / 2
+        ) ** 2 +
+
+        Math.cos(
+            lat1 *
+            Math.PI /
+            180
+        ) *
+
+        Math.cos(
+            lat2 *
+            Math.PI /
+            180
+        ) *
+
+        Math.sin(
+            dLng / 2
+        ) ** 2;
+
+
+    return (
+
+        R *
+
+        2 *
+
+        Math.atan2(
+
+            Math.sqrt(a),
+
+            Math.sqrt(
+                1 - a
+            )
+
+        )
+
+    );
+
+}
 
 
 /* =========================================================
    MAP LISTENERS
 ========================================================= */
 
-function attachMapListeners(
-    map
-){
+function attachMapListeners(map){
 
-    if(
-        mapListenersAttached
-    ){
+    if(mapListenersAttached){
 
         return;
 
@@ -443,19 +1076,11 @@ function attachMapListeners(
     mapListenersAttached = true;
 
 
-    /*
-     * Обычное перемещение карты.
-     */
-
     map.on(
         'move',
         refreshRouteRenderer
     );
 
-
-    /*
-     * Zoom.
-     */
 
     map.on(
         'zoom',
@@ -463,20 +1088,11 @@ function attachMapListeners(
     );
 
 
-    /*
-     * Начало/изменение вращения.
-     */
-
     map.on(
         'rotate',
         refreshRouteRenderer
     );
 
-
-    /*
-     * На всякий случай обновляем
-     * ещё и после завершения действий.
-     */
 
     map.on(
         'moveend',
@@ -489,23 +1105,16 @@ function attachMapListeners(
         refreshRouteRenderer
     );
 
-
 }
-
-
 
 
 /* =========================================================
    REMOVE MAP LISTENERS
 ========================================================= */
 
-function removeMapListeners(
-    map
-){
+function removeMapListeners(map){
 
-    if(
-        !mapListenersAttached
-    ){
+    if(!mapListenersAttached){
 
         return;
 
@@ -547,10 +1156,8 @@ function removeMapListeners(
 }
 
 
-
-
 /* =========================================================
-   REFRESH ROUTE RENDERER
+   REFRESH RENDERER
 ========================================================= */
 
 function refreshRouteRenderer(){
@@ -561,10 +1168,6 @@ function refreshRouteRenderer(){
 
     }
 
-
-    /*
-     * Получаем renderer маршрута.
-     */
 
     const renderer =
         routeLine._renderer;
@@ -580,11 +1183,6 @@ function refreshRouteRenderer(){
     }
 
 
-    /*
-     * Дополнительное обновление
-     * SVG/Canvas позиции.
-     */
-
     if(
         typeof routeLine.redraw === 'function'
     ){
@@ -596,15 +1194,18 @@ function refreshRouteRenderer(){
 }
 
 
-
-
 /* =========================================================
    ANIMATE ROUTE
 ========================================================= */
 
-function animateRoute(
-    points
-){
+function animateRoute(points){
+
+    if(!routeLine){
+
+        return;
+
+    }
+
 
     let i = 0;
 
@@ -618,7 +1219,7 @@ function animateRoute(
         }
 
 
-        i += 5;
+        i += 8;
 
 
         routeLine.setLatLngs(
@@ -630,12 +1231,6 @@ function animateRoute(
 
         );
 
-
-        /*
-         * После каждого кадра
-         * сразу обновляем положение
-         * относительно карты.
-         */
 
         refreshRouteRenderer();
 
@@ -663,8 +1258,6 @@ function animateRoute(
     draw();
 
 }
-
-
 
 
 /* =========================================================
@@ -703,26 +1296,24 @@ function getCurrentPosition(){
 
                 },
 
-
                 error => {
 
                     console.error(
-
                         'Geolocation error:',
-
                         error
-
                     );
-
 
                     resolve(null);
 
                 },
 
-
                 {
 
-                    enableHighAccuracy:true
+                    enableHighAccuracy:true,
+
+                    maximumAge:2000,
+
+                    timeout:10000
 
                 }
 
