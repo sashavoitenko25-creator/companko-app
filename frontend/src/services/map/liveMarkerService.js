@@ -1,32 +1,32 @@
 import L from 'leaflet';
 
-
 import {
     UserMarker
 } from '../../components/UserMarker';
-
 
 import {
     getMap
 } from './mapService';
 
-
 import {
     getLiveUsers
 } from '../supabase/liveService';
-
 
 import {
     getProfile
 } from '../../features/profile/profileStore';
 
+import {
+    getFilters
+} from '../../store/filterStore';
 
+import {
+    getCachedLocation
+} from '../location/locationService';
 
 
 let liveMarkers = [];
-
 let liveMarkerMap = {};
-
 let refreshTimer = null;
 
 
@@ -42,99 +42,298 @@ function getActivityColor(activity) {
             .trim();
 
 
-    /* ГУЛЯТЬ — ЗЕЛЁНЫЙ */
-
     if (
-
         value === 'walk' ||
-
         value === 'walking' ||
-
         value.includes('гуля')
-
     ) {
-
         return {
             main: '#45e879',
             glow: 'rgba(69,232,121,.75)',
             soft: 'rgba(69,232,121,.28)'
         };
-
     }
 
 
-    /* КОФЕ — КОРИЧНЕВЫЙ */
-
     if (
-
         value === 'coffee' ||
-
         value.includes('кофе')
-
     ) {
-
         return {
             main: '#c58a5a',
             glow: 'rgba(197,138,90,.75)',
             soft: 'rgba(197,138,90,.28)'
         };
-
     }
 
 
-    /* ВЫПИТЬ — ОРАНЖЕВЫЙ */
-
     if (
-
         value === 'beer' ||
-
         value === 'alcohol' ||
-
         value.includes('алког') ||
-
         value.includes('выпит')
-
     ) {
-
         return {
             main: '#ffad32',
             glow: 'rgba(255,173,50,.8)',
             soft: 'rgba(255,173,50,.3)'
         };
-
     }
 
 
-    /* ОБЩАТЬСЯ — ГОЛУБОЙ */
-
     if (
-
         value === 'chat' ||
-
         value === 'talking' ||
-
         value.includes('общ')
-
     ) {
-
         return {
             main: '#4dbfff',
             glow: 'rgba(77,191,255,.75)',
             soft: 'rgba(77,191,255,.28)'
         };
-
     }
 
 
-    /* ПО УМОЛЧАНИЮ — ФИОЛЕТОВЫЙ */
-
     return {
-
         main: '#9b5cff',
         glow: 'rgba(155,92,255,.75)',
         soft: 'rgba(155,92,255,.28)'
-
     };
+
+}
+
+
+/* ========================================
+   DISTANCE
+======================================== */
+
+function distanceMeters(
+    lat1,
+    lng1,
+    lat2,
+    lng2
+) {
+
+    const R = 6371000;
+
+    const dLat =
+        (lat2 - lat1) * Math.PI / 180;
+
+    const dLng =
+        (lng2 - lng1) * Math.PI / 180;
+
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) *
+        Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) ** 2;
+
+    return (
+        R *
+        2 *
+        Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+        )
+    );
+
+}
+
+
+function normalizeActivity(activity) {
+
+    const value =
+        String(activity || '')
+            .toLowerCase()
+            .trim();
+
+
+    if (
+        value === 'beer' ||
+        value === 'alcohol' ||
+        value.includes('алког') ||
+        value.includes('выпит')
+    ) {
+        return 'beer';
+    }
+
+
+    if (
+        value === 'coffee' ||
+        value.includes('кофе')
+    ) {
+        return 'coffee';
+    }
+
+
+    if (
+        value === 'walk' ||
+        value === 'walking' ||
+        value.includes('гуля')
+    ) {
+        return 'walk';
+    }
+
+
+    if (
+        value === 'chat' ||
+        value === 'talking' ||
+        value === 'talk' ||
+        value.includes('общ')
+    ) {
+        return 'chat';
+    }
+
+
+    return value;
+
+}
+
+
+/* ========================================
+   APPLY FILTERS
+======================================== */
+
+function applyFilters(users) {
+
+    const filters =
+        getFilters();
+
+
+    const myLocation =
+        getCachedLocation() ||
+        (
+            window.myLocation
+                ? {
+                    latitude: window.myLocation.lat,
+                    longitude: window.myLocation.lng
+                }
+                : null
+        );
+
+
+    return users.filter(user => {
+
+        /*
+         * Активность
+         */
+        if (
+            filters.activities &&
+            filters.activities.length > 0
+        ) {
+
+            const activity =
+                normalizeActivity(
+                    user.activity
+                );
+
+
+            if (
+                !filters.activities.includes(
+                    activity
+                )
+            ) {
+                return false;
+            }
+
+        }
+
+
+        /*
+         * Возраст
+         */
+        const age =
+            Number(user.age);
+
+
+        if (
+            filters.ageFrom != null &&
+            Number.isFinite(age) &&
+            age < Number(filters.ageFrom)
+        ) {
+            return false;
+        }
+
+
+        if (
+            filters.ageTo != null &&
+            Number.isFinite(age) &&
+            age > Number(filters.ageTo)
+        ) {
+            return false;
+        }
+
+
+        /*
+         * Если возраст обязателен фильтром,
+         * а у пользователя его нет — скрываем.
+         */
+        if (
+            (
+                filters.ageFrom != null ||
+                filters.ageTo != null
+            ) &&
+            !Number.isFinite(age)
+        ) {
+            return false;
+        }
+
+
+        /*
+         * Статус отношений
+         */
+        if (
+            filters.relationshipStatuses &&
+            filters.relationshipStatuses.length > 0
+        ) {
+
+            const status =
+                user.relationship_status ||
+                'not_specified';
+
+
+            if (
+                !filters.relationshipStatuses.includes(
+                    status
+                )
+            ) {
+                return false;
+            }
+
+        }
+
+
+        /*
+         * Радиус
+         */
+        if (
+            filters.radiusMeters != null &&
+            myLocation &&
+            user.lat != null &&
+            user.lng != null
+        ) {
+
+            const dist =
+                distanceMeters(
+                    myLocation.latitude,
+                    myLocation.longitude,
+                    Number(user.lat),
+                    Number(user.lng)
+                );
+
+
+            if (
+                dist > Number(filters.radiusMeters)
+            ) {
+                return false;
+            }
+
+        }
+
+
+        return true;
+
+    });
 
 }
 
@@ -157,13 +356,13 @@ export async function loadLiveMarkers() {
 
         const users = await getLiveUsers();
 
+        const filteredUsers =
+            applyFilters(
+                users
+            );
+
         const profile = getProfile();
 
-        /*
-        ========================================
-        МОЙ USER ID
-        ========================================
-        */
 
         const myUserId =
             profile?.user_id ||
@@ -171,42 +370,12 @@ export async function loadLiveMarkers() {
             null;
 
 
-        /*
-        ========================================
-        МОЙ TELEGRAM ID
-        ========================================
-        */
-
         const myTelegramId =
             profile?.telegram_id ||
             null;
 
 
-        console.log(
-            'MY USER ID:',
-            myUserId
-        );
-
-        console.log(
-            'MY TELEGRAM ID:',
-            myTelegramId
-        );
-
-
-        /*
-        ========================================
-        СОЗДАЁМ ТОЛЬКО ЧУЖИЕ LIVE-МАРКЕРЫ
-        ========================================
-        */
-
-        users.forEach(user => {
-
-
-            /*
-            ====================================
-            НЕ ПОКАЗЫВАЕМ СЕБЯ ПО USER ID
-            ====================================
-            */
+        filteredUsers.forEach(user => {
 
             const sameUserId =
                 myUserId &&
@@ -215,12 +384,6 @@ export async function loadLiveMarkers() {
                 String(myUserId);
 
 
-            /*
-            ====================================
-            НЕ ПОКАЗЫВАЕМ СЕБЯ ПО TELEGRAM ID
-            ====================================
-            */
-
             const sameTelegramId =
                 myTelegramId &&
                 user?.telegram_id &&
@@ -228,48 +391,21 @@ export async function loadLiveMarkers() {
                 String(myTelegramId);
 
 
-            /*
-            ====================================
-            ЕСЛИ ЭТО Я — ПРОПУСКАЕМ
-            ====================================
-            */
-
             if (
                 sameUserId ||
                 sameTelegramId
             ) {
-
-                console.log(
-                    'SKIP MY LIVE MARKER:',
-                    user
-                );
-
                 return;
-
             }
 
-
-            /*
-            ====================================
-            ПРОВЕРКА КООРДИНАТ
-            ====================================
-            */
 
             if (
                 user.lat == null ||
                 user.lng == null
             ) {
-
                 return;
-
             }
 
-
-            /*
-            ====================================
-            СОЗДАЁМ МАРКЕР ДРУГОГО ПОЛЬЗОВАТЕЛЯ
-            ====================================
-            */
 
             const marker =
                 createMarker(
@@ -288,7 +424,6 @@ export async function loadLiveMarkers() {
             ] = marker;
 
         });
-
 
     }
 
@@ -309,17 +444,9 @@ export async function loadLiveMarkers() {
 ======================================== */
 
 function createMarker(
-
     map,
-
     user
-
 ) {
-
-
-    /* ====================================
-       ЦВЕТ
-    ==================================== */
 
     const color =
         getActivityColor(
@@ -327,20 +454,11 @@ function createMarker(
         );
 
 
-    /* ====================================
-       АВАТАР
-    ==================================== */
-
     const avatarHTML =
         UserMarker(user);
 
 
-    /* ====================================
-       MARKER HTML
-    ==================================== */
-
     const markerHTML = `
-
         <div
             class="activity-live-marker"
             style="
@@ -349,125 +467,59 @@ function createMarker(
                 --activity-soft: ${color.soft};
             "
         >
-
-            <div
-                class="activity-live-marker__glow">
-            </div>
-
-
-            <div
-                class="activity-live-marker__pulse">
-            </div>
-
-
-            <div
-                class="activity-live-marker__avatar">
-
+            <div class="activity-live-marker__glow"></div>
+            <div class="activity-live-marker__pulse"></div>
+            <div class="activity-live-marker__avatar">
                 ${avatarHTML}
-
             </div>
-
         </div>
-
     `;
 
 
-    /* ====================================
-       LEAFLET ICON
-    ==================================== */
-
     const icon =
-
         L.divIcon({
-
             className:
                 'activity-live-leaflet-icon',
-
             html:
                 markerHTML,
-
-            iconSize: [
-                80,
-                80
-            ],
-
-            iconAnchor: [
-                40,
-                40
-            ]
-
+            iconSize: [80, 80],
+            iconAnchor: [40, 40]
         });
 
 
-    /* ====================================
-       MARKER
-    ==================================== */
-
     const marker =
-
         L.marker(
-
             [
-
                 user.lat,
-
                 user.lng
-
             ],
-
             {
-
                 icon,
-
                 zIndexOffset: 500
-
             }
-
         )
-
         .addTo(map);
 
 
-    /* ====================================
-       CLICK
-    ==================================== */
-
     marker.on(
-
         'click',
-
         event => {
 
-
-            if (
-                event.originalEvent
-            ) {
-
-                event
-                    .originalEvent
-                    .stopPropagation();
-
+            if (event.originalEvent) {
+                event.originalEvent.stopPropagation();
             }
 
 
             window.dispatchEvent(
-
                 new CustomEvent(
-
                     'user:selected',
-
                     {
-
                         detail: user
-
                     }
-
                 )
-
             );
 
         }
-
     );
 
 
@@ -481,24 +533,18 @@ function createMarker(
 ======================================== */
 
 export function updateLiveMarkerPosition(
-
     userId,
-
     position
-
 ) {
-
 
     const marker =
         liveMarkerMap[userId];
 
 
     if (marker) {
-
         marker.setLatLng(
             position
         );
-
     }
 
 }
@@ -510,33 +556,25 @@ export function updateLiveMarkerPosition(
 
 export function clearLiveMarkers() {
 
-
     const map =
         getMap();
 
 
     if (!map) {
-
         return;
-
     }
 
 
     liveMarkers.forEach(
-
         marker => {
-
             map.removeLayer(
                 marker
             );
-
         }
-
     );
 
 
     liveMarkers = [];
-
     liveMarkerMap = {};
 
 }
@@ -547,11 +585,8 @@ export function clearLiveMarkers() {
 ======================================== */
 
 window.addEventListener(
-
     'live:refresh',
-
     () => {
-
 
         clearTimeout(
             refreshTimer
@@ -559,19 +594,12 @@ window.addEventListener(
 
 
         refreshTimer =
-
             setTimeout(
-
                 () => {
-
                     loadLiveMarkers();
-
                 },
-
                 500
-
             );
 
     }
-
 );

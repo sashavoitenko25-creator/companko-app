@@ -1,68 +1,56 @@
 import './Home.css';
 
-
 import {
     Header
 } from '../../components/Header';
-
 
 import {
     Map
 } from '../../components/Map';
 
-
 import {
     LiveModal
 } from '../../components/LiveModal';
 
-
 import {
     BottomBar
 } from '../../components/BottomBar';
-
 
 import {
     RoutePanel,
     showRoute
 } from '../../features/route/RoutePanel';
 
-
 import {
     Settings,
     initSettings
-}
-from '../../components/Settings/Settings';
-
+} from '../../components/Settings/Settings';
 
 import {
     SelectedUser,
     showUserCard
 } from '../../features/profile/SelectedUser';
 
-
 import {
     FeedbackModal,
     initFeedbackModal
-}
-from '../../components/FeedbackModal/FeedbackModal';
-
+} from '../../components/FeedbackModal/FeedbackModal';
 
 import {
     AdminPanel
 } from '../../components/AdminPanel/AdminPanel';
 
-
 import {
     initAdminPanel as initAdminComponent,
     loadFeedback
-}
-from '../../components/AdminPanel/AdminPanel';
+} from '../../components/AdminPanel/AdminPanel';
 
+import {
+    FilterPanel
+} from '../../features/filters/FilterPanel';
 
 import '../../features/live/live.css';
-
 import '../../features/route/route.css';
-
 
 import {
     setActivity,
@@ -72,11 +60,9 @@ import {
     getLiveState
 } from '../../store/liveStore';
 
-
 import {
     getProfile
 } from '../../features/profile/profileStore';
-
 
 import {
     createLiveSession,
@@ -85,11 +71,9 @@ import {
     restoreActiveLive
 } from '../../services/supabase/liveSessionService';
 
-
 import {
     initMyLiveController
 } from '../../features/live/myLiveController';
-
 
 import {
     supabase
@@ -97,9 +81,7 @@ import {
 
 
 let selectedUser = null;
-
 let initialized = false;
-
 let exitLiveHandled = false;
 
 
@@ -116,9 +98,7 @@ export function Home(){
 
     setTimeout(
         async()=>{
-
             await initHomeEvents();
-
         },
         0
     );
@@ -130,31 +110,19 @@ export function Home(){
 
 
     return `
-
 <main class="home">
-
 ${Map()}
-
 ${Header()}
-
+${FilterPanel()}
 <div id="my-live-container"></div>
-
 ${LiveModal()}
-
 ${Settings()}
-
 ${FeedbackModal()}
-
 ${AdminPanel()}
-
 ${RoutePanel()}
-
 ${SelectedUser()}
-
 ${BottomBar()}
-
 </main>
-
 `;
 
 }
@@ -179,7 +147,6 @@ async function initHomeEvents(){
 
 
     await restoreMyLive();
-
 
     initMyLiveController();
 
@@ -245,18 +212,14 @@ async function restoreMyLive(){
 
 
             window.dispatchEvent(
-
                 new Event(
                     'live:started'
                 )
-
             );
 
 
             setTimeout(()=>{
-
                 updateLiveButton();
-
             },100);
 
         }
@@ -267,13 +230,10 @@ async function restoreMyLive(){
 
 
             setTimeout(()=>{
-
                 updateLiveButton();
-
             },100);
 
         }
-
 
     }
 
@@ -295,16 +255,10 @@ async function restoreMyLive(){
 
 function initAutoStopLiveOnExit(){
 
-    /*
-     * Не регистрируем обработчики повторно.
-     */
-
     if(
         window.__liveExitHandlersInitialized
     ){
-
         return;
-
     }
 
 
@@ -312,52 +266,19 @@ function initAutoStopLiveOnExit(){
         true;
 
 
-    /*
-     * ВАЖНО:
-     *
-     * visibilitychange здесь НЕ используется.
-     *
-     * Telegram Mini App при сворачивании
-     * меняет visibilityState на hidden.
-     *
-     * Поэтому hidden НЕЛЬЗЯ считать
-     * выходом из приложения.
-     */
-
-
-    /*
-     * pagehide оставляем только для
-     * реального ухода со страницы.
-     */
-
     window.addEventListener(
-
         'pagehide',
-
         ()=>{
-
             stopLiveOnExit();
-
         }
-
     );
 
 
-    /*
-     * beforeunload — дополнительная страховка
-     * при полном закрытии страницы/WebView.
-     */
-
     window.addEventListener(
-
         'beforeunload',
-
         ()=>{
-
             stopLiveOnExit();
-
         }
-
     );
 
 }
@@ -381,9 +302,7 @@ function stopLiveOnExit(){
         !live ||
         !live.session_id
     ){
-
         return;
-
     }
 
 
@@ -407,34 +326,15 @@ function stopLiveOnExit(){
     exitLiveHandled = true;
 
 
-    /*
-     * Сразу меняем локальное состояние.
-     */
-
     clearLiveState();
 
 
-    /*
-     * Сообщаем остальному приложению.
-     */
-
     window.dispatchEvent(
-
         new Event(
             'live:stopped'
         )
-
     );
 
-
-    /*
-     * Пытаемся отправить завершение
-     * напрямую через REST.
-     *
-     * keepalive позволяет запросу
-     * продолжить выполнение при закрытии
-     * страницы.
-     */
 
     try{
 
@@ -452,46 +352,29 @@ function stopLiveOnExit(){
         ){
 
             fetch(
-
                 `${url}/rest/v1/live_sessions?id=eq.${encodeURIComponent(sessionId)}`,
-
                 {
-
                     method:'PATCH',
-
                     headers:{
-
                         apikey:key,
-
                         Authorization:
                             `Bearer ${key}`,
-
                         'Content-Type':
                             'application/json',
-
                         Prefer:
                             'return=minimal'
-
                     },
-
                     body:JSON.stringify({
-
                         status:
                             'finished'
-
                     }),
-
                     keepalive:true
-
                 }
-
             ).catch(error=>{
-
                 console.warn(
                     'AUTO STOP LIVE REQUEST ERROR',
                     error
                 );
-
             });
 
         }
@@ -508,22 +391,15 @@ function stopLiveOnExit(){
     }
 
 
-    /*
-     * Дополнительная попытка через
-     * существующий Supabase service.
-     */
-
     try{
 
         stopLiveSession(
             sessionId
         ).catch(error=>{
-
             console.warn(
                 'AUTO STOP LIVE SERVICE ERROR',
                 error
             );
-
         });
 
     }
@@ -633,11 +509,9 @@ async function stopMyLive(){
 
 
     window.dispatchEvent(
-
         new Event(
             'live:stopped'
         )
-
     );
 
 
@@ -770,11 +644,9 @@ function initLiveEvents(){
 
 
                     setDuration(
-
                         Number(
                             button.dataset.time
                         )
-
                     );
 
                 };
@@ -814,16 +686,12 @@ function initLiveEvents(){
 
                     const session =
                         await createLiveSession({
-
                             user_id:
                                 userId,
-
                             activity:
                                 live.activity,
-
                             duration:
                                 live.duration || 60
-
                         });
 
 
@@ -842,20 +710,13 @@ function initLiveEvents(){
 
 
                     window.dispatchEvent(
-
                         new CustomEvent(
-
                             'live:started',
-
                             {
-
                                 detail:
                                     session
-
                             }
-
                         )
-
                     );
 
 
@@ -864,19 +725,14 @@ function initLiveEvents(){
 
                     navigator.geolocation
                         .getCurrentPosition(
-
                             async position=>{
 
                                 try{
 
                                     await sendLocation(
-
                                         userId,
-
                                         position.coords.latitude,
-
                                         position.coords.longitude
-
                                     );
 
                                 }
@@ -891,9 +747,7 @@ function initLiveEvents(){
                                 }
 
                             }
-
                         );
-
 
                 }
 
@@ -920,9 +774,7 @@ function initLiveEvents(){
 function initUserSelection(){
 
     window.addEventListener(
-
         'user:selected',
-
         event=>{
 
             console.log(
@@ -940,23 +792,18 @@ function initUserSelection(){
             );
 
         }
-
     );
 
 
     document.addEventListener(
-
         'click',
-
         event=>{
 
             if(
-
                 event.target.classList
                     .contains(
                         'user-card__route'
                     )
-
             ){
 
                 if(selectedUser){
@@ -970,7 +817,6 @@ function initUserSelection(){
             }
 
         }
-
     );
 
 }
@@ -983,9 +829,7 @@ function initUserSelection(){
 function initMyLiveSelection(){
 
     window.addEventListener(
-
         'my-live:selected',
-
         event=>{
 
             const profile =
@@ -1001,26 +845,18 @@ function initMyLiveSelection(){
 
 
             showUserCard({
-
                 ...profile,
-
                 own:true,
-
                 isLive:true,
-
                 activity:
                     live.activity || 'LIVE',
-
                 duration:
                     live.duration,
-
                 expires_at:
                     live.expires_at
-
             });
 
         }
-
     );
 
 }
@@ -1046,11 +882,9 @@ function initProfileButton(){
         ()=>{
 
             window.dispatchEvent(
-
                 new Event(
                     'profile:open'
                 )
-
             );
 
         };
@@ -1082,9 +916,7 @@ function initAdminPanel(){
         telegramId !==
         6859689857
     ){
-
         return;
-
     }
 
 
@@ -1112,9 +944,7 @@ function initAdminPanel(){
             '#admin-open'
         )
     ){
-
         return;
-
     }
 
 
