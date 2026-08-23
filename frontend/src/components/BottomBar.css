@@ -197,7 +197,6 @@
 
 /* =========================================================
    SETTINGS ICON
-   РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
 ========================================================= */
 
 .settings-icon{
@@ -239,10 +238,6 @@
 }
 
 
-/* =========================================================
-   КОНТУР ШЕСТЕРЁНКИ
-========================================================= */
-
 .settings-icon path{
 
     fill:none;
@@ -257,10 +252,6 @@
 
 }
 
-
-/* =========================================================
-   ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
-========================================================= */
 
 .settings-icon circle{
 
@@ -317,7 +308,7 @@
             #A855F7
         );
 
-    color:white;
+    color:#ffffff;
 
     font-size:20px;
 
@@ -325,14 +316,24 @@
 
     cursor:pointer;
 
+    outline:none;
+
+    -webkit-tap-highlight-color:transparent;
+
     transition:
-        transform .18s ease;
+        transform .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
 
     box-shadow:
         0 10px 28px rgba(139,92,246,.35);
 
 }
 
+
+/* =========================================================
+   LIVE HOVER
+========================================================= */
 
 .live-button:hover{
 
@@ -341,12 +342,20 @@
 }
 
 
+/* =========================================================
+   LIVE ACTIVE
+========================================================= */
+
 .live-button:active{
 
     transform:scale(.97);
 
 }
 
+
+/* =========================================================
+   STOP LIVE — КРАСНЫЙ
+========================================================= */
 
 .live-button.stop-live{
 
@@ -355,10 +364,86 @@
             135deg,
             #EF4444,
             #DC2626
-        );
+        ) !important;
+
+    color:#ffffff !important;
+
+    box-shadow:
+        0 10px 28px rgba(239,68,68,.40) !important;
 
 }
 
+
+/* =========================================================
+   STOP LIVE HOVER — ОСТАЁТСЯ КРАСНЫМ
+========================================================= */
+
+.live-button.stop-live:hover{
+
+    background:
+        linear-gradient(
+            135deg,
+            #F04444,
+            #DC2626
+        ) !important;
+
+    color:#ffffff !important;
+
+    box-shadow:
+        0 12px 32px rgba(239,68,68,.50) !important;
+
+    transform:translateY(-2px);
+
+}
+
+
+/* =========================================================
+   STOP LIVE ACTIVE — ОСТАЁТСЯ КРАСНЫМ
+========================================================= */
+
+.live-button.stop-live:active{
+
+    background:
+        linear-gradient(
+            135deg,
+            #DC2626,
+            #B91C1C
+        ) !important;
+
+    color:#ffffff !important;
+
+    box-shadow:
+        0 6px 20px rgba(239,68,68,.40) !important;
+
+    transform:scale(.97);
+
+}
+
+
+/* =========================================================
+   STOP LIVE FOCUS
+========================================================= */
+
+.live-button.stop-live:focus,
+.live-button.stop-live:focus-visible{
+
+    background:
+        linear-gradient(
+            135deg,
+            #EF4444,
+            #DC2626
+        ) !important;
+
+    color:#ffffff !important;
+
+    outline:none;
+
+}
+
+
+/* =========================================================
+   LIVE DOT
+========================================================= */
 
 .live-dot{
 
@@ -576,13 +661,4 @@
 
     }
 
-
-    .settings-window{
-
-        width:270px !important;
-
-        max-width:calc(100vw - 30px) !important;
-
-    }
-
-}
+} 
