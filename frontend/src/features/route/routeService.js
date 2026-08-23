@@ -28,6 +28,8 @@ let lastToLng = null;
 
 let latestOwnPosition = null;
 
+let routeCanvasRenderer = null;
+
 
 const ROUTE_UPDATE_INTERVAL = 4000;
 const TARGET_REFRESH_INTERVAL = 3000;
@@ -40,6 +42,7 @@ const MIN_MOVEMENT_METERS = 8;
 ========================================================= */
 
 export async function startRoute(user, mode = 'car') {
+
     stopRoute();
 
     activeUser = { ...user };
@@ -73,6 +76,7 @@ export async function startRoute(user, mode = 'car') {
     startDynamicRoute();
 
     return result;
+
 }
 
 
@@ -81,6 +85,7 @@ export async function startRoute(user, mode = 'car') {
 ========================================================= */
 
 export function stopRoute() {
+
     stopDynamicRoute();
 
     const map = getMap();
@@ -90,6 +95,7 @@ export function stopRoute() {
     }
 
     routeLine = null;
+    routeCanvasRenderer = null;
 
     activeUser = null;
     latestOwnPosition = null;
@@ -101,6 +107,7 @@ export function stopRoute() {
 
     lastRouteBuildTime = 0;
     routeBuilding = false;
+
 }
 
 
@@ -114,6 +121,7 @@ async function buildRoute(
     toLat,
     toLng
 ) {
+
     const map = getMap();
 
     if (!map || routeBuilding)
@@ -122,6 +130,7 @@ async function buildRoute(
     routeBuilding = true;
 
     try {
+
         const { data, error } =
             await supabase.functions.invoke(
                 'route',
@@ -163,6 +172,18 @@ async function buildRoute(
         ========================================== */
 
         if (!routeLine) {
+
+            /*
+             * Canvas-renderer нужен,
+             * чтобы линия не отрывалась
+             * от улиц при rotate / pan
+             * (leaflet-rotate + SVG даёт лаг).
+             */
+            routeCanvasRenderer =
+                L.canvas({
+                    padding: 0.5
+                });
+
             routeLine = L.polyline(
                 path,
                 {
@@ -170,7 +191,9 @@ async function buildRoute(
                     weight: 6,
                     opacity: 0.95,
                     lineCap: 'round',
-                    lineJoin: 'round'
+                    lineJoin: 'round',
+                    renderer: routeCanvasRenderer,
+                    smoothFactor: 1
                 }
             ).addTo(map);
 
@@ -182,16 +205,15 @@ async function buildRoute(
                     duration: 1
                 }
             );
+
         } else {
 
-            /* ======================================
-               ОБНОВЛЯЕМ ТУ ЖЕ ЛИНИЮ
-
-               Leaflet сам переместит её
-               вместе с картой.
-            ====================================== */
-
+            /*
+             * Только обновляем точки.
+             * Линию не удаляем и не пересоздаём.
+             */
             routeLine.setLatLngs(path);
+
         }
 
 
@@ -246,6 +268,7 @@ async function buildRoute(
         routeBuilding = false;
 
     }
+
 }
 
 
@@ -254,11 +277,13 @@ async function buildRoute(
 ========================================================= */
 
 function startDynamicRoute() {
+
     stopDynamicRoute();
 
 
     locationWatch = watchLocation(
         position => {
+
             if (!position)
                 return;
 
@@ -270,6 +295,7 @@ function startDynamicRoute() {
             };
 
             checkRouteUpdate();
+
         }
     );
 
@@ -287,6 +313,7 @@ function startDynamicRoute() {
 
 
     refreshTargetPosition();
+
 }
 
 
@@ -295,6 +322,7 @@ function startDynamicRoute() {
 ========================================================= */
 
 function stopDynamicRoute() {
+
     if (
         locationWatch &&
         typeof locationWatch.stop === 'function'
@@ -315,6 +343,7 @@ function stopDynamicRoute() {
         clearInterval(routeUpdateTimer);
         routeUpdateTimer = null;
     }
+
 }
 
 
@@ -323,6 +352,7 @@ function stopDynamicRoute() {
 ========================================================= */
 
 async function refreshTargetPosition() {
+
     if (!activeUser)
         return;
 
@@ -332,8 +362,8 @@ async function refreshTargetPosition() {
     if (!targetId)
         return;
 
-
     try {
+
         const { data, error } =
             await supabase
                 .from('live_sessions')
@@ -349,7 +379,6 @@ async function refreshTargetPosition() {
                 .limit(1)
                 .maybeSingle();
 
-
         if (error) {
             console.warn(
                 'Target live position error:',
@@ -364,6 +393,7 @@ async function refreshTargetPosition() {
         ========================================== */
 
         if (!data) {
+
             window.dispatchEvent(
                 new CustomEvent(
                     'live:user-ended',
@@ -376,6 +406,7 @@ async function refreshTargetPosition() {
             );
 
             return;
+
         }
 
 
@@ -391,7 +422,6 @@ async function refreshTargetPosition() {
             activeUser.lng
         );
 
-
         if (
             !Number.isFinite(lat) ||
             !Number.isFinite(lng)
@@ -399,13 +429,11 @@ async function refreshTargetPosition() {
             return;
         }
 
-
         activeUser = {
             ...activeUser,
             lat,
             lng
         };
-
 
         checkRouteUpdate();
 
@@ -417,6 +445,7 @@ async function refreshTargetPosition() {
         );
 
     }
+
 }
 
 
@@ -425,6 +454,7 @@ async function refreshTargetPosition() {
 ========================================================= */
 
 async function checkRouteUpdate() {
+
     if (!activeUser)
         return;
 
@@ -472,7 +502,6 @@ async function checkRouteUpdate() {
             toLat,
             toLng
         );
-
         return;
     }
 
@@ -517,6 +546,7 @@ async function checkRouteUpdate() {
         toLat,
         toLng
     );
+
 }
 
 
@@ -530,6 +560,7 @@ async function rebuildDynamicRoute(
     toLat,
     toLng
 ) {
+
     if (routeBuilding)
         return;
 
@@ -549,6 +580,7 @@ async function rebuildDynamicRoute(
             result
         );
     }
+
 }
 
 
@@ -557,6 +589,7 @@ async function rebuildDynamicRoute(
 ========================================================= */
 
 function getUserId(user) {
+
     if (!user)
         return null;
 
@@ -566,6 +599,7 @@ function getUserId(user) {
         user.profile_id ||
         null
     );
+
 }
 
 
@@ -579,6 +613,7 @@ function distanceMeters(
     lat2,
     lng2
 ) {
+
     const R = 6371000;
 
     const dLat =
@@ -613,4 +648,5 @@ function distanceMeters(
             Math.sqrt(1 - a)
         )
     );
+
 }
