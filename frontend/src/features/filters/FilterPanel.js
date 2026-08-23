@@ -240,9 +240,6 @@ export function FilterPanel(){
         <span id="filters-open-label">
             Фильтры
         </span>
-        <span class="filters-trigger__arrow">
-            ▾
-        </span>
     </button>
 
 </div>
