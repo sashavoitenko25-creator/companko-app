@@ -29,7 +29,8 @@ let lastToLng = null;
 let latestOwnPosition = null;
 
 let mapRedrawBound = false;
-let redrawRaf = null;
+let lockLoopActive = false;
+let lockRaf = null;
 
 
 const ROUTE_UPDATE_INTERVAL = 4000;
@@ -40,7 +41,6 @@ const MIN_MOVEMENT_METERS = 8;
 
 /* =========================================================
    FORCE LOCK TO STREETS
-   (перепроецируем линию на каждом кадре взаимодействия)
 ========================================================= */
 
 function forceRouteLock() {
@@ -48,32 +48,56 @@ function forceRouteLock() {
     if (!routeLine)
         return;
 
-    /*
-     * Берём те же координаты и заново
-     * проецируем в текущий transform карты.
-     * Это единственный способ, который
-     * стабильно держит линию на улицах
-     * при leaflet-rotate.
-     */
     const latlngs = routeLine.getLatLngs();
 
     if (!latlngs || !latlngs.length)
         return;
 
+    /*
+     * Заново проецируем те же точки
+     * в текущий transform карты.
+     */
     routeLine.setLatLngs(latlngs);
 
 }
 
 
-function scheduleRouteLock() {
+function startLockLoop() {
 
-    if (redrawRaf)
+    if (lockLoopActive)
         return;
 
-    redrawRaf = requestAnimationFrame(() => {
-        redrawRaf = null;
+    lockLoopActive = true;
+
+    const tick = () => {
+
+        if (!lockLoopActive)
+            return;
+
         forceRouteLock();
-    });
+        lockRaf = requestAnimationFrame(tick);
+
+    };
+
+    lockRaf = requestAnimationFrame(tick);
+
+}
+
+
+function stopLockLoop() {
+
+    lockLoopActive = false;
+
+    if (lockRaf) {
+        cancelAnimationFrame(lockRaf);
+        lockRaf = null;
+    }
+
+    /*
+     * Финальная точная фиксация
+     * после окончания жеста.
+     */
+    forceRouteLock();
 
 }
 
@@ -85,14 +109,32 @@ function bindMapRedraw(map) {
 
     mapRedrawBound = true;
 
-    map.on('move', scheduleRouteLock);
-    map.on('rotate', scheduleRouteLock);
-    map.on('zoom', scheduleRouteLock);
-    map.on('viewreset', scheduleRouteLock);
-    map.on('zoomanim', scheduleRouteLock);
-    map.on('moveend', forceRouteLock);
-    map.on('rotateend', forceRouteLock);
-    map.on('zoomend', forceRouteLock);
+    /*
+     * Как только начинается любое
+     * взаимодействие — крутим цикл
+     * перепроекции каждый кадр.
+     */
+    map.on('movestart', startLockLoop);
+    map.on('rotatestart', startLockLoop);
+    map.on('zoomstart', startLockLoop);
+
+    /*
+     * На всякий случай дублируем
+     * и на сами события движения.
+     */
+    map.on('move', forceRouteLock);
+    map.on('rotate', forceRouteLock);
+    map.on('zoom', forceRouteLock);
+    map.on('zoomanim', forceRouteLock);
+    map.on('viewreset', forceRouteLock);
+
+    /*
+     * Когда жест закончился —
+     * останавливаем цикл и фиксируем.
+     */
+    map.on('moveend', stopLockLoop);
+    map.on('rotateend', stopLockLoop);
+    map.on('zoomend', stopLockLoop);
 
 }
 
@@ -102,19 +144,21 @@ function unbindMapRedraw(map) {
     if (!map || !mapRedrawBound)
         return;
 
-    map.off('move', scheduleRouteLock);
-    map.off('rotate', scheduleRouteLock);
-    map.off('zoom', scheduleRouteLock);
-    map.off('viewreset', scheduleRouteLock);
-    map.off('zoomanim', scheduleRouteLock);
-    map.off('moveend', forceRouteLock);
-    map.off('rotateend', forceRouteLock);
-    map.off('zoomend', forceRouteLock);
+    stopLockLoop();
 
-    if (redrawRaf) {
-        cancelAnimationFrame(redrawRaf);
-        redrawRaf = null;
-    }
+    map.off('movestart', startLockLoop);
+    map.off('rotatestart', startLockLoop);
+    map.off('zoomstart', startLockLoop);
+
+    map.off('move', forceRouteLock);
+    map.off('rotate', forceRouteLock);
+    map.off('zoom', forceRouteLock);
+    map.off('zoomanim', forceRouteLock);
+    map.off('viewreset', forceRouteLock);
+
+    map.off('moveend', stopLockLoop);
+    map.off('rotateend', stopLockLoop);
+    map.off('zoomend', stopLockLoop);
 
     mapRedrawBound = false;
 
@@ -252,16 +296,8 @@ async function buildRoute(
             );
 
 
-        /* ==========================================
-           СОЗДАЁМ POLYLINE ТОЛЬКО ОДИН РАЗ
-        ========================================== */
-
         if (!routeLine) {
 
-            /*
-             * Используем Canvas + жёсткую
-             * перепроекцию на каждом кадре.
-             */
             const renderer = L.canvas({
                 padding: 0.5
             });
@@ -293,9 +329,6 @@ async function buildRoute(
 
         } else {
 
-            /*
-             * Только обновляем точки.
-             */
             routeLine.setLatLngs(path);
             forceRouteLock();
 
