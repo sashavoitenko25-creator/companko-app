@@ -28,8 +28,8 @@ let lastToLng = null;
 
 let latestOwnPosition = null;
 
-let routeCanvasRenderer = null;
 let mapRedrawBound = false;
+let redrawRaf = null;
 
 
 const ROUTE_UPDATE_INTERVAL = 4000;
@@ -39,17 +39,41 @@ const MIN_MOVEMENT_METERS = 8;
 
 
 /* =========================================================
-   FORCE REDRAW (чтобы линия не отрывалась при rotate/pan)
+   FORCE LOCK TO STREETS
+   (перепроецируем линию на каждом кадре взаимодействия)
 ========================================================= */
 
-function forceRouteRedraw() {
+function forceRouteLock() {
 
     if (!routeLine)
         return;
 
-    try {
-        routeLine.redraw();
-    } catch (e) {}
+    /*
+     * Берём те же координаты и заново
+     * проецируем в текущий transform карты.
+     * Это единственный способ, который
+     * стабильно держит линию на улицах
+     * при leaflet-rotate.
+     */
+    const latlngs = routeLine.getLatLngs();
+
+    if (!latlngs || !latlngs.length)
+        return;
+
+    routeLine.setLatLngs(latlngs);
+
+}
+
+
+function scheduleRouteLock() {
+
+    if (redrawRaf)
+        return;
+
+    redrawRaf = requestAnimationFrame(() => {
+        redrawRaf = null;
+        forceRouteLock();
+    });
 
 }
 
@@ -61,18 +85,14 @@ function bindMapRedraw(map) {
 
     mapRedrawBound = true;
 
-    /*
-     * Перерисовываем линию на каждом кадре
-     * взаимодействия с картой.
-     * Это убирает «отрыв» от улиц при rotate + pan.
-     */
-    map.on('move', forceRouteRedraw);
-    map.on('rotate', forceRouteRedraw);
-    map.on('zoom', forceRouteRedraw);
-    map.on('viewreset', forceRouteRedraw);
-    map.on('moveend', forceRouteRedraw);
-    map.on('rotateend', forceRouteRedraw);
-    map.on('zoomend', forceRouteRedraw);
+    map.on('move', scheduleRouteLock);
+    map.on('rotate', scheduleRouteLock);
+    map.on('zoom', scheduleRouteLock);
+    map.on('viewreset', scheduleRouteLock);
+    map.on('zoomanim', scheduleRouteLock);
+    map.on('moveend', forceRouteLock);
+    map.on('rotateend', forceRouteLock);
+    map.on('zoomend', forceRouteLock);
 
 }
 
@@ -82,13 +102,19 @@ function unbindMapRedraw(map) {
     if (!map || !mapRedrawBound)
         return;
 
-    map.off('move', forceRouteRedraw);
-    map.off('rotate', forceRouteRedraw);
-    map.off('zoom', forceRouteRedraw);
-    map.off('viewreset', forceRouteRedraw);
-    map.off('moveend', forceRouteRedraw);
-    map.off('rotateend', forceRouteRedraw);
-    map.off('zoomend', forceRouteRedraw);
+    map.off('move', scheduleRouteLock);
+    map.off('rotate', scheduleRouteLock);
+    map.off('zoom', scheduleRouteLock);
+    map.off('viewreset', scheduleRouteLock);
+    map.off('zoomanim', scheduleRouteLock);
+    map.off('moveend', forceRouteLock);
+    map.off('rotateend', forceRouteLock);
+    map.off('zoomend', forceRouteLock);
+
+    if (redrawRaf) {
+        cancelAnimationFrame(redrawRaf);
+        redrawRaf = null;
+    }
 
     mapRedrawBound = false;
 
@@ -155,7 +181,6 @@ export function stopRoute() {
     }
 
     routeLine = null;
-    routeCanvasRenderer = null;
 
     activeUser = null;
     latestOwnPosition = null;
@@ -234,15 +259,12 @@ async function buildRoute(
         if (!routeLine) {
 
             /*
-             * Canvas + принудительная перерисовка
-             * на move/rotate — единственный стабильный
-             * способ держать линию на улицах
-             * при leaflet-rotate.
+             * Используем Canvas + жёсткую
+             * перепроекцию на каждом кадре.
              */
-            routeCanvasRenderer =
-                L.canvas({
-                    padding: 0.5
-                });
+            const renderer = L.canvas({
+                padding: 0.5
+            });
 
             routeLine = L.polyline(
                 path,
@@ -252,7 +274,7 @@ async function buildRoute(
                     opacity: 0.95,
                     lineCap: 'round',
                     lineJoin: 'round',
-                    renderer: routeCanvasRenderer,
+                    renderer,
                     smoothFactor: 1,
                     interactive: false
                 }
@@ -273,10 +295,9 @@ async function buildRoute(
 
             /*
              * Только обновляем точки.
-             * Линию не удаляем и не пересоздаём.
              */
             routeLine.setLatLngs(path);
-            forceRouteRedraw();
+            forceRouteLock();
 
         }
 
@@ -452,10 +473,6 @@ async function refreshTargetPosition() {
         }
 
 
-        /* ==========================================
-           LIVE ЗАКОНЧИЛСЯ
-        ========================================== */
-
         if (!data) {
 
             window.dispatchEvent(
@@ -551,10 +568,6 @@ async function checkRouteUpdate() {
         return;
     }
 
-
-    /* ==========================================
-       ПЕРВОЕ ПОСТРОЕНИЕ
-    ========================================== */
 
     if (
         lastFromLat === null ||
