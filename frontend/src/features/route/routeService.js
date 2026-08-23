@@ -29,12 +29,70 @@ let lastToLng = null;
 let latestOwnPosition = null;
 
 let routeCanvasRenderer = null;
+let mapRedrawBound = false;
 
 
 const ROUTE_UPDATE_INTERVAL = 4000;
 const TARGET_REFRESH_INTERVAL = 3000;
 const MIN_ROUTE_REBUILD_INTERVAL = 4000;
 const MIN_MOVEMENT_METERS = 8;
+
+
+/* =========================================================
+   FORCE REDRAW (чтобы линия не отрывалась при rotate/pan)
+========================================================= */
+
+function forceRouteRedraw() {
+
+    if (!routeLine)
+        return;
+
+    try {
+        routeLine.redraw();
+    } catch (e) {}
+
+}
+
+
+function bindMapRedraw(map) {
+
+    if (!map || mapRedrawBound)
+        return;
+
+    mapRedrawBound = true;
+
+    /*
+     * Перерисовываем линию на каждом кадре
+     * взаимодействия с картой.
+     * Это убирает «отрыв» от улиц при rotate + pan.
+     */
+    map.on('move', forceRouteRedraw);
+    map.on('rotate', forceRouteRedraw);
+    map.on('zoom', forceRouteRedraw);
+    map.on('viewreset', forceRouteRedraw);
+    map.on('moveend', forceRouteRedraw);
+    map.on('rotateend', forceRouteRedraw);
+    map.on('zoomend', forceRouteRedraw);
+
+}
+
+
+function unbindMapRedraw(map) {
+
+    if (!map || !mapRedrawBound)
+        return;
+
+    map.off('move', forceRouteRedraw);
+    map.off('rotate', forceRouteRedraw);
+    map.off('zoom', forceRouteRedraw);
+    map.off('viewreset', forceRouteRedraw);
+    map.off('moveend', forceRouteRedraw);
+    map.off('rotateend', forceRouteRedraw);
+    map.off('zoomend', forceRouteRedraw);
+
+    mapRedrawBound = false;
+
+}
 
 
 /* =========================================================
@@ -89,6 +147,8 @@ export function stopRoute() {
     stopDynamicRoute();
 
     const map = getMap();
+
+    unbindMapRedraw(map);
 
     if (routeLine && map) {
         map.removeLayer(routeLine);
@@ -174,10 +234,10 @@ async function buildRoute(
         if (!routeLine) {
 
             /*
-             * Canvas-renderer нужен,
-             * чтобы линия не отрывалась
-             * от улиц при rotate / pan
-             * (leaflet-rotate + SVG даёт лаг).
+             * Canvas + принудительная перерисовка
+             * на move/rotate — единственный стабильный
+             * способ держать линию на улицах
+             * при leaflet-rotate.
              */
             routeCanvasRenderer =
                 L.canvas({
@@ -193,9 +253,12 @@ async function buildRoute(
                     lineCap: 'round',
                     lineJoin: 'round',
                     renderer: routeCanvasRenderer,
-                    smoothFactor: 1
+                    smoothFactor: 1,
+                    interactive: false
                 }
             ).addTo(map);
+
+            bindMapRedraw(map);
 
             map.fitBounds(
                 routeLine.getBounds(),
@@ -213,6 +276,7 @@ async function buildRoute(
              * Линию не удаляем и не пересоздаём.
              */
             routeLine.setLatLngs(path);
+            forceRouteRedraw();
 
         }
 
