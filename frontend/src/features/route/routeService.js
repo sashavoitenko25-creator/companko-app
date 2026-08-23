@@ -54,8 +54,8 @@ function forceRouteLock() {
         return;
 
     /*
-     * Заново проецируем те же точки
-     * в текущий transform карты.
+     * Перепроецируем те же точки
+     * под текущий zoom + bearing.
      */
     routeLine.setLatLngs(latlngs);
 
@@ -93,10 +93,6 @@ function stopLockLoop() {
         lockRaf = null;
     }
 
-    /*
-     * Финальная точная фиксация
-     * после окончания жеста.
-     */
     forceRouteLock();
 
 }
@@ -110,17 +106,15 @@ function bindMapRedraw(map) {
     mapRedrawBound = true;
 
     /*
-     * Как только начинается любое
-     * взаимодействие — крутим цикл
-     * перепроекции каждый кадр.
+     * Старт любого жеста — включаем
+     * перепроекцию каждый кадр.
      */
     map.on('movestart', startLockLoop);
     map.on('rotatestart', startLockLoop);
     map.on('zoomstart', startLockLoop);
 
     /*
-     * На всякий случай дублируем
-     * и на сами события движения.
+     * Во время жеста
      */
     map.on('move', forceRouteLock);
     map.on('rotate', forceRouteLock);
@@ -129,8 +123,7 @@ function bindMapRedraw(map) {
     map.on('viewreset', forceRouteLock);
 
     /*
-     * Когда жест закончился —
-     * останавливаем цикл и фиксируем.
+     * Конец жеста
      */
     map.on('moveend', stopLockLoop);
     map.on('rotateend', stopLockLoop);
@@ -298,10 +291,13 @@ async function buildRoute(
 
         if (!routeLine) {
 
-            const renderer = L.canvas({
-                padding: 0.5
-            });
-
+            /*
+             * ВАЖНО:
+             * Не используем отдельный Canvas.
+             * SVG наследует CSS-transform карты
+             * и намного лучше держится
+             * при rotate + zoom.
+             */
             routeLine = L.polyline(
                 path,
                 {
@@ -310,7 +306,6 @@ async function buildRoute(
                     opacity: 0.95,
                     lineCap: 'round',
                     lineJoin: 'round',
-                    renderer,
                     smoothFactor: 1,
                     interactive: false
                 }
