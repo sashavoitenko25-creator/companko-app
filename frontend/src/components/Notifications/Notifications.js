@@ -18,6 +18,10 @@ import {
 } from '../../features/profile/SelectedUser';
 
 import {
+    checkActiveLive
+} from '../../services/supabase/liveSessionService';
+
+import {
     t
 } from '../../i18n';
 
@@ -304,10 +308,10 @@ function renderList() {
 }
 
 /* ========================================
-   OPEN → map + card
+   OPEN → map + card (через 2.5 сек)
 ======================================== */
 
-function handleOpenNotification(item) {
+async function handleOpenNotification(item) {
     closePanel();
     markRead(item.id);
 
@@ -326,8 +330,8 @@ function handleOpenNotification(item) {
         });
     }
 
-    setTimeout(() => {
-        showUserCard({
+    setTimeout(async () => {
+        const user = {
             user_id: item.from_user_id,
             id: item.from_user_id,
             name: item.name,
@@ -339,11 +343,41 @@ function handleOpenNotification(item) {
             gender: item.gender,
             activity: item.activity,
             relationship_status: item.relationship_status,
-            expires_at: item.expires_at,
-            duration: item.duration,
+            expires_at: item.expires_at || null,
+            duration: item.duration || null,
             distance: 0
-        });
-    }, 1000);
+        };
+
+        // подтягиваем актуальный LIVE, чтобы таймер работал
+        if (item.from_user_id) {
+            try {
+                const session = await checkActiveLive(item.from_user_id);
+
+                if (session) {
+                    user.activity =
+                        session.activity ||
+                        user.activity;
+
+                    user.expires_at =
+                        session.expires_at ||
+                        user.expires_at;
+
+                    user.duration =
+                        session.duration ||
+                        user.duration;
+
+                    user.isLive = true;
+                }
+            } catch (error) {
+                console.warn(
+                    'Notification live load error',
+                    error
+                );
+            }
+        }
+
+        showUserCard(user);
+    }, 2500);
 }
 
 /* ========================================
