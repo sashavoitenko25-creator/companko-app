@@ -136,7 +136,6 @@ export function initNotifications() {
         renderList();
     });
 
-    // тестовый/внешний вход: window.dispatchEvent(new CustomEvent('notification:push', { detail: {...} }))
     window.addEventListener('notification:push', (e) => {
         if (e.detail) addNotification(e.detail);
     });
@@ -144,6 +143,43 @@ export function initNotifications() {
     renderList();
     updateBadge();
     updateTexts();
+}
+
+/* ========================================
+   SETTINGS / FILTERS
+======================================== */
+
+function closeSettings() {
+    const settings = document.querySelector('#settings-window');
+    const settingsButton = document.querySelector('#settings-button');
+
+    if (settings) {
+        settings.classList.remove('open');
+    }
+
+    if (settingsButton) {
+        settingsButton.classList.remove('open-state');
+        settingsButton.blur();
+    }
+}
+
+function hideFiltersTrigger() {
+    const trigger = document.querySelector('.filters-trigger');
+    if (!trigger) return;
+
+    trigger.style.opacity = '0';
+    trigger.style.pointerEvents = 'none';
+    trigger.style.transform = 'translateY(16px)';
+    trigger.style.transition = 'opacity .2s ease, transform .2s ease';
+}
+
+function showFiltersTrigger() {
+    const trigger = document.querySelector('.filters-trigger');
+    if (!trigger) return;
+
+    trigger.style.opacity = '';
+    trigger.style.pointerEvents = '';
+    trigger.style.transform = '';
 }
 
 /* ========================================
@@ -160,10 +196,14 @@ function togglePanel() {
         return;
     }
 
+    closeSettings();
     window.dispatchEvent(new Event('ui:close-all'));
+
+    hideFiltersTrigger();
 
     panel.classList.add('open');
     btn?.classList.add('open-state');
+
     markAllRead();
     renderList();
     updateBadge();
@@ -172,8 +212,11 @@ function togglePanel() {
 function closePanel() {
     const panel = document.querySelector('#notif-panel');
     const btn = document.querySelector('#notif-btn');
+
     panel?.classList.remove('open');
     btn?.classList.remove('open-state');
+
+    showFiltersTrigger();
 }
 
 /* ========================================

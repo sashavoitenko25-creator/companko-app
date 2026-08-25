@@ -1,5 +1,5 @@
 /* =========================================================
-   NOTIFICATION BUTTON (header, left of avatar)
+   NOTIFICATION BUTTON — как bottom-button (45px)
 ========================================================= */
 
 .notif-btn {
@@ -7,6 +7,7 @@
     width: 45px;
     height: 45px;
     min-width: 45px;
+    max-width: 45px;
     flex: 0 0 45px;
     border: 1px solid rgba(255, 255, 255, 0.10);
     border-radius: 50%;
@@ -16,7 +17,7 @@
             rgba(28, 30, 43, 0.97),
             rgba(14, 16, 26, 0.97)
         );
-    color: rgba(255, 255, 255, 0.92);
+    color: rgba(255, 255, 255, 0.90);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,6 +46,10 @@
     transform: scale(0.92);
 }
 
+.notif-btn:focus {
+    outline: none;
+}
+
 .notif-btn.open-state {
     transform: scale(0.94);
     background:
@@ -54,16 +59,19 @@
             rgba(91, 33, 182, 0.30)
         );
     border-color: rgba(167, 139, 250, 0.75);
+    color: #ffffff;
     box-shadow:
         0 8px 22px rgba(0, 0, 0, 0.40),
         0 0 20px rgba(139, 92, 246, 0.38),
+        0 0 6px rgba(167, 139, 250, 0.30),
         inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
 .notif-btn__icon {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
     display: block;
+    flex: 0 0 auto;
     color: #ffffff;
 }
 
