@@ -1,62 +1,48 @@
 import './Home.css';
-
 import {
     Header
 } from '../../components/Header';
-
 import {
     Map
 } from '../../components/Map';
-
 import {
     LiveModal
 } from '../../components/LiveModal';
-
 import {
     BottomBar
 } from '../../components/BottomBar';
-
 import {
     RoutePanel,
     showRoute
 } from '../../features/route/RoutePanel';
-
 import {
     Settings,
     initSettings
 } from '../../components/Settings/Settings';
-
 import {
     SelectedUser,
     showUserCard
 } from '../../features/profile/SelectedUser';
-
 import {
     FeedbackModal,
     initFeedbackModal
 } from '../../components/FeedbackModal/FeedbackModal';
-
 import {
     LanguageModal,
     initLanguageModal
 } from '../../components/LanguageModal/LanguageModal';
-
 import {
     AdminPanel
 } from '../../components/AdminPanel/AdminPanel';
-
 import {
     initAdminPanel as initAdminComponent,
     loadFeedback
 } from '../../components/AdminPanel/AdminPanel';
-
 import {
     FilterPanel
 } from '../../features/filters/FilterPanel';
-
 import '../../features/live/live.css';
 import '../../features/route/route.css';
-
 import {
     setActivity,
     setDuration,
@@ -64,26 +50,30 @@ import {
     clearLiveState,
     getLiveState
 } from '../../store/liveStore';
-
 import {
     getProfile
 } from '../../features/profile/profileStore';
-
 import {
     createLiveSession,
     sendLocation,
     stopLiveSession,
     restoreActiveLive
 } from '../../services/supabase/liveSessionService';
-
 import {
     initMyLiveController
 } from '../../features/live/myLiveController';
-
 import {
     supabase
 } from '../../services/supabase/supabaseClient';
-
+import {
+    fetchMyRouteNotifications,
+    subscribeRouteNotifications,
+    mapRouteNotificationRow
+} from '../../services/supabase/routeNotificationService';
+import {
+    addNotification,
+    getNotifications
+} from '../../store/notificationStore';
 import {
     t
 } from '../../i18n';
@@ -91,6 +81,7 @@ import {
 let selectedUser = null;
 let initialized = false;
 let exitLiveHandled = false;
+let routeNotifChannel = null;
 
 /* =========================================================
    HOME
@@ -173,12 +164,99 @@ async function initHomeEvents(){
 
     initAutoStopLiveOnExit();
 
+    // уведомления о маршрутах
+    await initRouteNotifications();
+
     window.addEventListener(
         'language:changed',
         ()=>{
             updateLiveButton();
         }
     );
+
+}
+
+/* =========================================================
+   ROUTE NOTIFICATIONS (realtime + load)
+========================================================= */
+
+async function initRouteNotifications(){
+
+    const profile = getProfile();
+    if(!profile)
+        return;
+
+    const myUserId =
+        profile.user_id ||
+        profile.id;
+
+    if(!myUserId)
+        return;
+
+    // загрузить уже существующие
+    try{
+
+        const rows =
+            await fetchMyRouteNotifications(
+                myUserId
+            );
+
+        const existingIds = new Set(
+            getNotifications().map(n => n.id)
+        );
+
+        rows.forEach(row => {
+
+            const mapped =
+                mapRouteNotificationRow(row);
+
+            if(
+                mapped &&
+                !existingIds.has(mapped.id)
+            ){
+                addNotification(mapped);
+            }
+
+        });
+
+    }
+    catch(error){
+
+        console.error(
+            'Load route notifications error',
+            error
+        );
+
+    }
+
+    // realtime: новые
+    if(routeNotifChannel){
+        try{
+            supabase.removeChannel(
+                routeNotifChannel
+            );
+        }
+        catch(e){}
+        routeNotifChannel = null;
+    }
+
+    routeNotifChannel =
+        subscribeRouteNotifications(
+            myUserId,
+            (row) => {
+
+                const mapped =
+                    mapRouteNotificationRow(
+                        row
+                    );
+
+                if(!mapped)
+                    return;
+
+                addNotification(mapped);
+
+            }
+        );
 
 }
 
@@ -415,10 +493,8 @@ function initLiveButton(){
                 getLiveState();
 
             if(live.session_id){
-
                 await stopMyLive();
                 return;
-
             }
 
             const modal =
@@ -427,11 +503,9 @@ function initLiveButton(){
                 );
 
             if(modal){
-
                 modal.classList.add(
                     'open'
                 );
-
             }
 
         };
@@ -550,11 +624,9 @@ function initLiveEvents(){
                             '.live-option'
                         )
                         .forEach(item=>{
-
                             item.classList.remove(
                                 'active'
                             );
-
                         });
 
                     button.classList.add(
@@ -583,11 +655,9 @@ function initLiveEvents(){
                             '.time-options button'
                         )
                         .forEach(item=>{
-
                             item.classList.remove(
                                 'active'
                             );
-
                         });
 
                     button.classList.add(
@@ -741,11 +811,9 @@ function initUserSelection(){
             ){
 
                 if(selectedUser){
-
                     showRoute(
                         selectedUser
                     );
-
                 }
 
             }

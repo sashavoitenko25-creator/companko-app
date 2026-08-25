@@ -39,6 +39,15 @@ const translations = {
         // Header
         online: 'Онлайн',
 
+        // Notifications
+        notifications_aria: 'Уведомления',
+        notifications_title: 'Уведомления',
+        notifications_empty: 'Пока нет уведомлений',
+        notifications_delete: 'Удалить',
+        notifications_route_text: 'Построил к вам маршрут',
+        notifications_route_toast: 'К вам построили маршрут 📍',
+        notifications_default_text: 'Новое уведомление',
+
         // UserCard
         guest: 'Гость',
         meters: 'м',
@@ -210,6 +219,15 @@ const translations = {
 
         // Header
         online: 'Online',
+
+        // Notifications
+        notifications_aria: 'Notifications',
+        notifications_title: 'Notifications',
+        notifications_empty: 'No notifications yet',
+        notifications_delete: 'Delete',
+        notifications_route_text: 'Built a route to you',
+        notifications_route_toast: 'Someone built a route to you 📍',
+        notifications_default_text: 'New notification',
 
         // UserCard
         guest: 'Guest',
@@ -383,6 +401,15 @@ const translations = {
         // Header
         online: 'Онлайн',
 
+        // Notifications
+        notifications_aria: 'Сповіщення',
+        notifications_title: 'Сповіщення',
+        notifications_empty: 'Поки немає сповіщень',
+        notifications_delete: 'Видалити',
+        notifications_route_text: 'Побудував до вас маршрут',
+        notifications_route_toast: 'До вас побудували маршрут 📍',
+        notifications_default_text: 'Нове сповіщення',
+
         // UserCard
         guest: 'Гість',
         meters: 'м',
@@ -554,6 +581,15 @@ const translations = {
 
         // Header
         online: 'Online',
+
+        // Notifications
+        notifications_aria: 'Benachrichtigungen',
+        notifications_title: 'Benachrichtigungen',
+        notifications_empty: 'Noch keine Benachrichtigungen',
+        notifications_delete: 'Löschen',
+        notifications_route_text: 'Hat eine Route zu dir gebaut',
+        notifications_route_toast: 'Jemand hat eine Route zu dir gebaut 📍',
+        notifications_default_text: 'Neue Benachrichtigung',
 
         // UserCard
         guest: 'Gast',

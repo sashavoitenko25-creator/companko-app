@@ -5,13 +5,16 @@ import {
 } from '../ProfileButton/ProfileButton';
 
 import {
+    Notifications
+} from '../Notifications/Notifications';
+
+import {
     getOnlineCount
 } from '../../services/supabase/liveService';
 
 import {
     t
 } from '../../i18n';
-
 
 export function Header(){
 
@@ -21,7 +24,6 @@ export function Header(){
     );
 
     return `
-
 <header class="header">
 
     <div class="header-brand">
@@ -65,14 +67,15 @@ export function Header(){
 
     </div>
 
-    ${ProfileButton()}
+    <div class="header-actions">
+        ${Notifications()}
+        ${ProfileButton()}
+    </div>
 
 </header>
-
 `;
 
 }
-
 
 /* =========================================================
    INIT
@@ -93,24 +96,12 @@ function initHeader(){
             }
         );
 
-
     updateOnline();
-
-
-    /*
-     * Обновляем количество пользователей
-     * каждую секунду.
-     */
 
     setInterval(
         updateOnline,
         1000
     );
-
-
-    /*
-     * Обновляем текст при смене языка.
-     */
 
     window.addEventListener(
         'language:changed',
@@ -118,7 +109,6 @@ function initHeader(){
     );
 
 }
-
 
 /* =========================================================
    ONLINE
@@ -131,16 +121,13 @@ async function updateOnline(){
         const count =
             await getOnlineCount();
 
-
         const status =
             document.querySelector(
                 '#header-status'
             );
 
-
         if(!status)
             return;
-
 
         if(count > 0){
 
@@ -156,7 +143,6 @@ async function updateOnline(){
         }
 
     }
-
     catch(error){
 
         console.error(

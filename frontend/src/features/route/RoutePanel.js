@@ -1,14 +1,17 @@
 import './route.css';
-
 import {
     startRoute,
     stopRoute
 } from './routeService';
-
 import {
     getLiveState
 } from '../../store/liveStore';
-
+import {
+    getProfile
+} from '../../features/profile/profileStore';
+import {
+    sendRouteNotification
+} from '../../services/supabase/routeNotificationService';
 import {
     t
 } from '../../i18n';
@@ -19,6 +22,7 @@ let collapsed = false;
 let noticeTimer = null;
 let routeLiveListenerInitialized = false;
 let routeInfoListenerInitialized = false;
+let lastRouteNotifyAt = 0;
 
 /* ========================================
    УВЕДОМЛЕНИЕ
@@ -95,18 +99,67 @@ export function showLiveRequiredNotice(
     noticeTimer =
         setTimeout(
             () => {
-
                 notice.classList.remove(
                     'route-live-notice--show'
                 );
-
                 notice.classList.add(
                     'route-live-notice--hide'
                 );
-
             },
             2500
         );
+
+}
+
+/* ========================================
+   УВЕДОМЛЕНИЕ О МАРШРУТЕ (на сервер)
+======================================== */
+
+function notifyRouteBuilt(targetUser){
+
+    if(!targetUser)
+        return;
+
+    const now = Date.now();
+    if(now - lastRouteNotifyAt < 5000)
+        return;
+
+    lastRouteNotifyAt = now;
+
+    const me = getProfile();
+    if(!me)
+        return;
+
+    const toUserId = getUserId(targetUser);
+    const fromUserId = me.user_id || me.id;
+
+    if(!toUserId || !fromUserId)
+        return;
+
+    // не уведомляем сами себя
+    if(String(toUserId) === String(fromUserId))
+        return;
+
+    const myLoc = window.myLocation || {};
+
+    sendRouteNotification({
+        to_user_id: toUserId,
+        from_user_id: fromUserId,
+        name: me.name || me.first_name || '',
+        age: me.age || null,
+        photo_url: me.photo_url || me.photo || null,
+        lat: myLoc.lat ?? null,
+        lng: myLoc.lng ?? null,
+        gender: me.gender || null,
+        activity: me.activity || null,
+        relationship_status: me.relationship_status || null
+    }).then(row => {
+        if(row){
+            console.log('Route notification sent:', row.id);
+        } else {
+            console.warn('Route notification not sent');
+        }
+    });
 
 }
 
@@ -129,40 +182,30 @@ export function RoutePanel(){
 
     return `
 <div id="route-panel" class="route-panel">
-
     <div class="route-panel__title" id="route-panel-title">
         ${t('route_title')}
     </div>
-
     <div id="route-info"></div>
-
     <div class="transport-buttons">
-
         <button data-mode="foot" id="route-mode-foot">
             ${t('route_foot')}
         </button>
-
         <button data-mode="bike" id="route-mode-bike">
             ${t('route_bike')}
         </button>
-
         <button
             data-mode="car"
             class="active"
             id="route-mode-car">
             ${t('route_car')}
         </button>
-
     </div>
-
     <button
         id="route-cancel"
         type="button">
         ${t('route_cancel')}
     </button>
-
 </div>
-
 <!-- =====================================
      КНОПКА СВЁРНУТОГО МАРШРУТА
 ===================================== -->
@@ -172,13 +215,11 @@ export function RoutePanel(){
     type="button"
     aria-label="${t('route_open')}"
     title="${t('route_open')}">
-
     <svg
         class="route-open-button__icon"
         viewBox="0 0 32 32"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true">
-
         <path
             class="route-open-button__arrow"
             d="
@@ -197,7 +238,6 @@ export function RoutePanel(){
             stroke-linejoin="round"
             stroke-linecap="round"
         />
-
         <path
             class="route-open-button__arrow-inner"
             d="
@@ -212,9 +252,7 @@ export function RoutePanel(){
             "
             fill="currentColor"
         />
-
     </svg>
-
 </button>
 `;
 
@@ -485,10 +523,8 @@ export function showRoute(user){
         !live ||
         !live.session_id
     ){
-
         showLiveRequiredNotice();
         return;
-
     }
 
     currentUser =
@@ -560,12 +596,9 @@ export function showRoute(user){
         }
 
         if(!result){
-
             info.innerHTML =
                 t('route_failed');
-
             return;
-
         }
 
         info.innerHTML = `
@@ -579,6 +612,8 @@ export function showRoute(user){
                 ⏱ ${result.duration} ${t('route_min')}
             </div>
         `;
+
+        notifyRouteBuilt(routeTarget);
 
     }
 
@@ -603,11 +638,9 @@ export function showRoute(user){
                             '.transport-buttons button'
                         )
                         .forEach(item => {
-
                             item.classList.remove(
                                 'active'
                             );
-
                         });
 
                     button.classList.add(

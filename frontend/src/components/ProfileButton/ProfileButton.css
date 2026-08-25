@@ -1,79 +1,45 @@
 .profile-button{
-
-    position:absolute;
-
-    top:18px;
-
-    right:18px;
-
+    position:relative;
+    top:auto;
+    right:auto;
     width:48px;
-
     height:48px;
-
     border-radius:50%;
-
     overflow:hidden;
-
     padding:0;
-
     background:none;
-
     border:2px solid white;
-
     cursor:pointer;
-
     z-index:6000;
-
     pointer-events:auto;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
     transition:.2s;
-
+    flex-shrink:0;
 }
 
 .profile-button:hover{
-
     transform:scale(1.05);
-
 }
 
 .profile-button:active{
-
     transform:scale(.96);
-
 }
 
 .profile-button img{
-
     width:100%;
-
     height:100%;
-
     object-fit:cover;
-
 }
 
 .profile-button__empty{
-
     width:100%;
-
     height:100%;
-
     display:flex;
-
     align-items:center;
-
     justify-content:center;
-
     font-size:22px;
-
     background:#444;
-
     color:white;
-
 }
