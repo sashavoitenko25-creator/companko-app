@@ -1,12 +1,10 @@
 import './FilterPanel.css';
-
 import {
     getFilters,
     setFilters,
     resetFilters,
     hasActiveFilters
 } from '../../store/filterStore';
-
 import {
     t
 } from '../../i18n';
@@ -63,22 +61,16 @@ export function FilterPanel(){
     id="filter-panel"
     class="filter-panel"
 >
-
     <div
         class="filter-panel__backdrop"
         id="filter-panel-backdrop"
     ></div>
-
     <div class="filter-panel__sheet">
-
         <div class="filter-panel__handle"></div>
-
         <div class="filter-panel__header">
-
             <div class="filter-panel__title" id="filter-panel-title">
                 ${t('filters_title')}
             </div>
-
             <button
                 type="button"
                 class="filter-panel__close"
@@ -87,16 +79,12 @@ export function FilterPanel(){
             >
                 ×
             </button>
-
         </div>
-
         <!-- АКТИВНОСТИ -->
         <div class="filter-section">
-
             <div class="filter-section__label" id="filter-label-activities">
                 ${t('filters_busy_with')}
             </div>
-
             <div
                 class="filter-chips"
                 id="filter-activities"
@@ -113,18 +101,13 @@ export function FilterPanel(){
                     `).join('')
                 }
             </div>
-
         </div>
-
         <!-- ВОЗРАСТ -->
         <div class="filter-section">
-
             <div class="filter-section__label" id="filter-label-age">
                 ${t('filters_age')}
             </div>
-
             <div class="filter-age-row">
-
                 <label class="filter-age-field">
                     <span id="filter-age-from-label">${t('filters_age_from')}</span>
                     <input
@@ -136,7 +119,6 @@ export function FilterPanel(){
                         placeholder="18"
                     >
                 </label>
-
                 <label class="filter-age-field">
                     <span id="filter-age-to-label">${t('filters_age_to')}</span>
                     <input
@@ -148,18 +130,13 @@ export function FilterPanel(){
                         placeholder="45"
                     >
                 </label>
-
             </div>
-
         </div>
-
         <!-- ОТНОШЕНИЯ -->
         <div class="filter-section">
-
             <div class="filter-section__label" id="filter-label-relationship">
                 ${t('filters_relationship')}
             </div>
-
             <div
                 class="filter-chips"
                 id="filter-relationships"
@@ -176,16 +153,12 @@ export function FilterPanel(){
                     `).join('')
                 }
             </div>
-
         </div>
-
         <!-- РАДИУС -->
         <div class="filter-section">
-
             <div class="filter-section__label" id="filter-label-radius">
                 ${t('filters_radius')}
             </div>
-
             <div
                 class="filter-chips"
                 id="filter-radius"
@@ -202,12 +175,9 @@ export function FilterPanel(){
                     `).join('')
                 }
             </div>
-
         </div>
-
         <!-- ACTIONS -->
         <div class="filter-actions">
-
             <button
                 type="button"
                 class="filter-btn filter-btn--ghost"
@@ -215,7 +185,6 @@ export function FilterPanel(){
             >
                 ${t('filters_reset')}
             </button>
-
             <button
                 type="button"
                 class="filter-btn filter-btn--primary"
@@ -223,16 +192,11 @@ export function FilterPanel(){
             >
                 ${t('filters_apply')}
             </button>
-
         </div>
-
     </div>
-
 </div>
-
 <!-- КНОПКА ПОД ПРОФИЛЕМ -->
 <div class="filters-trigger">
-
     <button
         type="button"
         class="filters-trigger__btn"
@@ -242,10 +206,8 @@ export function FilterPanel(){
             ${t('filters_btn')}
         </span>
     </button>
-
 </div>
 `;
-
 }
 
 /* ========================================
@@ -298,6 +260,30 @@ export function openFilterPanel(){
 
     if(!panel)
         return;
+
+    // Закрываем настройки, если они открыты
+    const settings =
+        document.querySelector(
+            '#settings-window'
+        );
+
+    const settingsButton =
+        document.querySelector(
+            '#settings-button'
+        );
+
+    if(settings){
+        settings.classList.remove(
+            'open'
+        );
+    }
+
+    if(settingsButton){
+        settingsButton.classList.remove(
+            'open-state'
+        );
+        settingsButton.blur();
+    }
 
     draft = getFilters();
     syncDraftToUI();
@@ -421,20 +407,16 @@ function initFilterPanel(){
                     if(
                         draft.activities.includes(id)
                     ){
-
                         draft.activities =
                             draft.activities.filter(
                                 item => item !== id
                             );
-
                     }
                     else{
-
                         draft.activities = [
                             ...draft.activities,
                             id
                         ];
-
                     }
 
                     syncDraftToUI();
@@ -463,20 +445,16 @@ function initFilterPanel(){
                     if(
                         draft.relationshipStatuses.includes(id)
                     ){
-
                         draft.relationshipStatuses =
                             draft.relationshipStatuses.filter(
                                 item => item !== id
                             );
-
                     }
                     else{
-
                         draft.relationshipStatuses = [
                             ...draft.relationshipStatuses,
                             id
                         ];
-
                     }
 
                     syncDraftToUI();
@@ -657,21 +635,17 @@ function syncDraftToUI(){
         );
 
     if(ageFrom){
-
         ageFrom.value =
             draft.ageFrom != null
                 ? String(draft.ageFrom)
                 : '';
-
     }
 
     if(ageTo){
-
         ageTo.value =
             draft.ageTo != null
                 ? String(draft.ageTo)
                 : '';
-
     }
 
 }
@@ -737,12 +711,10 @@ function updateTriggerState(){
         );
 
     if(label){
-
         label.textContent =
             active
                 ? t('filters_btn_active')
                 : t('filters_btn');
-
     }
 
 }
