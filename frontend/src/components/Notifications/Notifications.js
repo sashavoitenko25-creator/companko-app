@@ -32,13 +32,13 @@ import {
 } from '../../i18n';
 
 let initialized = false;
+let toastTimer = null;
 
 /* ========================================
    HTML
 ======================================== */
 
 export function Notifications() {
-
     setTimeout(initNotifications, 0);
 
     return `
@@ -96,7 +96,6 @@ export function Notifications() {
 ======================================== */
 
 export function initNotifications() {
-
     if (initialized) return;
     initialized = true;
 
@@ -107,7 +106,6 @@ export function initNotifications() {
 
     if (!btn || !panel) return;
 
-    // toast и панель — в body, чтобы не зависели от z-index header
     if (toast && toast.parentElement !== document.body) {
         document.body.appendChild(toast);
     }
@@ -334,7 +332,7 @@ function renderList() {
 }
 
 /* ========================================
-   OPEN → map + card (через 2.5 сек)
+   OPEN
 ======================================== */
 
 async function handleOpenNotification(item) {
@@ -342,7 +340,6 @@ async function handleOpenNotification(item) {
     markRead(item.id);
     markRouteNotificationRead(item.id).catch(() => {});
 
-    // 1) Проверяем, жив ли ещё LIVE
     let session = null;
 
     if (item.from_user_id) {
@@ -362,7 +359,6 @@ async function handleOpenNotification(item) {
 
     const isLiveGone = !session || isExpiredByTime;
 
-    // 2) LIVE уже нет → ошибка + удалить все уведомления от этого человека
     if (isLiveGone) {
         showLiveEndedError(item);
 
@@ -377,7 +373,6 @@ async function handleOpenNotification(item) {
         return;
     }
 
-    // 3) LIVE активен → карта + карточка
     const map = getMap();
     const lat = Number(item.lat);
     const lng = Number(item.lng);
@@ -464,10 +459,6 @@ function showLiveEndedError(item) {
     };
 }
 
-/* ========================================
-   BADGE
-======================================== */
-
 function updateBadge() {
     const badge = document.querySelector('#notif-badge');
     if (!badge) return;
@@ -482,12 +473,6 @@ function updateBadge() {
     }
 }
 
-/* ========================================
-   TOAST
-======================================== */
-
-let toastTimer = null;
-
 function showToast(item) {
     if (!item) return;
 
@@ -498,7 +483,6 @@ function showToast(item) {
 
     if (!toast || !title || !text) return;
 
-    // гарантированно поверх всего UI
     if (toast.parentElement !== document.body) {
         document.body.appendChild(toast);
     }
@@ -533,10 +517,6 @@ function showToast(item) {
         handleOpenNotification(item);
     };
 }
-
-/* ========================================
-   TEXTS
-======================================== */
 
 function updateTexts() {
     const title = document.querySelector('#notif-panel-title');
