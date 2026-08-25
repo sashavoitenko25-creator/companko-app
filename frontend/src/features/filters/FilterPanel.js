@@ -195,7 +195,7 @@ export function FilterPanel(){
         </div>
     </div>
 </div>
-<!-- КНОПКА ФИЛЬТРОВ (иконка) -->
+<!-- КНОПКА ФИЛЬТРОВ (воронка) -->
 <div class="filters-trigger">
     <button
         type="button"
@@ -211,9 +211,10 @@ export function FilterPanel(){
             aria-hidden="true"
         >
             <path
-                d="M4 6h16M7 12h10M10 18h4"
+                d="M3 5h18l-7 8v5l-4 2v-7L3 5z"
                 stroke="currentColor"
-                stroke-width="1.9"
+                stroke-width="1.85"
+                stroke-linejoin="round"
                 stroke-linecap="round"
             />
         </svg>
