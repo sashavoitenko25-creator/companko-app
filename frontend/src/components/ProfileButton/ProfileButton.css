@@ -43,3 +43,17 @@
     background:#444;
     color:white;
 }
+
+/* =========================================================
+   LIGHT MAP — рамка профиля
+========================================================= */
+
+body.map-theme-light .profile-button {
+    border-color: rgba(28, 30, 43, 0.35);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+body.map-theme-light .profile-button__empty {
+    background: #e8e8ec;
+    color: rgba(28, 30, 43, 0.85);
+}

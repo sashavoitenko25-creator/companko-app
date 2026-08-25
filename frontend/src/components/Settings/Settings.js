@@ -19,41 +19,33 @@ import L from 'leaflet';
 export function Settings(){
 
     return `
-
 <div
 id="settings-window"
 class="settings-window"
 >
-
 <h2 id="settings-title">
 ${t('settings_title')}
 </h2>
 
 <div class="theme-switch">
-
 <span class="theme-icon">
 🌙
 </span>
 
 <label class="switch">
-
 <input
 type="checkbox"
 id="map-theme-toggle"
 />
-
 <span class="slider"></span>
-
 </label>
 
 <span class="theme-icon">
 ☀️
 </span>
-
 </div>
 
 <div class="settings-actions">
-
 <button
 id="change-language-button"
 class="settings-action"
@@ -74,13 +66,10 @@ class="settings-action"
 >
 ${t('suggest_idea')}
 </button>
-
 </div>
 
 </div>
-
 `;
-
 }
 
 export function initSettings(){
@@ -99,23 +88,15 @@ export function initSettings(){
 
             const theme =
                 toggle.checked
-                    ?
-                    'light'
-                    :
-                    'dark';
+                    ? 'light'
+                    : 'dark';
 
             setMapTheme(theme);
 
-            const map =
-                getMap();
+            const map = getMap();
 
             if(map){
-
-                reloadMapTheme(
-                    map,
-                    L
-                );
-
+                reloadMapTheme(map, L);
             }
 
         };
@@ -136,14 +117,10 @@ export function initSettings(){
                 ?.classList.remove('open');
 
             setTimeout(()=>{
-
                 window.dispatchEvent(
-                    new Event(
-                        'language:open'
-                    )
+                    new Event('language:open')
                 );
-
-            },200);
+            }, 200);
 
         };
 
@@ -163,14 +140,10 @@ export function initSettings(){
                 ?.classList.remove('open');
 
             setTimeout(()=>{
-
                 window.dispatchEvent(
-                    new Event(
-                        'feedback:problem'
-                    )
+                    new Event('feedback:problem')
                 );
-
-            },200);
+            }, 200);
 
         };
 
@@ -190,20 +163,15 @@ export function initSettings(){
                 ?.classList.remove('open');
 
             setTimeout(()=>{
-
                 window.dispatchEvent(
-                    new Event(
-                        'feedback:idea'
-                    )
+                    new Event('feedback:idea')
                 );
-
-            },200);
+            }, 200);
 
         };
 
     }
 
-    // Обновляем тексты при смене языка
     window.addEventListener(
         'language:changed',
         ()=>{

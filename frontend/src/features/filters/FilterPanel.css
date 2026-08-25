@@ -301,3 +301,41 @@
     box-shadow:0 0 6px rgba(239,68,68,.7);
     pointer-events:none;
 }
+
+/* =========================================================
+   LIGHT MAP — инверсия кнопки фильтров
+========================================================= */
+
+body.map-theme-light .filters-trigger__btn {
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.96),
+        rgba(245, 245, 248, 0.96)
+    );
+    border-color: rgba(28, 30, 43, 0.12);
+    color: rgba(28, 30, 43, 0.92);
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.map-theme-light .filters-trigger__icon {
+    color: rgba(28, 30, 43, 0.92);
+}
+
+body.map-theme-light .filters-trigger__btn.has-active {
+    background: linear-gradient(
+        145deg,
+        rgba(124, 58, 237, 0.18),
+        rgba(91, 33, 182, 0.14)
+    );
+    border-color: rgba(124, 58, 237, 0.55);
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.12),
+        0 0 16px rgba(139, 92, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+body.map-theme-light .filters-trigger__btn.has-active .filters-trigger__icon {
+    color: #5b21b6;
+}

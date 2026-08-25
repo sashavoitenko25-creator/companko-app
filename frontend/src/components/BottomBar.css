@@ -662,3 +662,48 @@
     }
 
 } 
+
+/* =========================================================
+   LIGHT MAP — инверсия bottom-кнопок
+========================================================= */
+
+body.map-theme-light .bottom-button {
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.96),
+        rgba(245, 245, 248, 0.96)
+    );
+    border-color: rgba(28, 30, 43, 0.12);
+    color: rgba(28, 30, 43, 0.92);
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.map-theme-light .location-icon,
+body.map-theme-light .settings-icon {
+    color: rgba(28, 30, 43, 0.92);
+}
+
+body.map-theme-light .bottom-button.locating,
+body.map-theme-light .bottom-button.open-state {
+    background: linear-gradient(
+        145deg,
+        rgba(124, 58, 237, 0.18),
+        rgba(91, 33, 182, 0.14)
+    );
+    border-color: rgba(124, 58, 237, 0.55);
+    color: #5b21b6;
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.12),
+        0 0 16px rgba(139, 92, 246, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+body.map-theme-light .bottom-button.locating .location-icon,
+body.map-theme-light .bottom-button.open-state .settings-icon,
+body.map-theme-light #settings-button.open-state .settings-icon {
+    color: #5b21b6;
+}
+
+/* LIVE остаётся фиолетовым / красным — на светлой карте тоже хорошо читается */
