@@ -212,23 +212,25 @@
 }
 
 /* ========================================
-   FILTER BUTTON — круглая иконка
+   FILTER BUTTON — 38px, по центру под профилем
 ======================================== */
 
 .filters-trigger{
     position:absolute;
     top:74px;
-    right:14px;
+    /* профиль: right 18px, width 48px → центр 42px от края;
+       кнопка 38px → right = 42 - 19 = 23px */
+    right:23px;
     z-index:6000;
     pointer-events:auto;
 }
 
 .filters-trigger__btn{
     position:relative;
-    width:45px;
-    height:45px;
-    min-width:45px;
-    max-width:45px;
+    width:38px;
+    height:38px;
+    min-width:38px;
+    max-width:38px;
     padding:0;
     margin:0;
     border:1px solid rgba(255,255,255,.10);
@@ -270,8 +272,8 @@
 }
 
 .filters-trigger__icon{
-    width:21px;
-    height:21px;
+    width:18px;
+    height:18px;
     display:block;
     color:#ffffff;
 }
@@ -292,10 +294,10 @@
 
 .filters-trigger__dot{
     position:absolute;
-    top:6px;
-    right:6px;
-    width:8px;
-    height:8px;
+    top:5px;
+    right:5px;
+    width:7px;
+    height:7px;
     border-radius:50%;
     background:#ef4444;
     box-shadow:0 0 6px rgba(239,68,68,.7);
