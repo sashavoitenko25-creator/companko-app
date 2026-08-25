@@ -3,19 +3,13 @@
 ========================================================= */
 
 .profile-page {
-
+    position: relative;
     min-height: 100%;
-
     width: 100%;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     padding: 30px 16px;
-
     background:
         radial-gradient(
             circle at 50% 0%,
@@ -23,738 +17,484 @@
             transparent 40%
         ),
         #070812;
-
     box-sizing: border-box;
-
     color: #ffffff;
-
 }
 
+/* =========================================================
+   LANGUAGE BUTTON (registration)
+========================================================= */
+
+.profile-lang-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 10;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition:
+        background 0.2s ease,
+        transform 0.15s ease,
+        box-shadow 0.2s ease;
+}
+
+.profile-lang-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: scale(1.05);
+}
+
+.profile-lang-btn:active {
+    transform: scale(0.96);
+    background: rgba(139, 92, 246, 0.35);
+}
 
 /* =========================================================
    MODAL
 ========================================================= */
 
 .profile-modal {
-
     position: fixed;
-
     inset: 0;
-
     z-index: 10000;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     padding: 12px 16px;
-
     box-sizing: border-box;
-
     overflow-y: auto;
-
 }
-
 
 /* затемнение карты */
 
 .profile-modal__backdrop {
-
     position: absolute;
-
     inset: 0;
-
     background: rgba(0, 0, 0, .58);
-
     backdrop-filter: blur(4px);
-
     -webkit-backdrop-filter: blur(4px);
-
 }
-
 
 /* =========================================================
    CARD
 ========================================================= */
 
 .profile-card {
-
     position: relative;
-
     z-index: 1;
-
     width: 100%;
-
     max-width: 430px;
-
     box-sizing: border-box;
-
     padding: 30px 28px 28px;
-
     background:
         linear-gradient(
             145deg,
             #13172a 0%,
             #0f1220 100%
         );
-
     border: 1px solid rgba(255, 255, 255, 0.06);
-
     border-radius: 30px;
-
     box-shadow:
         0 25px 70px rgba(0, 0, 0, 0.55),
         0 0 40px rgba(124, 60, 255, 0.06);
-
     color: #ffffff;
-
 }
-
 
 /* =========================================================
    МОДАЛЬНАЯ КАРТОЧКА
 ========================================================= */
 
 .profile-modal .profile-card {
-
     max-height: none;
-
     height: auto;
-
     overflow: visible;
-
     margin: 0;
-
 }
-
 
 /* =========================================================
    CLOSE
 ========================================================= */
 
 .profile-close {
-
     position: absolute;
-
     top: 14px;
-
     right: 14px;
-
     z-index: 10;
-
     width: 38px;
-
     height: 38px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     padding: 0;
-
     border: none;
-
     border-radius: 50%;
-
     background: rgba(255,255,255,.08);
-
     color: rgba(255,255,255,.85);
-
     font-size: 27px;
-
     font-weight: 300;
-
     line-height: 1;
-
     cursor: pointer;
-
     transition:
         background .2s ease,
         transform .15s ease,
         color .2s ease;
-
 }
-
 
 .profile-close:hover {
-
     background: rgba(255,255,255,.15);
-
     color: #ffffff;
-
 }
-
 
 .profile-close:active {
-
     transform: scale(.92);
-
 }
-
 
 /* =========================================================
    HEADER
 ========================================================= */
 
 .profile-header {
-
     text-align: center;
-
     margin-bottom: 28px;
-
 }
 
-
 .profile-avatar {
-
     display: block;
-
     width: 112px;
-
     height: 112px;
-
     margin: 0 auto;
-
     object-fit: cover;
-
     border-radius: 50%;
-
     border: 4px solid #7c3cff;
-
     box-shadow:
         0 0 0 5px rgba(124, 60, 255, 0.10),
         0 12px 35px rgba(0, 0, 0, 0.45);
-
 }
-
 
 .profile-header h1 {
-
     margin: 18px 0 6px;
-
     font-size: 25px;
-
     line-height: 1.2;
-
     font-weight: 800;
-
     color: #ffffff;
-
 }
-
 
 .profile-header p {
-
     margin: 0;
-
     color: #8e93a8;
-
     font-size: 14px;
-
     line-height: 1.5;
-
 }
-
 
 /* =========================================================
    FIELDS
 ========================================================= */
 
 .profile-field {
-
     width: 100%;
-
     margin-bottom: 20px;
-
 }
-
 
 .profile-field label,
 .profile-label {
-
     display: block;
-
     margin-bottom: 9px;
-
     color: #a9aec0;
-
     font-size: 14px;
-
     font-weight: 600;
-
 }
-
 
 /* =========================================================
    INPUT
 ========================================================= */
 
 .profile-field input {
-
     display: block;
-
     width: 100%;
-
     box-sizing: border-box;
-
     padding: 15px 17px;
-
     border-radius: 17px;
-
     background: #080a13;
-
     border: 1px solid #2b3045;
-
     color: #ffffff;
-
     font-size: 16px;
-
     font-weight: 500;
-
     outline: none;
-
     transition:
         border-color .2s ease,
         box-shadow .2s ease,
         background .2s ease;
-
 }
-
 
 .profile-field input::placeholder {
-
     color: #5f6477;
-
 }
-
 
 .profile-field input:focus {
-
     background: #0a0c17;
-
     border-color: #7c3cff;
-
     box-shadow:
         0 0 0 4px rgba(124, 60, 255, 0.12);
-
 }
-
 
 .profile-field input[type="number"]::-webkit-inner-spin-button,
 .profile-field input[type="number"]::-webkit-outer-spin-button {
-
     margin: 0;
-
     -webkit-appearance: none;
-
 }
-
 
 .profile-field input[type="number"] {
-
     -moz-appearance: textfield;
-
 }
-
 
 /* =========================================================
    GENDER
 ========================================================= */
 
 .gender-box {
-
     display: flex;
-
     gap: 12px;
-
     width: 100%;
-
     margin-bottom: 22px;
-
 }
 
-
 .gender-choice {
-
     flex: 1;
-
     min-width: 0;
-
     padding: 15px 10px;
-
     border: 1px solid #272c42;
-
     border-radius: 17px;
-
     background: #1b2033;
-
     color: #ffffff;
-
     font-size: 15px;
-
     font-weight: 600;
-
     cursor: pointer;
-
     outline: none;
-
     transition:
         background .2s ease,
         border-color .2s ease,
         transform .15s ease,
         box-shadow .2s ease;
-
 }
-
 
 .gender-choice:hover {
-
     background: #242a42;
-
     border-color: #3b4260;
-
 }
-
 
 .gender-choice:active {
-
     transform: scale(.98);
-
 }
 
-
 .gender-choice.active {
-
     background:
         linear-gradient(
             135deg,
             #8b42ff,
             #7032ed
         );
-
     border-color: #8b42ff;
-
     box-shadow:
         0 10px 25px rgba(124, 60, 255, 0.28);
-
 }
-
 
 /* =========================================================
    RELATIONSHIP SELECT
 ========================================================= */
 
 .relationship-select {
-
     position: relative;
-
     width: 100%;
-
 }
 
-
 .relationship-select-button {
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     width: 100%;
-
     box-sizing: border-box;
-
     padding: 15px 17px;
-
     border: 1px solid #2b3045;
-
     border-radius: 17px;
-
     background: #080a13;
-
     color: #ffffff;
-
     font-size: 15px;
-
     font-weight: 500;
-
     text-align: left;
-
     cursor: pointer;
-
     outline: none;
-
     transition:
         border-color .2s ease,
         background .2s ease,
         box-shadow .2s ease;
-
 }
-
 
 .relationship-select-button:hover {
-
     background: #0b0d18;
-
     border-color: #3a4059;
-
 }
-
 
 .relationship-select.open
 .relationship-select-button {
-
     border-color: #7c3cff;
-
     box-shadow:
         0 0 0 4px rgba(124, 60, 255, 0.12);
-
 }
-
 
 #relationship-selected-text {
-
     overflow: hidden;
-
     white-space: nowrap;
-
     text-overflow: ellipsis;
-
 }
 
-
 .relationship-arrow {
-
     flex-shrink: 0;
-
     margin-left: 12px;
-
     color: #8f94a8;
-
     font-size: 18px;
-
     line-height: 1;
-
     transition:
         transform .2s ease,
         color .2s ease;
-
 }
-
 
 .relationship-select.open
 .relationship-arrow {
-
     color: #9b6cff;
-
     transform: rotate(180deg);
-
 }
-
 
 /* =========================================================
    RELATIONSHIP OPTIONS — ОТКРЫВАЮТСЯ ВВЕРХ
 ========================================================= */
 
 .relationship-options {
-
     position: absolute;
-
     z-index: 100;
-
     bottom: calc(100% + 8px);
-
     left: 0;
-
     right: 0;
-
     display: flex;
-
     flex-direction: column;
-
     gap: 5px;
-
     padding: 7px;
-
     box-sizing: border-box;
-
     background:
         linear-gradient(
             145deg,
             #181c30,
             #101322
         );
-
     border: 1px solid #303650;
-
     border-radius: 18px;
-
     box-shadow:
         0 18px 45px rgba(0, 0, 0, 0.55);
-
     opacity: 0;
-
     visibility: hidden;
-
     transform:
         translateY(6px)
         scale(.98);
-
     transform-origin: bottom;
-
     pointer-events: none;
-
     transition:
         opacity .16s ease,
         transform .16s ease,
         visibility .16s ease;
-
 }
-
 
 .relationship-select.open
 .relationship-options {
-
     opacity: 1;
-
     visibility: visible;
-
     transform:
         translateY(0)
         scale(1);
-
     pointer-events: auto;
-
 }
 
-
 .relationship-option {
-
     display: flex;
-
     align-items: center;
-
     width: 100%;
-
     box-sizing: border-box;
-
     padding: 13px 12px;
-
     border: 0;
-
     border-radius: 12px;
-
     background: transparent;
-
     color: #ffffff;
-
     font-size: 14px;
-
     font-weight: 500;
-
     text-align: left;
-
     cursor: pointer;
-
     outline: none;
-
     transition:
         background .15s ease,
         color .15s ease;
-
 }
-
 
 .relationship-option:hover {
-
     background: rgba(124, 60, 255, 0.12);
-
 }
-
 
 .relationship-option.active {
-
     background:
         rgba(124, 60, 255, 0.18);
-
     color: #b896ff;
-
 }
-
 
 /* =========================================================
    SAVE BUTTON
 ========================================================= */
 
 .save-button {
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     width: 100%;
-
     box-sizing: border-box;
-
     margin-top: 4px;
-
     padding: 16px 20px;
-
     border: 0;
-
     border-radius: 18px;
-
     background:
         linear-gradient(
             135deg,
             #8b42ff,
             #7133ee
         );
-
     color: #ffffff;
-
     font-size: 16px;
-
     font-weight: 800;
-
     cursor: pointer;
-
     outline: none;
-
     box-shadow:
         0 12px 30px rgba(124, 60, 255, 0.28);
-
     transition:
         transform .15s ease,
         box-shadow .2s ease,
         filter .2s ease;
-
 }
-
 
 .save-button:hover {
-
     filter: brightness(1.08);
-
     box-shadow:
         0 15px 35px rgba(124, 60, 255, 0.36);
-
 }
-
 
 .save-button:active {
-
     transform: scale(.985);
-
 }
-
 
 /* =========================================================
    MOBILE
@@ -763,91 +503,54 @@
 @media (max-width: 480px) {
 
     .profile-page {
-
         align-items: flex-start;
-
         padding: 20px 12px 30px;
-
     }
-
 
     .profile-card {
-
         max-width: 100%;
-
         padding: 25px 20px 22px;
-
         border-radius: 27px;
-
     }
-
 
     .profile-modal {
-
         padding: 12px;
-
         align-items: center;
-
     }
-
 
     .profile-modal .profile-card {
-
         max-height: none;
-
         height: auto;
-
         padding:
             25px 20px 22px;
-
         border-radius: 27px;
-
         overflow: visible;
-
     }
-
 
     .profile-avatar {
-
         width: 100px;
-
         height: 100px;
-
     }
-
 
     .profile-header h1 {
-
         font-size: 23px;
-
     }
-
 
     .gender-choice {
-
         padding: 14px 8px;
-
         font-size: 14px;
-
     }
-
 
     .profile-field input,
     .relationship-select-button {
-
         padding: 14px 15px;
-
     }
 
-
     .save-button {
-
         padding: 15px;
-
     }
 
 }
-
 
 /* =========================================================
    VERY SMALL PHONES
@@ -856,32 +559,21 @@
 @media (max-width: 350px) {
 
     .profile-card {
-
         padding:
             22px 16px 20px;
-
     }
-
 
     .profile-modal .profile-card {
-
         padding:
             22px 16px 20px;
-
     }
-
 
     .gender-box {
-
         gap: 8px;
-
     }
 
-
     .gender-choice {
-
         font-size: 13px;
-
     }
 
 }

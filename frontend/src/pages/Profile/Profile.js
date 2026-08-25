@@ -1,31 +1,29 @@
 import './Profile.css';
-
 import {
     saveProfile,
     getProfile
 } from '../../features/profile/profileStore';
-
 import {
     getTelegramUser
 } from '../../services/telegram/telegramService';
-
 import {
     createUser
 } from '../../services/supabase/userService';
-
 import {
     createProfile,
     getProfileByUserId,
     updateProfile
 } from '../../services/supabase/profileService';
-
 import {
     showLiveRequiredNotice
 } from '../../features/route/RoutePanel';
-
 import {
     t
 } from '../../i18n';
+import {
+    LanguageModal,
+    initLanguageModal
+} from '../../components/LanguageModal/LanguageModal';
 
 let selectedGender = null;
 let selectedRelationshipStatus = 'not_specified';
@@ -106,7 +104,17 @@ export function Profile() {
                             id="profile-modal-backdrop"
                         ></div>
                     `
-                    : ''
+                    : `
+                        <button
+                            type="button"
+                            class="profile-lang-btn"
+                            id="profile-lang-btn"
+                            aria-label="${t('change_language')}"
+                        >
+                            🌐
+                        </button>
+                        ${LanguageModal()}
+                    `
             }
 
             <div class="profile-card">
@@ -321,6 +329,27 @@ function initProfile() {
     profileInitialized = true;
 
     /* ====================================
+       ЯЗЫК (только на регистрации)
+    ==================================== */
+
+    const langBtn =
+        document.querySelector(
+            '#profile-lang-btn'
+        );
+
+    if (langBtn) {
+        initLanguageModal();
+
+        langBtn.onclick = () => {
+            window.dispatchEvent(
+                new Event(
+                    'language:open'
+                )
+            );
+        };
+    }
+
+    /* ====================================
        ИМЯ
     ==================================== */
 
@@ -394,13 +423,11 @@ function initProfile() {
 
     const closeProfile =
         () => {
-
             window.dispatchEvent(
                 new CustomEvent(
                     'profile:close'
                 )
             );
-
         };
 
     closeButton?.addEventListener(
@@ -430,11 +457,9 @@ function initProfile() {
                         '[data-gender]'
                     )
                     .forEach(item => {
-
                         item.classList.remove(
                             'active'
                         );
-
                     });
 
                 button.classList.add(
@@ -518,11 +543,9 @@ function initProfile() {
                                 '[data-relationship]'
                             )
                             .forEach(item => {
-
                                 item.classList.remove(
                                     'active'
                                 );
-
                             });
 
                         option.classList.add(
@@ -547,12 +570,10 @@ function initProfile() {
                         event.target
                     )
                 ) {
-
                     relationshipSelect
                         .classList.remove(
                             'open'
                         );
-
                 }
 
             }
@@ -620,6 +641,9 @@ function updateProfileTexts() {
 
     const closeBtn = document.querySelector('#profile-close');
     if (closeBtn) closeBtn.setAttribute('aria-label', t('profile_close'));
+
+    const langBtn = document.querySelector('#profile-lang-btn');
+    if (langBtn) langBtn.setAttribute('aria-label', t('change_language'));
 
     const saveBtn = document.querySelector('#profile-save');
     if (saveBtn) {
