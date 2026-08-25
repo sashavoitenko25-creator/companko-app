@@ -2,19 +2,22 @@ import './Header.css';
 
 import {
     ProfileButton
-}
-from '../ProfileButton/ProfileButton';
+} from '../ProfileButton/ProfileButton';
 
 import {
     getOnlineCount
-}
-from '../../services/supabase/liveService';
+} from '../../services/supabase/liveService';
+
+import {
+    t
+} from '../../i18n';
 
 
 export function Header(){
 
     setTimeout(
-        initHeader
+        initHeader,
+        0
     );
 
     return `
@@ -53,7 +56,7 @@ export function Header(){
             <div class="header-brand__subtitle">
 
                 <span id="header-status">
-                    Онлайн
+                    ${t('online')}
                 </span>
 
             </div>
@@ -70,6 +73,10 @@ export function Header(){
 
 }
 
+
+/* =========================================================
+   INIT
+========================================================= */
 
 function initHeader(){
 
@@ -90,13 +97,32 @@ function initHeader(){
     updateOnline();
 
 
+    /*
+     * Обновляем количество пользователей
+     * каждую секунду.
+     */
+
     setInterval(
         updateOnline,
         1000
     );
 
+
+    /*
+     * Обновляем текст при смене языка.
+     */
+
+    window.addEventListener(
+        'language:changed',
+        updateOnline
+    );
+
 }
 
+
+/* =========================================================
+   ONLINE
+========================================================= */
 
 async function updateOnline(){
 
@@ -116,16 +142,27 @@ async function updateOnline(){
             return;
 
 
-        status.innerHTML =
-            count > 0
-                ? `Онлайн • ${count}`
-                : 'Онлайн';
+        if(count > 0){
+
+            status.innerHTML =
+                `${t('online')} • ${count}`;
+
+        }
+        else{
+
+            status.innerHTML =
+                t('online');
+
+        }
 
     }
 
     catch(error){
 
-        console.error(error);
+        console.error(
+            'Online counter error:',
+            error
+        );
 
     }
 

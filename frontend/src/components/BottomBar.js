@@ -4,6 +4,10 @@ import {
     centerOnMyLocation
 } from '../services/map/locationControlService';
 
+import {
+    t
+} from '../i18n';
+
 
 export function BottomBar(){
 
@@ -12,11 +16,8 @@ export function BottomBar(){
         0
     );
 
-
     return `
-
 <div class="bottom-bar">
-
 
     <!-- =====================================================
          НАЙТИ СЕБЯ
@@ -25,7 +26,7 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="my-location-button"
-        aria-label="Найти себя">
+        aria-label="${t('find_me')}">
 
         <svg
             class="location-icon"
@@ -64,7 +65,7 @@ export function BottomBar(){
 
         <span class="live-dot"></span>
 
-        LIVE
+        ${t('live')}
 
     </button>
 
@@ -76,7 +77,7 @@ export function BottomBar(){
     <button
         class="bottom-button"
         id="settings-button"
-        aria-label="Настройки">
+        aria-label="${t('settings_aria')}">
 
         <svg
             class="settings-icon"
@@ -84,57 +85,36 @@ export function BottomBar(){
             fill="none"
             xmlns="http://www.w3.org/2000/svg">
 
-            <!--
-                =================================================
-                РОВНАЯ КРУГЛАЯ ШЕСТЕРЁНКА
-                Одинаковая ширина и высота.
-                Центр: 12 / 12
-                =================================================
-            -->
-
             <path
                 d="
                     M12 3.2
-
                     L13.55 4.75
                     L15.05 5.15
-
                     L17.20 4.45
                     L19.55 6.80
                     L18.85 8.95
-
                     L19.25 10.45
                     L20.80 12
-
                     L19.25 13.55
                     L18.85 15.05
-
                     L19.55 17.20
                     L17.20 19.55
                     L15.05 18.85
-
                     L13.55 19.25
                     L12 20.80
-
                     L10.45 19.25
                     L8.95 18.85
-
                     L6.80 19.55
                     L4.45 17.20
                     L5.15 15.05
-
                     L4.75 13.55
                     L3.20 12
-
                     L4.75 10.45
                     L5.15 8.95
-
                     L4.45 6.80
                     L6.80 4.45
                     L8.95 5.15
-
                     L10.45 4.75
-
                     Z
                 "
                 fill="none"
@@ -143,10 +123,6 @@ export function BottomBar(){
                 stroke-linecap="round"
                 stroke-linejoin="round"
             />
-
-            <!--
-                ЦЕНТРАЛЬНОЕ ОТВЕРСТИЕ
-            -->
 
             <circle
                 cx="12"
@@ -161,11 +137,8 @@ export function BottomBar(){
 
     </button>
 
-
 </div>
-
 `;
-
 }
 
 
@@ -180,23 +153,71 @@ function initBottomBar(){
             '#my-location-button'
         );
 
-
     const settingsButton =
         document.querySelector(
             '#settings-button'
         );
-
 
     const liveButton =
         document.querySelector(
             '#live-button'
         );
 
-
     const settings =
         document.querySelector(
             '#settings-window'
         );
+
+
+    /* =====================================================
+       ОБНОВЛЕНИЕ ТЕКСТОВ
+    ===================================================== */
+
+    function updateBottomBarTexts(){
+
+        if(locationButton){
+
+            locationButton.setAttribute(
+                'aria-label',
+                t('find_me')
+            );
+
+        }
+
+
+        if(settingsButton){
+
+            settingsButton.setAttribute(
+                'aria-label',
+                t('settings_aria')
+            );
+
+        }
+
+
+        /*
+         * Текст LIVE / STOP LIVE обновляется
+         * в Home.js через updateLiveButton().
+         *
+         * Здесь меняем текст только если
+         * Live сейчас НЕ активен.
+         */
+
+        if(
+            liveButton &&
+            !liveButton.classList.contains(
+                'stop-live'
+            )
+        ){
+
+            liveButton.innerHTML = `
+                <span class="live-dot"></span>
+                ${t('live')}
+            `;
+
+        }
+
+    }
 
 
     /* =====================================================
@@ -208,13 +229,12 @@ function initBottomBar(){
         locationButton.onclick = async (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
-            /* ---------------------------------------------
-               Закрываем настройки
-            --------------------------------------------- */
+            /*
+             * Закрываем настройки
+             */
 
             if(settings){
 
@@ -225,19 +245,22 @@ function initBottomBar(){
             }
 
 
-            settingsButton?.classList.remove(
-                'open-state'
-            );
+            if(settingsButton){
+
+                settingsButton.classList.remove(
+                    'open-state'
+                );
+
+            }
 
 
-            /* ---------------------------------------------
-               Активное состояние
-            --------------------------------------------- */
+            /*
+             * Состояние загрузки
+             */
 
             locationButton.classList.add(
                 'locating'
             );
-
 
             locationButton.blur();
 
@@ -250,18 +273,12 @@ function initBottomBar(){
             catch(error){
 
                 console.error(
-                    'Ошибка поиска местоположения:',
+                    t('location_error') + ':',
                     error
                 );
 
             }
             finally{
-
-                /*
-                 * После полного завершения
-                 * фокусировки возвращаем кнопку
-                 * в обычное состояние.
-                 */
 
                 locationButton.classList.remove(
                     'locating'
@@ -285,12 +302,14 @@ function initBottomBar(){
         settingsButton.onclick = (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
-            if(!settings)
+            if(!settings){
+
                 return;
+
+            }
 
 
             const isOpen =
@@ -299,9 +318,9 @@ function initBottomBar(){
                 );
 
 
-            /* ---------------------------------------------
-               ВТОРОЕ НАЖАТИЕ — ЗАКРЫТЬ
-            --------------------------------------------- */
+            /*
+             * Закрыть
+             */
 
             if(isOpen){
 
@@ -320,9 +339,9 @@ function initBottomBar(){
             }
 
 
-            /* ---------------------------------------------
-               ПЕРВОЕ НАЖАТИЕ — ОТКРЫТЬ
-            --------------------------------------------- */
+            /*
+             * Открыть
+             */
 
             settings.classList.add(
                 'open'
@@ -348,21 +367,34 @@ function initBottomBar(){
         liveButton.onclick = (event)=>{
 
             event.preventDefault();
-
             event.stopPropagation();
 
 
-            settings?.classList.remove(
-                'open'
-            );
+            /*
+             * При нажатии LIVE закрываем настройки.
+             *
+             * Само включение / выключение Live
+             * обрабатывается в Home.js.
+             */
+
+            if(settings){
+
+                settings.classList.remove(
+                    'open'
+                );
+
+            }
 
 
-            settingsButton?.classList.remove(
-                'open-state'
-            );
+            if(settingsButton){
 
+                settingsButton.classList.remove(
+                    'open-state'
+                );
 
-            settingsButton?.blur();
+                settingsButton.blur();
+
+            }
 
         };
 
@@ -377,28 +409,44 @@ function initBottomBar(){
         'click',
         (event)=>{
 
-            if(!settings)
+            if(!settings){
+
                 return;
+
+            }
+
+
+            const clickedInsideSettings =
+                settings.contains(
+                    event.target
+                );
+
+            const clickedSettingsButton =
+                settingsButton &&
+                settingsButton.contains(
+                    event.target
+                );
 
 
             if(
-                !settings.contains(
-                    event.target
-                ) &&
-                !settingsButton?.contains(
-                    event.target
-                )
+                !clickedInsideSettings &&
+                !clickedSettingsButton
             ){
 
                 settings.classList.remove(
                     'open'
                 );
 
-                settingsButton?.classList.remove(
-                    'open-state'
-                );
 
-                settingsButton?.blur();
+                if(settingsButton){
+
+                    settingsButton.classList.remove(
+                        'open-state'
+                    );
+
+                    settingsButton.blur();
+
+                }
 
             }
 
@@ -420,30 +468,73 @@ function initBottomBar(){
                 );
 
 
-            if(!target)
+            if(!target){
+
                 return;
+
+            }
+
+
+            /*
+             * Если нажали не на кнопку настроек
+             * и не внутри окна настроек —
+             * закрываем настройки.
+             */
+
+            const isSettingsButton =
+                target === settingsButton;
+
+            const isInsideSettings =
+                settings &&
+                settings.contains(
+                    target
+                );
 
 
             if(
-                target !== settingsButton &&
-                !settings?.contains(
-                    target
-                )
+                !isSettingsButton &&
+                !isInsideSettings
             ){
 
-                settings?.classList.remove(
-                    'open'
-                );
+                if(settings){
 
-                settingsButton?.classList.remove(
-                    'open-state'
-                );
+                    settings.classList.remove(
+                        'open'
+                    );
 
-                settingsButton?.blur();
+                }
+
+
+                if(settingsButton){
+
+                    settingsButton.classList.remove(
+                        'open-state'
+                    );
+
+                    settingsButton.blur();
+
+                }
 
             }
 
         }
     );
+
+
+    /* =====================================================
+       ОБНОВЛЕНИЕ ПРИ СМЕНЕ ЯЗЫКА
+    ===================================================== */
+
+    window.addEventListener(
+        'language:changed',
+        updateBottomBarTexts
+    );
+
+
+    /*
+     * Первоначальное обновление
+     */
+
+    updateBottomBarTexts();
 
 }

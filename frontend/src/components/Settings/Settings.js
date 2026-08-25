@@ -4,27 +4,29 @@ import {
     setMapTheme,
     getMapTheme,
     reloadMapTheme
-}
-from '../../services/map/mapThemeService';
+} from '../../services/map/mapThemeService';
 
 import {
     getMap
-}
-from '../../services/map/mapService';
+} from '../../services/map/mapService';
+
+import {
+    t
+} from '../../i18n';
 
 import L from 'leaflet';
 
 export function Settings(){
 
-return `
+    return `
 
 <div
 id="settings-window"
 class="settings-window"
 >
 
-<h2>
-⚙ Настройки
+<h2 id="settings-title">
+${t('settings_title')}
 </h2>
 
 <div class="theme-switch">
@@ -53,17 +55,24 @@ id="map-theme-toggle"
 <div class="settings-actions">
 
 <button
+id="change-language-button"
+class="settings-action"
+>
+${t('change_language')}
+</button>
+
+<button
 id="report-problem-button"
 class="settings-action"
 >
-🐞 Сообщить о проблеме
+${t('report_problem')}
 </button>
 
 <button
 id="suggest-idea-button"
 class="settings-action"
 >
-💡 Предложить идею
+${t('suggest_idea')}
 </button>
 
 </div>
@@ -76,95 +85,155 @@ class="settings-action"
 
 export function initSettings(){
 
-const toggle =
-document.querySelector(
-'#map-theme-toggle'
-);
+    const toggle =
+        document.querySelector(
+            '#map-theme-toggle'
+        );
 
-if(toggle){
+    if(toggle){
 
-    toggle.checked =
-    getMapTheme() === 'light';
+        toggle.checked =
+            getMapTheme() === 'light';
 
-    toggle.onchange = ()=>{
+        toggle.onchange = ()=>{
 
-        const theme =
-        toggle.checked
-        ?
-        'light'
-        :
-        'dark';
+            const theme =
+                toggle.checked
+                    ?
+                    'light'
+                    :
+                    'dark';
 
-        setMapTheme(theme);
+            setMapTheme(theme);
 
-        const map =
-        getMap();
+            const map =
+                getMap();
 
-        if(map){
+            if(map){
 
-            reloadMapTheme(
-                map,
-                L
-            );
+                reloadMapTheme(
+                    map,
+                    L
+                );
+
+            }
+
+        };
+
+    }
+
+    const languageButton =
+        document.querySelector(
+            '#change-language-button'
+        );
+
+    if(languageButton){
+
+        languageButton.onclick = ()=>{
+
+            document
+                .querySelector('#settings-window')
+                ?.classList.remove('open');
+
+            setTimeout(()=>{
+
+                window.dispatchEvent(
+                    new Event(
+                        'language:open'
+                    )
+                );
+
+            },200);
+
+        };
+
+    }
+
+    const reportButton =
+        document.querySelector(
+            '#report-problem-button'
+        );
+
+    if(reportButton){
+
+        reportButton.onclick = ()=>{
+
+            document
+                .querySelector('#settings-window')
+                ?.classList.remove('open');
+
+            setTimeout(()=>{
+
+                window.dispatchEvent(
+                    new Event(
+                        'feedback:problem'
+                    )
+                );
+
+            },200);
+
+        };
+
+    }
+
+    const ideaButton =
+        document.querySelector(
+            '#suggest-idea-button'
+        );
+
+    if(ideaButton){
+
+        ideaButton.onclick = ()=>{
+
+            document
+                .querySelector('#settings-window')
+                ?.classList.remove('open');
+
+            setTimeout(()=>{
+
+                window.dispatchEvent(
+                    new Event(
+                        'feedback:idea'
+                    )
+                );
+
+            },200);
+
+        };
+
+    }
+
+    // Обновляем тексты при смене языка
+    window.addEventListener(
+        'language:changed',
+        ()=>{
+
+            const title =
+                document.querySelector(
+                    '#settings-title'
+                );
+
+            if(title){
+                title.textContent =
+                    t('settings_title');
+            }
+
+            if(languageButton){
+                languageButton.textContent =
+                    t('change_language');
+            }
+
+            if(reportButton){
+                reportButton.textContent =
+                    t('report_problem');
+            }
+
+            if(ideaButton){
+                ideaButton.textContent =
+                    t('suggest_idea');
+            }
 
         }
-
-    };
-
-}
-
-const reportButton =
-document.querySelector(
-'#report-problem-button'
-);
-
-if(reportButton){
-
-    reportButton.onclick = ()=>{
-
-        document
-        .querySelector('#settings-window')
-        ?.classList.remove('open');
-
-        setTimeout(()=>{
-
-            window.dispatchEvent(
-                new Event(
-                    'feedback:problem'
-                )
-            );
-
-        },200);
-
-    };
-
-}
-
-const ideaButton =
-document.querySelector(
-'#suggest-idea-button'
-);
-
-if(ideaButton){
-
-    ideaButton.onclick = ()=>{
-
-        document
-        .querySelector('#settings-window')
-        ?.classList.remove('open');
-
-        setTimeout(()=>{
-
-            window.dispatchEvent(
-                new Event(
-                    'feedback:idea'
-                )
-            );
-
-        },200);
-
-    };
-
-}
+    );
 
 }

@@ -23,48 +23,41 @@ import {
     showLiveRequiredNotice
 } from '../../features/route/RoutePanel';
 
+import {
+    t
+} from '../../i18n';
 
 let selectedGender = null;
 let selectedRelationshipStatus = 'not_specified';
 let profileInitialized = false;
 
-
 /* ========================================
    СТАТУСЫ ОТНОШЕНИЙ
 ======================================== */
 
-const RELATIONSHIP_STATUSES = {
-    relationship: '❤️ В отношениях',
-    married: '💍 Женат / замужем',
-    single: '💔 Свободен / свободна',
-    not_specified: '🤫 Не хочу указывать'
-};
-
+function getRelationshipStatuses() {
+    return {
+        relationship: t('rel_profile_relationship'),
+        married: t('rel_profile_married'),
+        single: t('rel_profile_single'),
+        not_specified: t('rel_profile_not_specified')
+    };
+}
 
 /* ========================================
    ВАЛИДАЦИЯ
 ======================================== */
 
-/*
- * Имя:
- * только буквы Unicode + пробел + дефис + апостроф.
- */
 function sanitizeName(value) {
     return value
         .replace(/[^\p{L}\s'-]/gu, '')
         .replace(/\s{2,}/g, ' ');
 }
 
-
-/*
- * Возраст:
- * только цифры.
- */
 function sanitizeAge(value) {
     return value
         .replace(/\D/g, '');
 }
-
 
 /* ========================================
    PROFILE
@@ -74,33 +67,29 @@ export function Profile() {
 
     profileInitialized = false;
 
-
     const tgUser =
         getTelegramUser();
-
 
     const oldProfile =
         getProfile();
 
-
     selectedGender =
         oldProfile?.gender || null;
-
 
     selectedRelationshipStatus =
         oldProfile?.relationship_status ||
         'not_specified';
-
 
     setTimeout(
         initProfile,
         0
     );
 
-
     const isEditing =
         !!oldProfile;
 
+    const statuses =
+        getRelationshipStatuses();
 
     return `
         <main class="${
@@ -129,7 +118,7 @@ export function Profile() {
                                 type="button"
                                 class="profile-close"
                                 id="profile-close"
-                                aria-label="Закрыть"
+                                aria-label="${t('profile_close')}"
                             >
                                 ×
                             </button>
@@ -150,31 +139,30 @@ export function Profile() {
                         alt=""
                     >
 
-                    <h1>
+                    <h1 id="profile-title">
                         ${
                             oldProfile
-                                ? 'Редактирование'
-                                : 'Создание профиля'
+                                ? t('profile_edit')
+                                : t('profile_create')
                         }
                     </h1>
 
-                    <p>
-                        Как вас будут видеть другие
+                    <p id="profile-subtitle">
+                        ${t('profile_subtitle')}
                     </p>
 
                 </div>
 
-
                 <!-- ИМЯ -->
                 <div class="profile-field">
 
-                    <label>
-                        Имя
+                    <label id="profile-name-label">
+                        ${t('profile_name')}
                     </label>
 
                     <input
                         id="profile-name"
-                        placeholder="Ваше имя"
+                        placeholder="${t('profile_name_placeholder')}"
                         value="${
                             oldProfile?.name ||
                             tgUser?.first_name ||
@@ -184,19 +172,18 @@ export function Profile() {
 
                 </div>
 
-
                 <!-- ВОЗРАСТ -->
                 <div class="profile-field">
 
-                    <label>
-                        Возраст
+                    <label id="profile-age-label">
+                        ${t('profile_age')}
                     </label>
 
                     <input
                         id="profile-age"
                         type="number"
                         inputmode="numeric"
-                        placeholder="Возраст"
+                        placeholder="${t('profile_age_placeholder')}"
                         value="${
                             oldProfile?.age || ''
                         }"
@@ -204,10 +191,9 @@ export function Profile() {
 
                 </div>
 
-
                 <!-- ПОЛ -->
-                <label class="profile-label">
-                    Пол
+                <label class="profile-label" id="profile-gender-label">
+                    ${t('profile_gender')}
                 </label>
 
                 <div class="gender-box">
@@ -220,8 +206,9 @@ export function Profile() {
                                 : ''
                         }"
                         data-gender="male"
+                        id="profile-gender-male"
                     >
-                        👨 Парень
+                        ${t('profile_male')}
                     </button>
 
                     <button
@@ -232,18 +219,18 @@ export function Profile() {
                                 : ''
                         }"
                         data-gender="female"
+                        id="profile-gender-female"
                     >
-                        👩 Девушка
+                        ${t('profile_female')}
                     </button>
 
                 </div>
 
-
                 <!-- СТАТУС ОТНОШЕНИЙ -->
                 <div class="profile-field">
 
-                    <label>
-                        Статус отношений
+                    <label id="profile-relationship-label">
+                        ${t('profile_relationship')}
                     </label>
 
                     <div
@@ -256,21 +243,18 @@ export function Profile() {
                             class="relationship-select-button"
                             id="relationship-select-button"
                         >
-
                             <span
                                 id="relationship-selected-text"
                             >
                                 ${
-                                    RELATIONSHIP_STATUSES[
+                                    statuses[
                                         selectedRelationshipStatus
                                     ]
                                 }
                             </span>
-
                             <span class="relationship-arrow">
                                 ▾
                             </span>
-
                         </button>
 
                         <div
@@ -279,7 +263,7 @@ export function Profile() {
                         >
                             ${
                                 Object.entries(
-                                    RELATIONSHIP_STATUSES
+                                    statuses
                                 )
                                 .map(
                                     ([value, label]) => `
@@ -304,7 +288,6 @@ export function Profile() {
 
                 </div>
 
-
                 <!-- SAVE -->
                 <button
                     id="profile-save"
@@ -313,8 +296,8 @@ export function Profile() {
                 >
                     ${
                         oldProfile
-                            ? 'Сохранить'
-                            : 'Создать профиль'
+                            ? t('profile_save')
+                            : t('profile_create_btn')
                     }
                 </button>
 
@@ -324,7 +307,6 @@ export function Profile() {
     `;
 
 }
-
 
 /* ========================================
    ИНИЦИАЛИЗАЦИЯ
@@ -336,9 +318,7 @@ function initProfile() {
         return;
     }
 
-
     profileInitialized = true;
-
 
     /* ====================================
        ИМЯ
@@ -349,7 +329,6 @@ function initProfile() {
             '#profile-name'
         );
 
-
     nameInput?.addEventListener(
         'input',
         () => {
@@ -358,7 +337,6 @@ function initProfile() {
                 sanitizeName(
                     nameInput.value
                 );
-
 
             if (
                 nameInput.value !==
@@ -371,7 +349,6 @@ function initProfile() {
         }
     );
 
-
     /* ====================================
        ВОЗРАСТ
     ==================================== */
@@ -381,7 +358,6 @@ function initProfile() {
             '#profile-age'
         );
 
-
     ageInput?.addEventListener(
         'input',
         () => {
@@ -390,7 +366,6 @@ function initProfile() {
                 sanitizeAge(
                     ageInput.value
                 );
-
 
             if (
                 ageInput.value !==
@@ -403,7 +378,6 @@ function initProfile() {
         }
     );
 
-
     /* ====================================
        ЗАКРЫТИЕ РЕДАКТИРОВАНИЯ
     ==================================== */
@@ -413,12 +387,10 @@ function initProfile() {
             '#profile-close'
         );
 
-
     const backdrop =
         document.querySelector(
             '#profile-modal-backdrop'
         );
-
 
     const closeProfile =
         () => {
@@ -431,18 +403,15 @@ function initProfile() {
 
         };
 
-
     closeButton?.addEventListener(
         'click',
         closeProfile
     );
 
-
     backdrop?.addEventListener(
         'click',
         closeProfile
     );
-
 
     /* ====================================
        ПОЛ
@@ -461,16 +430,16 @@ function initProfile() {
                         '[data-gender]'
                     )
                     .forEach(item => {
+
                         item.classList.remove(
                             'active'
                         );
-                    });
 
+                    });
 
                 button.classList.add(
                     'active'
                 );
-
 
                 selectedGender =
                     button.dataset.gender;
@@ -478,7 +447,6 @@ function initProfile() {
             };
 
         });
-
 
     /* ====================================
        СТАТУС — ОТКРЫТИЕ СПИСКА
@@ -489,24 +457,20 @@ function initProfile() {
             '#relationship-select'
         );
 
-
     const relationshipButton =
         document.querySelector(
             '#relationship-select-button'
         );
-
 
     const relationshipOptions =
         document.querySelector(
             '#relationship-options'
         );
 
-
     const relationshipText =
         document.querySelector(
             '#relationship-selected-text'
         );
-
 
     if (
         relationshipButton &&
@@ -519,14 +483,12 @@ function initProfile() {
                 event.preventDefault();
                 event.stopPropagation();
 
-
                 relationshipSelect
                     ?.classList.toggle(
                         'open'
                     );
 
             };
-
 
         relationshipOptions
             .querySelectorAll(
@@ -540,32 +502,32 @@ function initProfile() {
                         event.preventDefault();
                         event.stopPropagation();
 
-
                         selectedRelationshipStatus =
                             option.dataset.relationship;
 
+                        const statuses =
+                            getRelationshipStatuses();
 
                         relationshipText.textContent =
-                            RELATIONSHIP_STATUSES[
+                            statuses[
                                 selectedRelationshipStatus
                             ];
-
 
                         relationshipOptions
                             .querySelectorAll(
                                 '[data-relationship]'
                             )
                             .forEach(item => {
+
                                 item.classList.remove(
                                     'active'
                                 );
-                            });
 
+                            });
 
                         option.classList.add(
                             'active'
                         );
-
 
                         relationshipSelect
                             .classList.remove(
@@ -576,7 +538,6 @@ function initProfile() {
 
             });
 
-
         document.addEventListener(
             'click',
             event => {
@@ -586,17 +547,18 @@ function initProfile() {
                         event.target
                     )
                 ) {
+
                     relationshipSelect
                         .classList.remove(
                             'open'
                         );
+
                 }
 
             }
         );
 
     }
-
 
     /* ====================================
        СОХРАНЕНИЕ
@@ -611,8 +573,78 @@ function initProfile() {
             saveProfileHandler
         );
 
+    // Обновление при смене языка
+    window.addEventListener(
+        'language:changed',
+        () => {
+            updateProfileTexts();
+        }
+    );
+
 }
 
+/* ========================================
+   ОБНОВЛЕНИЕ ТЕКСТОВ
+======================================== */
+
+function updateProfileTexts() {
+
+    const oldProfile = getProfile();
+    const statuses = getRelationshipStatuses();
+
+    const setText = (id, key) => {
+        const el = document.querySelector(id);
+        if (el) el.textContent = t(key);
+    };
+
+    const title = document.querySelector('#profile-title');
+    if (title) {
+        title.textContent = oldProfile
+            ? t('profile_edit')
+            : t('profile_create');
+    }
+
+    setText('#profile-subtitle', 'profile_subtitle');
+    setText('#profile-name-label', 'profile_name');
+    setText('#profile-age-label', 'profile_age');
+    setText('#profile-gender-label', 'profile_gender');
+    setText('#profile-relationship-label', 'profile_relationship');
+    setText('#profile-gender-male', 'profile_male');
+    setText('#profile-gender-female', 'profile_female');
+
+    const nameInput = document.querySelector('#profile-name');
+    if (nameInput) nameInput.placeholder = t('profile_name_placeholder');
+
+    const ageInput = document.querySelector('#profile-age');
+    if (ageInput) ageInput.placeholder = t('profile_age_placeholder');
+
+    const closeBtn = document.querySelector('#profile-close');
+    if (closeBtn) closeBtn.setAttribute('aria-label', t('profile_close'));
+
+    const saveBtn = document.querySelector('#profile-save');
+    if (saveBtn) {
+        saveBtn.textContent = oldProfile
+            ? t('profile_save')
+            : t('profile_create_btn');
+    }
+
+    const relationshipText = document.querySelector('#relationship-selected-text');
+    if (relationshipText) {
+        relationshipText.textContent =
+            statuses[selectedRelationshipStatus] ||
+            statuses.not_specified;
+    }
+
+    document
+        .querySelectorAll('#relationship-options [data-relationship]')
+        .forEach(option => {
+            const key = option.dataset.relationship;
+            if (statuses[key]) {
+                option.textContent = statuses[key];
+            }
+        });
+
+}
 
 /* ========================================
    СОХРАНЕНИЕ ПРОФИЛЯ
@@ -622,147 +654,81 @@ async function saveProfileHandler() {
 
     try {
 
-        /* ====================================
-           ПОЛУЧАЕМ ПОЛЯ
-        ==================================== */
-
         const nameInput =
             document.querySelector(
                 '#profile-name'
             );
-
 
         const ageInput =
             document.querySelector(
                 '#profile-age'
             );
 
-
         const name =
             sanitizeName(
                 nameInput?.value || ''
             ).trim();
-
 
         const age =
             sanitizeAge(
                 ageInput?.value || ''
             ).trim();
 
-
-        /* ====================================
-           ОБЯЗАТЕЛЬНОЕ ИМЯ
-        ==================================== */
-
         if (!name) {
-
             showLiveRequiredNotice(
-                'Пожалуйста, укажите ваше имя'
+                t('profile_err_name')
             );
-
             nameInput?.focus();
-
             return;
-
         }
-
-
-        /* ====================================
-           ОБЯЗАТЕЛЬНЫЙ ВОЗРАСТ
-        ==================================== */
 
         if (!age) {
-
             showLiveRequiredNotice(
-                'Пожалуйста, укажите ваш возраст'
+                t('profile_err_age')
             );
-
             ageInput?.focus();
-
             return;
-
         }
-
-
-        /* ====================================
-           ОБЯЗАТЕЛЬНЫЙ ПОЛ
-        ==================================== */
 
         if (!selectedGender) {
-
             showLiveRequiredNotice(
-                'Пожалуйста, укажите ваш пол'
+                t('profile_err_gender')
             );
-
             return;
-
         }
-
-
-        /* ====================================
-           ПРОВЕРКА ВОЗРАСТА
-        ==================================== */
 
         const ageNumber =
             Number(age);
-
 
         if (
             !Number.isInteger(ageNumber) ||
             ageNumber < 1 ||
             ageNumber > 120
         ) {
-
             showLiveRequiredNotice(
-                'Пожалуйста, укажите корректный возраст'
+                t('profile_err_age_invalid')
             );
-
             ageInput?.focus();
-
             return;
-
         }
-
-
-        /* ====================================
-           ТОЛЬКО 18+
-        ==================================== */
 
         if (ageNumber < 18) {
-
             showLiveRequiredNotice(
-                'Приложением можно пользоваться только с 18 лет'
+                t('profile_err_age_18')
             );
-
             ageInput?.focus();
-
             return;
-
         }
-
-
-        /* ====================================
-           TELEGRAM USER
-        ==================================== */
 
         const tgUser =
             getTelegramUser();
 
-
         if (!tgUser) {
-
             alert(
-                'Telegram user not found'
+                t('profile_err_tg')
             );
-
             return;
-
         }
-
-
-        /* ====================================
-           USER
-        ==================================== */
 
         const user =
             await createUser({
@@ -779,11 +745,6 @@ async function saveProfileHandler() {
                     tgUser.language_code ||
                     'ru'
             });
-
-
-        /* ====================================
-           ДАННЫЕ ПРОФИЛЯ
-        ==================================== */
 
         const profileData = {
             user_id:
@@ -806,43 +767,26 @@ async function saveProfileHandler() {
                 'not_specified'
         };
 
-
-        /* ====================================
-           СУЩЕСТВУЮЩИЙ ПРОФИЛЬ
-        ==================================== */
-
         const old =
             await getProfileByUserId(
                 user.id
             );
 
-
         let profile;
 
-
         if (old) {
-
             profile =
                 await updateProfile(
                     old.id,
                     profileData
                 );
-
         }
-
         else {
-
             profile =
                 await createProfile(
                     profileData
                 );
-
         }
-
-
-        /* ====================================
-           LOCAL STORE
-        ==================================== */
 
         saveProfile({
             ...profile,
@@ -860,11 +804,6 @@ async function saveProfileHandler() {
                 selectedRelationshipStatus
         });
 
-
-        /* ====================================
-           СИГНАЛ
-        ==================================== */
-
         window.dispatchEvent(
             new CustomEvent(
                 'profile:created',
@@ -874,15 +813,9 @@ async function saveProfileHandler() {
             )
         );
 
-
-        /* ====================================
-           ПЕРЕЗАГРУЗКА
-        ==================================== */
-
         window.location.reload();
 
     }
-
     catch (error) {
 
         console.error(
@@ -891,7 +824,7 @@ async function saveProfileHandler() {
         );
 
         alert(
-            'Ошибка сохранения'
+            t('profile_err_save')
         );
 
     }

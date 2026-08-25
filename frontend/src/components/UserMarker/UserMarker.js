@@ -1,5 +1,9 @@
 import './UserMarker.css';
 
+import {
+    t
+} from '../i18n';
+
 
 /* ========================================
    ЦВЕТА АКТИВНОСТЕЙ
@@ -97,17 +101,14 @@ export function UserMarker(user) {
             style="--activity-color: ${color};"
         >
 
-
             <div
                 class="user-marker__circle"
             >
-
 
                 <img
                     src="${photo}"
                     alt="avatar"
                 >
-
 
             </div>
 
@@ -118,7 +119,7 @@ export function UserMarker(user) {
 
                 <span class="user-marker__badge-dot"></span>
 
-                LIVE
+                ${t('live')}
 
             </div>
 

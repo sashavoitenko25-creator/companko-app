@@ -1,5 +1,8 @@
 import './SelectedUser.css';
 
+import {
+    t
+} from '../../i18n';
 
 /* ========================================
    СТАТУС ОТНОШЕНИЙ
@@ -18,10 +21,8 @@ function getRelationshipStatus(user) {
         .toLowerCase()
         .trim();
 
-
     const female =
         user?.gender === 'female';
-
 
     /* ====================================
        СВОБОДЕН / СВОБОДНА
@@ -34,22 +35,15 @@ function getRelationshipStatus(user) {
         value === 'свободен' ||
         value === 'свободна'
     ) {
-
         return {
-
             text:
                 female
-                    ? 'Свободна'
-                    : 'Свободен',
-
+                    ? t('rel_card_single_f')
+                    : t('rel_card_single_m'),
             icon: '●',
-
             className: 'status-single'
-
         };
-
     }
-
 
     /* ====================================
        В ОТНОШЕНИЯХ
@@ -63,19 +57,12 @@ function getRelationshipStatus(user) {
         value === 'отношения' ||
         value === 'в отношениях'
     ) {
-
         return {
-
-            text: 'В отношениях',
-
+            text: t('rel_card_relationship'),
             icon: '♥',
-
             className: 'status-relationship'
-
         };
-
     }
-
 
     /* ====================================
        В ПОИСКЕ
@@ -87,19 +74,12 @@ function getRelationshipStatus(user) {
         value === 'looking_for_relationship' ||
         value === 'в поиске'
     ) {
-
         return {
-
-            text: 'В поиске',
-
+            text: t('status_looking'),
             icon: '✦',
-
             className: 'status-looking'
-
         };
-
     }
-
 
     /* ====================================
        ТОЛЬКО ОБЩЕНИЕ
@@ -111,19 +91,12 @@ function getRelationshipStatus(user) {
         value === 'only_chat' ||
         value === 'только общение'
     ) {
-
         return {
-
-            text: 'Только общение',
-
+            text: t('status_only_chat'),
             icon: '•',
-
             className: 'status-chat'
-
         };
-
     }
-
 
     /* ====================================
        ОТКРЫТ К ЗНАКОМСТВАМ
@@ -135,22 +108,15 @@ function getRelationshipStatus(user) {
         value === 'open_to_dating' ||
         value === 'знакомства'
     ) {
-
         return {
-
             text:
                 female
-                    ? 'Открыта к знакомствам'
-                    : 'Открыт к знакомствам',
-
+                    ? t('status_open_f')
+                    : t('status_open_m'),
             icon: '✧',
-
             className: 'status-open'
-
         };
-
     }
-
 
     /* ====================================
        ВСЁ СЛОЖНО
@@ -162,67 +128,46 @@ function getRelationshipStatus(user) {
         value === 'сложно' ||
         value === 'всё сложно'
     ) {
-
         return {
-
-            text: 'Всё сложно',
-
+            text: t('status_complicated'),
             icon: '◇',
-
             className: 'status-complicated'
-
         };
-
     }
-
 
     /* ====================================
        ПО УМОЛЧАНИЮ
     ==================================== */
 
     return {
-
         text:
             female
-                ? 'Свободна'
-                : 'Свободен',
-
+                ? t('rel_card_single_f')
+                : t('rel_card_single_m'),
         icon: '●',
-
         className: 'status-single'
-
     };
 
 }
-
 
 /* ========================================
    ЭКРАНИРОВАНИЕ HTML
 ======================================== */
 
 function escapeHTML(value) {
-
     return String(value)
-
         .replace(/&/g, '&amp;')
-
         .replace(/</g, '&lt;')
-
         .replace(/>/g, '&gt;')
-
         .replace(/"/g, '&quot;')
-
         .replace(/'/g, '&#039;');
-
 }
-
 
 /* ========================================
    КАРТОЧКА ПОЛЬЗОВАТЕЛЯ
 ======================================== */
 
 export function SelectedUser(user = {}) {
-
 
     /* ====================================
        ДАННЫЕ
@@ -231,35 +176,28 @@ export function SelectedUser(user = {}) {
     const distance =
         Number(user.distance) || 0;
 
-
     const activity =
         user.activity || '';
-
 
     const icon =
         user.icon || '🔥';
 
-
     const status =
         getRelationshipStatus(user);
-
 
     const photo =
         user.photo ||
         user.photo_url ||
         'https://i.pravatar.cc/150';
 
-
     const name =
         user.name ||
         user.first_name ||
-        'Гость';
-
+        t('guest');
 
     const age =
         user.age ||
         '';
-
 
     /* ====================================
        БЕЗОПАСНЫЕ ДАННЫЕ
@@ -268,192 +206,123 @@ export function SelectedUser(user = {}) {
     const safeName =
         escapeHTML(name);
 
-
     const safeAge =
         escapeHTML(age);
 
-
     const safeActivity =
         escapeHTML(
-            activity || 'Активен сейчас'
+            activity || t('active_now')
         );
-
 
     const safePhoto =
         escapeHTML(photo);
-
 
     /* ====================================
        HTML
     ==================================== */
 
     return `
-
         <div class="selected-user">
-
 
             <!-- ==================================
                  HEADER
             ================================== -->
-
             <div class="selected-user__header">
 
-
                 <!-- AVATAR -->
-
                 <img
-
                     class="selected-user__avatar"
-
                     src="${safePhoto}"
-
                     alt="${safeName}"
-
                 />
 
-
                 <!-- CONTENT -->
-
                 <div class="selected-user__content">
 
-
                     <!-- NAME -->
-
                     <div class="selected-user__name">
-
                         ${safeName}${safeAge ? `, ${safeAge}` : ''}
-
                     </div>
-
 
                     <!-- ACTIVITY -->
-
                     <div class="selected-user__activity">
-
                         <span class="selected-user__activity-icon">
-
                             ${icon}
-
                         </span>
-
                         <span>
-
                             ${safeActivity}
-
                         </span>
-
                     </div>
-
 
                     <!-- DISTANCE -->
-
                     <div class="selected-user__distance">
-
                         <span class="selected-user__distance-icon">
-
                             ●
-
                         </span>
-
                         <span>
-
                             ${distance} м
-
                         </span>
-
                     </div>
-
 
                 </div>
 
-
             </div>
-
 
             <!-- ==================================
                  FOOTER
             ================================== -->
-
             <div class="selected-user__footer">
-
 
                 <!-- ==================================
                      STATUS
                 ================================== -->
-
                 <div
                     class="
                         selected-user__status
                         ${status.className}
                     "
                 >
-
-
                     <span
                         class="
                             selected-user__status-icon
                         "
                     >
-
                         ${status.icon}
-
                     </span>
-
 
                     <div
                         class="
                             selected-user__status-content
                         "
                     >
-
-
                         <span
                             class="
                                 selected-user__status-label
                             "
                         >
-
-                            Статус
-
+                            ${t('status_label')}
                         </span>
 
-
                         <strong>
-
                             ${status.text}
-
                         </strong>
-
-
                     </div>
-
-
                 </div>
-
 
                 <!-- ==================================
                      ROUTE BUTTON
                 ================================== -->
-
                 <button
-
                     class="selected-user__button"
-
                     type="button"
-
                 >
-
-
                     <span
                         class="
                             selected-user__button-text
                         "
                     >
-
-                        Построить маршрут
-
+                        ${t('build_route')}
                     </span>
-
 
                     <span
                         class="
@@ -461,20 +330,13 @@ export function SelectedUser(user = {}) {
                         "
                         aria-hidden="true"
                     >
-
                         →
-
                     </span>
-
-
                 </button>
-
 
             </div>
 
-
         </div>
-
     `;
 
 }

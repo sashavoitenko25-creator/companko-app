@@ -8,11 +8,15 @@ import {
     sendFeedback
 } from '../../services/supabase/feedbackService';
 
+import {
+    t
+} from '../../i18n';
+
 let feedbackType = 'problem';
 
 export function FeedbackModal(){
 
-return `
+    return `
 
 <div
 id="feedback-overlay"
@@ -28,19 +32,19 @@ class="feedback-overlay">
 
         <h2
         id="feedback-title">
-            Сообщить о проблеме
+            ${t('feedback_problem')}
         </h2>
 
         <textarea
         id="feedback-message"
         class="feedback-text"
-        placeholder="Опишите подробнее..."
+        placeholder="${t('feedback_placeholder')}"
         ></textarea>
 
         <button
         id="feedback-send"
         class="feedback-send">
-            Отправить
+            ${t('feedback_send')}
         </button>
 
     </div>
@@ -54,31 +58,75 @@ class="feedback-overlay">
 export function initFeedbackModal(){
 
     const overlay =
-    document.querySelector(
-        '#feedback-overlay'
-    );
+        document.querySelector(
+            '#feedback-overlay'
+        );
 
     const title =
-    document.querySelector(
-        '#feedback-title'
-    );
+        document.querySelector(
+            '#feedback-title'
+        );
 
     const textarea =
-    document.querySelector(
-        '#feedback-message'
-    );
+        document.querySelector(
+            '#feedback-message'
+        );
+
+    const sendBtn =
+        document.querySelector(
+            '#feedback-send'
+        );
+
+    function updateFeedbackTexts(){
+
+        if(textarea){
+            textarea.placeholder =
+                t('feedback_placeholder');
+        }
+
+        if(sendBtn){
+            sendBtn.textContent =
+                t('feedback_send');
+        }
+
+        // Обновляем заголовок только если модалка закрыта
+        // (когда открыта — заголовок ставится по типу)
+        if(
+            title &&
+            overlay &&
+            !overlay.classList.contains('open')
+        ){
+            title.textContent =
+                feedbackType === 'idea'
+                    ? t('feedback_idea')
+                    : t('feedback_problem');
+        }
+
+    }
 
     window.addEventListener(
         'feedback:problem',
         ()=>{
 
-            feedbackType='problem';
+            feedbackType = 'problem';
 
-            title.innerHTML='🐞 Сообщить о проблеме';
+            if(title){
+                title.textContent =
+                    t('feedback_problem');
+            }
 
-            textarea.value='';
+            if(textarea){
+                textarea.value = '';
+                textarea.placeholder =
+                    t('feedback_placeholder');
+            }
 
-            overlay.classList.add('open');
+            if(sendBtn){
+                sendBtn.textContent =
+                    t('feedback_send');
+            }
+
+            overlay?.classList.add('open');
 
         }
     );
@@ -87,81 +135,99 @@ export function initFeedbackModal(){
         'feedback:idea',
         ()=>{
 
-            feedbackType='idea';
+            feedbackType = 'idea';
 
-            title.innerHTML='💡 Предложить идею';
+            if(title){
+                title.textContent =
+                    t('feedback_idea');
+            }
 
-            textarea.value='';
+            if(textarea){
+                textarea.value = '';
+                textarea.placeholder =
+                    t('feedback_placeholder');
+            }
 
-            overlay.classList.add('open');
+            if(sendBtn){
+                sendBtn.textContent =
+                    t('feedback_send');
+            }
 
+            overlay?.classList.add('open');
+
+        }
+    );
+
+    // Обновление текстов при смене языка
+    window.addEventListener(
+        'language:changed',
+        ()=>{
+            updateFeedbackTexts();
         }
     );
 
     document
         .querySelector('#feedback-back')
-        .onclick=()=>{
+        ?.addEventListener('click', ()=>{
 
-            overlay.classList.remove('open');
+            overlay?.classList.remove('open');
+
+        });
+
+    if(overlay){
+
+        overlay.onclick = (e)=>{
+
+            if(e.target === overlay){
+
+                overlay.classList.remove('open');
+
+            }
 
         };
 
-    overlay.onclick=(e)=>{
+    }
 
-        if(e.target===overlay){
+    if(sendBtn){
 
-            overlay.classList.remove('open');
+        sendBtn.onclick = async ()=>{
 
-        }
-
-    };
-
-    document
-        .querySelector('#feedback-send')
-        .onclick=async()=>{
-
-            const text=
-            textarea.value.trim();
+            const text =
+                textarea?.value.trim();
 
             if(!text)
                 return;
 
-            const profile=
-            getProfile();
+            const profile =
+                getProfile();
 
             try{
 
                 await sendFeedback({
 
                     telegram_id:
-                    profile.telegram_id,
+                        profile.telegram_id,
 
                     first_name:
-                    profile.first_name,
+                        profile.first_name,
 
                     username:
-                    profile.username,
+                        profile.username,
 
                     type:
-                    feedbackType,
+                        feedbackType,
 
                     message:
-                    text
+                        text
 
                 });
 
-                overlay.classList.remove('open');
+                overlay?.classList.remove('open');
 
                 setTimeout(()=>{
 
                     alert(
-
-                `✅ Спасибо!
-
-                Ваше сообщение успешно отправлено.
-
-                Мы обязательно его рассмотрим ❤️`
-
+                        t('feedback_thanks')
                     );
 
                 },200);
@@ -175,5 +241,7 @@ export function initFeedbackModal(){
             }
 
         };
+
+    }
 
 }

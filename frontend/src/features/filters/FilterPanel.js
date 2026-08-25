@@ -7,36 +7,41 @@ import {
     hasActiveFilters
 } from '../../store/filterStore';
 
+import {
+    t
+} from '../../i18n';
 
-const ACTIVITIES = [
-    { id: 'beer',  label: '🍺 Выпить' },
-    { id: 'coffee', label: '☕ Кофе' },
-    { id: 'walk',  label: '🚶 Гулять' },
-    { id: 'chat',  label: '💬 Общаться' }
-];
+function getActivities() {
+    return [
+        { id: 'beer',  label: t('activity_filter_beer') },
+        { id: 'coffee', label: t('activity_filter_coffee') },
+        { id: 'walk',  label: t('activity_filter_walk') },
+        { id: 'chat',  label: t('activity_filter_chat') }
+    ];
+}
 
+function getRelationships() {
+    return [
+        { id: 'single',        label: t('rel_single') },
+        { id: 'relationship',  label: t('rel_relationship') },
+        { id: 'married',       label: t('rel_married') },
+        { id: 'not_specified', label: t('rel_not_specified') }
+    ];
+}
 
-const RELATIONSHIPS = [
-    { id: 'single',        label: '💔 Свободен / свободна' },
-    { id: 'relationship',  label: '❤️ В отношениях' },
-    { id: 'married',       label: '💍 Женат / замужем' },
-    { id: 'not_specified', label: '🤫 Не указано' }
-];
-
-
-const RADIUS_OPTIONS = [
-    { value: null,   label: 'Любой' },
-    { value: 500,    label: '500 м' },
-    { value: 1000,   label: '1 км' },
-    { value: 3000,   label: '3 км' },
-    { value: 5000,   label: '5 км' },
-    { value: 10000,  label: '10 км' }
-];
-
+function getRadiusOptions() {
+    return [
+        { value: null,   label: t('radius_any') },
+        { value: 500,    label: t('radius_500') },
+        { value: 1000,   label: t('radius_1km') },
+        { value: 3000,   label: t('radius_3km') },
+        { value: 5000,   label: t('radius_5km') },
+        { value: 10000,  label: t('radius_10km') }
+    ];
+}
 
 let draft = null;
 let panelInitialized = false;
-
 
 /* ========================================
    HTML
@@ -49,9 +54,11 @@ export function FilterPanel(){
         0
     );
 
+    const activities = getActivities();
+    const relationships = getRelationships();
+    const radiusOptions = getRadiusOptions();
 
     return `
-
 <div
     id="filter-panel"
     class="filter-panel"
@@ -68,27 +75,26 @@ export function FilterPanel(){
 
         <div class="filter-panel__header">
 
-            <div class="filter-panel__title">
-                Фильтры
+            <div class="filter-panel__title" id="filter-panel-title">
+                ${t('filters_title')}
             </div>
 
             <button
                 type="button"
                 class="filter-panel__close"
                 id="filter-panel-close"
-                aria-label="Закрыть"
+                aria-label="${t('filters_close')}"
             >
                 ×
             </button>
 
         </div>
 
-
         <!-- АКТИВНОСТИ -->
         <div class="filter-section">
 
-            <div class="filter-section__label">
-                Чем заняты
+            <div class="filter-section__label" id="filter-label-activities">
+                ${t('filters_busy_with')}
             </div>
 
             <div
@@ -96,7 +102,7 @@ export function FilterPanel(){
                 id="filter-activities"
             >
                 ${
-                    ACTIVITIES.map(item => `
+                    activities.map(item => `
                         <button
                             type="button"
                             class="filter-chip"
@@ -110,18 +116,17 @@ export function FilterPanel(){
 
         </div>
 
-
         <!-- ВОЗРАСТ -->
         <div class="filter-section">
 
-            <div class="filter-section__label">
-                Возраст
+            <div class="filter-section__label" id="filter-label-age">
+                ${t('filters_age')}
             </div>
 
             <div class="filter-age-row">
 
                 <label class="filter-age-field">
-                    <span>От</span>
+                    <span id="filter-age-from-label">${t('filters_age_from')}</span>
                     <input
                         id="filter-age-from"
                         type="number"
@@ -133,7 +138,7 @@ export function FilterPanel(){
                 </label>
 
                 <label class="filter-age-field">
-                    <span>До</span>
+                    <span id="filter-age-to-label">${t('filters_age_to')}</span>
                     <input
                         id="filter-age-to"
                         type="number"
@@ -148,12 +153,11 @@ export function FilterPanel(){
 
         </div>
 
-
         <!-- ОТНОШЕНИЯ -->
         <div class="filter-section">
 
-            <div class="filter-section__label">
-                Статус отношений
+            <div class="filter-section__label" id="filter-label-relationship">
+                ${t('filters_relationship')}
             </div>
 
             <div
@@ -161,7 +165,7 @@ export function FilterPanel(){
                 id="filter-relationships"
             >
                 ${
-                    RELATIONSHIPS.map(item => `
+                    relationships.map(item => `
                         <button
                             type="button"
                             class="filter-chip"
@@ -175,12 +179,11 @@ export function FilterPanel(){
 
         </div>
 
-
         <!-- РАДИУС -->
         <div class="filter-section">
 
-            <div class="filter-section__label">
-                Радиус
+            <div class="filter-section__label" id="filter-label-radius">
+                ${t('filters_radius')}
             </div>
 
             <div
@@ -188,7 +191,7 @@ export function FilterPanel(){
                 id="filter-radius"
             >
                 ${
-                    RADIUS_OPTIONS.map(item => `
+                    radiusOptions.map(item => `
                         <button
                             type="button"
                             class="filter-chip"
@@ -202,7 +205,6 @@ export function FilterPanel(){
 
         </div>
 
-
         <!-- ACTIONS -->
         <div class="filter-actions">
 
@@ -211,7 +213,7 @@ export function FilterPanel(){
                 class="filter-btn filter-btn--ghost"
                 id="filter-reset"
             >
-                Сбросить
+                ${t('filters_reset')}
             </button>
 
             <button
@@ -219,7 +221,7 @@ export function FilterPanel(){
                 class="filter-btn filter-btn--primary"
                 id="filter-apply"
             >
-                Применить
+                ${t('filters_apply')}
             </button>
 
         </div>
@@ -227,7 +229,6 @@ export function FilterPanel(){
     </div>
 
 </div>
-
 
 <!-- КНОПКА ПОД ПРОФИЛЕМ -->
 <div class="filters-trigger">
@@ -238,16 +239,14 @@ export function FilterPanel(){
         id="filters-open-btn"
     >
         <span id="filters-open-label">
-            Фильтры
+            ${t('filters_btn')}
         </span>
     </button>
 
 </div>
-
 `;
 
 }
-
 
 /* ========================================
    BOTTOM BAR HIDE / SHOW
@@ -260,10 +259,8 @@ function hideBottomBar(){
             '.bottom-bar'
         );
 
-
     if(!bar)
         return;
-
 
     bar.style.opacity = '0';
     bar.style.pointerEvents = 'none';
@@ -272,7 +269,6 @@ function hideBottomBar(){
 
 }
 
-
 function showBottomBar(){
 
     const bar =
@@ -280,17 +276,14 @@ function showBottomBar(){
             '.bottom-bar'
         );
 
-
     if(!bar)
         return;
-
 
     bar.style.opacity = '';
     bar.style.pointerEvents = '';
     bar.style.transform = '';
 
 }
-
 
 /* ========================================
    OPEN / CLOSE
@@ -303,15 +296,11 @@ export function openFilterPanel(){
             '#filter-panel'
         );
 
-
     if(!panel)
         return;
 
-
     draft = getFilters();
-
     syncDraftToUI();
-
     hideBottomBar();
 
     panel.classList.add(
@@ -319,7 +308,6 @@ export function openFilterPanel(){
     );
 
 }
-
 
 export function closeFilterPanel(){
 
@@ -331,11 +319,9 @@ export function closeFilterPanel(){
             'open'
         );
 
-
     showBottomBar();
 
 }
-
 
 /* ========================================
    INIT
@@ -346,42 +332,34 @@ function initFilterPanel(){
     if(panelInitialized)
         return;
 
-
     panelInitialized = true;
 
-
     draft = getFilters();
-
 
     const openBtn =
         document.querySelector(
             '#filters-open-btn'
         );
 
-
     const closeBtn =
         document.querySelector(
             '#filter-panel-close'
         );
-
 
     const backdrop =
         document.querySelector(
             '#filter-panel-backdrop'
         );
 
-
     const applyBtn =
         document.querySelector(
             '#filter-apply'
         );
 
-
     const resetBtn =
         document.querySelector(
             '#filter-reset'
         );
-
 
     openBtn?.addEventListener(
         'click',
@@ -392,52 +370,37 @@ function initFilterPanel(){
         }
     );
 
-
     closeBtn?.addEventListener(
         'click',
         closeFilterPanel
     );
-
 
     backdrop?.addEventListener(
         'click',
         closeFilterPanel
     );
 
-
     applyBtn?.addEventListener(
         'click',
         () => {
-
             collectDraftFromUI();
-
             setFilters(
                 draft
             );
-
             updateTriggerState();
-
             closeFilterPanel();
-
         }
     );
-
 
     resetBtn?.addEventListener(
         'click',
         () => {
-
             resetFilters();
-
             draft = getFilters();
-
             syncDraftToUI();
-
             updateTriggerState();
-
         }
     );
-
 
     document
         .querySelectorAll(
@@ -452,10 +415,8 @@ function initFilterPanel(){
                     const id =
                         btn.dataset.activity;
 
-
                     if(!draft.activities)
                         draft.activities = [];
-
 
                     if(
                         draft.activities.includes(id)
@@ -467,7 +428,6 @@ function initFilterPanel(){
                             );
 
                     }
-
                     else{
 
                         draft.activities = [
@@ -477,14 +437,12 @@ function initFilterPanel(){
 
                     }
 
-
                     syncDraftToUI();
 
                 }
             );
 
         });
-
 
     document
         .querySelectorAll(
@@ -499,10 +457,8 @@ function initFilterPanel(){
                     const id =
                         btn.dataset.relationship;
 
-
                     if(!draft.relationshipStatuses)
                         draft.relationshipStatuses = [];
-
 
                     if(
                         draft.relationshipStatuses.includes(id)
@@ -514,7 +470,6 @@ function initFilterPanel(){
                             );
 
                     }
-
                     else{
 
                         draft.relationshipStatuses = [
@@ -524,14 +479,12 @@ function initFilterPanel(){
 
                     }
 
-
                     syncDraftToUI();
 
                 }
             );
 
         });
-
 
     document
         .querySelectorAll(
@@ -546,12 +499,10 @@ function initFilterPanel(){
                     const raw =
                         btn.dataset.radius;
 
-
                     draft.radiusMeters =
                         raw === 'any'
                             ? null
                             : Number(raw);
-
 
                     syncDraftToUI();
 
@@ -560,17 +511,73 @@ function initFilterPanel(){
 
         });
 
-
     updateTriggerState();
-
 
     window.addEventListener(
         'filters:changed',
         updateTriggerState
     );
 
+    window.addEventListener(
+        'language:changed',
+        () => {
+            updateFilterPanelTexts();
+            updateTriggerState();
+        }
+    );
+
 }
 
+/* ========================================
+   UPDATE TEXTS ON LANGUAGE CHANGE
+======================================== */
+
+function updateFilterPanelTexts(){
+
+    const setText = (id, key) => {
+        const el = document.querySelector(id);
+        if (el) el.textContent = t(key);
+    };
+
+    setText('#filter-panel-title', 'filters_title');
+    setText('#filter-label-activities', 'filters_busy_with');
+    setText('#filter-label-age', 'filters_age');
+    setText('#filter-age-from-label', 'filters_age_from');
+    setText('#filter-age-to-label', 'filters_age_to');
+    setText('#filter-label-relationship', 'filters_relationship');
+    setText('#filter-label-radius', 'filters_radius');
+    setText('#filter-reset', 'filters_reset');
+    setText('#filter-apply', 'filters_apply');
+
+    const closeBtn = document.querySelector('#filter-panel-close');
+    if (closeBtn) closeBtn.setAttribute('aria-label', t('filters_close'));
+
+    // Обновляем чипы активностей
+    getActivities().forEach(item => {
+        const btn = document.querySelector(
+            `#filter-activities [data-activity="${item.id}"]`
+        );
+        if (btn) btn.textContent = item.label;
+    });
+
+    // Обновляем чипы отношений
+    getRelationships().forEach(item => {
+        const btn = document.querySelector(
+            `#filter-relationships [data-relationship="${item.id}"]`
+        );
+        if (btn) btn.textContent = item.label;
+    });
+
+    // Обновляем чипы радиуса
+    getRadiusOptions().forEach(item => {
+        const key = item.value === null ? 'any' : String(item.value);
+        const btn = document.querySelector(
+            `#filter-radius [data-radius="${key}"]`
+        );
+        if (btn) btn.textContent = item.label;
+    });
+
+}
 
 /* ========================================
    UI SYNC
@@ -581,7 +588,6 @@ function syncDraftToUI(){
     if(!draft)
         draft = getFilters();
 
-
     document
         .querySelectorAll(
             '#filter-activities [data-activity]'
@@ -591,14 +597,12 @@ function syncDraftToUI(){
             const id =
                 btn.dataset.activity;
 
-
             btn.classList.toggle(
                 'active',
                 (draft.activities || []).includes(id)
             );
 
         });
-
 
     document
         .querySelectorAll(
@@ -609,14 +613,12 @@ function syncDraftToUI(){
             const id =
                 btn.dataset.relationship;
 
-
             btn.classList.toggle(
                 'active',
                 (draft.relationshipStatuses || []).includes(id)
             );
 
         });
-
 
     document
         .querySelectorAll(
@@ -627,18 +629,15 @@ function syncDraftToUI(){
             const raw =
                 btn.dataset.radius;
 
-
             const value =
                 raw === 'any'
                     ? null
                     : Number(raw);
 
-
             const active =
                 draft.radiusMeters == null
                     ? value == null
                     : Number(draft.radiusMeters) === value;
-
 
             btn.classList.toggle(
                 'active',
@@ -647,18 +646,15 @@ function syncDraftToUI(){
 
         });
 
-
     const ageFrom =
         document.querySelector(
             '#filter-age-from'
         );
 
-
     const ageTo =
         document.querySelector(
             '#filter-age-to'
         );
-
 
     if(ageFrom){
 
@@ -668,7 +664,6 @@ function syncDraftToUI(){
                 : '';
 
     }
-
 
     if(ageTo){
 
@@ -681,42 +676,35 @@ function syncDraftToUI(){
 
 }
 
-
 function collectDraftFromUI(){
 
     if(!draft)
         draft = getFilters();
-
 
     const ageFromRaw =
         document.querySelector(
             '#filter-age-from'
         )?.value;
 
-
     const ageToRaw =
         document.querySelector(
             '#filter-age-to'
         )?.value;
-
 
     const ageFrom =
         ageFromRaw
             ? Number(ageFromRaw)
             : null;
 
-
     const ageTo =
         ageToRaw
             ? Number(ageToRaw)
             : null;
 
-
     draft.ageFrom =
         Number.isFinite(ageFrom)
             ? ageFrom
             : null;
-
 
     draft.ageTo =
         Number.isFinite(ageTo)
@@ -725,7 +713,6 @@ function collectDraftFromUI(){
 
 }
 
-
 function updateTriggerState(){
 
     const btn =
@@ -733,33 +720,28 @@ function updateTriggerState(){
             '#filters-open-btn'
         );
 
-
     if(!btn)
         return;
 
-
     const active =
         hasActiveFilters();
-
 
     btn.classList.toggle(
         'has-active',
         active
     );
 
-
     const label =
         document.querySelector(
             '#filters-open-label'
         );
 
-
     if(label){
 
         label.textContent =
             active
-                ? 'Фильтры •'
-                : 'Фильтры';
+                ? t('filters_btn_active')
+                : t('filters_btn');
 
     }
 

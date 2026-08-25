@@ -1,176 +1,89 @@
 import './BottomSheet.css';
 
-
+import {
+    t
+} from '../../i18n';
 
 export function BottomSheet(){
 
-
     return `
-
-
-
     <div class="bottom-sheet">
-
-
 
         <div class="bottom-sheet__box">
 
-
-
-            <h2>
-
-                Начать LIVE
-
+            <h2 id="bs-title">
+                ${t('start_live_title')}
             </h2>
 
-
-
-
-
-            <h3>
-
-                Что делаешь?
-
+            <h3 id="bs-what">
+                ${t('bs_what_doing')}
             </h3>
-
-
-
-
 
             <div class="activity-options">
 
-
-
                 <button 
                 class="activity-option"
-                data-activity="coffee">
-
+                data-activity="coffee"
+                id="bs-act-coffee">
                     ☕
-
-                    Кофе
-
+                    ${t('bs_coffee')}
                 </button>
-
-
-
-
 
                 <button 
                 class="activity-option"
-                data-activity="walk">
-
+                data-activity="walk"
+                id="bs-act-walk">
                     🚶
-
-                    Прогулка
-
+                    ${t('bs_walk')}
                 </button>
-
-
-
-
-
 
                 <button 
                 class="activity-option"
-                data-activity="talk">
-
+                data-activity="talk"
+                id="bs-act-talk">
                     💬
-
-                    Общение
-
+                    ${t('bs_talk')}
                 </button>
-
-
-
-
 
                 <button 
                 class="activity-option"
-                data-activity="sport">
-
+                data-activity="sport"
+                id="bs-act-sport">
                     🏃
-
-                    Спорт
-
+                    ${t('bs_sport')}
                 </button>
-
-
 
             </div>
 
-
-
-
-
-
-
-            <h3>
-
-                Время LIVE
-
+            <h3 id="bs-time-label">
+                ${t('bs_live_time')}
             </h3>
-
-
-
-
 
             <div class="time-options">
 
-
-
-                <button data-time="30">
-
-                    30 мин
-
+                <button data-time="30" id="bs-time-30">
+                    ${t('min_30')}
                 </button>
 
-
-
-                <button data-time="60">
-
-                    1 час
-
+                <button data-time="60" id="bs-time-60">
+                    ${t('hour_1')}
                 </button>
 
-
-
-                <button data-time="120">
-
-                    2 часа
-
+                <button data-time="120" id="bs-time-120">
+                    ${t('hour_2')}
                 </button>
-
-
 
             </div>
 
-
-
-
-
-
-
-
             <button 
-            class="bottom-sheet__start">
-
-
-                Запустить LIVE
-
-
+            class="bottom-sheet__start"
+            id="bs-start">
+                ${t('bs_start')}
             </button>
-
-
-
 
         </div>
 
-
-
     </div>
-
-
     `;
-
 
 }

@@ -37,6 +37,11 @@ import {
 } from '../../components/FeedbackModal/FeedbackModal';
 
 import {
+    LanguageModal,
+    initLanguageModal
+} from '../../components/LanguageModal/LanguageModal';
+
+import {
     AdminPanel
 } from '../../components/AdminPanel/AdminPanel';
 
@@ -79,11 +84,13 @@ import {
     supabase
 } from '../../services/supabase/supabaseClient';
 
+import {
+    t
+} from '../../i18n';
 
 let selectedUser = null;
 let initialized = false;
 let exitLiveHandled = false;
-
 
 /* =========================================================
    HOME
@@ -95,7 +102,6 @@ export function Home(){
         'HOME START'
     );
 
-
     setTimeout(
         async()=>{
             await initHomeEvents();
@@ -103,11 +109,9 @@ export function Home(){
         0
     );
 
-
     console.log(
         'HOME BEFORE RETURN'
     );
-
 
     return `
 <main class="home">
@@ -118,6 +122,7 @@ ${FilterPanel()}
 ${LiveModal()}
 ${Settings()}
 ${FeedbackModal()}
+${LanguageModal()}
 ${AdminPanel()}
 ${RoutePanel()}
 ${SelectedUser()}
@@ -126,7 +131,6 @@ ${BottomBar()}
 `;
 
 }
-
 
 /* =========================================================
    INIT HOME EVENTS
@@ -137,14 +141,11 @@ async function initHomeEvents(){
     if(initialized)
         return;
 
-
     initialized = true;
-
 
     console.log(
         'HOME EVENTS INIT'
     );
-
 
     await restoreMyLive();
 
@@ -162,6 +163,8 @@ async function initHomeEvents(){
 
     initFeedbackModal();
 
+    initLanguageModal();
+
     initAdminPanel();
 
     updateLiveButton();
@@ -170,8 +173,14 @@ async function initHomeEvents(){
 
     initAutoStopLiveOnExit();
 
-}
+    window.addEventListener(
+        'language:changed',
+        ()=>{
+            updateLiveButton();
+        }
+    );
 
+}
 
 /* =========================================================
    RESTORE LIVE
@@ -184,25 +193,20 @@ async function restoreMyLive(){
         const profile =
             getProfile();
 
-
         if(!profile)
             return;
-
 
         const userId =
             profile.user_id ||
             profile.id;
 
-
         if(!userId)
             return;
-
 
         const session =
             await restoreActiveLive(
                 userId
             );
-
 
         if(session){
 
@@ -210,24 +214,20 @@ async function restoreMyLive(){
                 session
             );
 
-
             window.dispatchEvent(
                 new Event(
                     'live:started'
                 )
             );
 
-
             setTimeout(()=>{
                 updateLiveButton();
             },100);
 
         }
-
         else{
 
             clearLiveState();
-
 
             setTimeout(()=>{
                 updateLiveButton();
@@ -236,7 +236,6 @@ async function restoreMyLive(){
         }
 
     }
-
     catch(error){
 
         console.error(
@@ -247,7 +246,6 @@ async function restoreMyLive(){
     }
 
 }
-
 
 /* =========================================================
    AUTO STOP LIVE ON APP EXIT
@@ -261,10 +259,8 @@ function initAutoStopLiveOnExit(){
         return;
     }
 
-
     window.__liveExitHandlersInitialized =
         true;
-
 
     window.addEventListener(
         'pagehide',
@@ -272,7 +268,6 @@ function initAutoStopLiveOnExit(){
             stopLiveOnExit();
         }
     );
-
 
     window.addEventListener(
         'beforeunload',
@@ -283,7 +278,6 @@ function initAutoStopLiveOnExit(){
 
 }
 
-
 /* =========================================================
    STOP LIVE ON EXIT
 ========================================================= */
@@ -293,10 +287,8 @@ function stopLiveOnExit(){
     if(exitLiveHandled)
         return;
 
-
     const live =
         getLiveState();
-
 
     if(
         !live ||
@@ -305,29 +297,22 @@ function stopLiveOnExit(){
         return;
     }
 
-
     const sessionId =
         live.session_id;
 
-
     const profile =
         getProfile();
-
 
     const userId =
         profile?.user_id ||
         profile?.id;
 
-
     if(!userId)
         return;
 
-
     exitLiveHandled = true;
 
-
     clearLiveState();
-
 
     window.dispatchEvent(
         new Event(
@@ -335,16 +320,13 @@ function stopLiveOnExit(){
         )
     );
 
-
     try{
 
         const url =
             import.meta.env.VITE_SUPABASE_URL;
 
-
         const key =
             import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 
         if(
             url &&
@@ -380,7 +362,6 @@ function stopLiveOnExit(){
         }
 
     }
-
     catch(error){
 
         console.warn(
@@ -389,7 +370,6 @@ function stopLiveOnExit(){
         );
 
     }
-
 
     try{
 
@@ -403,7 +383,6 @@ function stopLiveOnExit(){
         });
 
     }
-
     catch(error){
 
         console.warn(
@@ -414,7 +393,6 @@ function stopLiveOnExit(){
     }
 
 }
-
 
 /* =========================================================
    LIVE BUTTON
@@ -427,10 +405,8 @@ function initLiveButton(){
             '#live-button'
         );
 
-
     if(!button)
         return;
-
 
     button.onclick =
         async ()=>{
@@ -438,21 +414,17 @@ function initLiveButton(){
             const live =
                 getLiveState();
 
-
             if(live.session_id){
 
                 await stopMyLive();
-
                 return;
 
             }
-
 
             const modal =
                 document.querySelector(
                     '#live-modal'
                 );
-
 
             if(modal){
 
@@ -466,7 +438,6 @@ function initLiveButton(){
 
 }
 
-
 /* =========================================================
    STOP MY LIVE
 ========================================================= */
@@ -476,14 +447,11 @@ async function stopMyLive(){
     const live =
         getLiveState();
 
-
     if(!live.session_id)
         return;
 
-
     const sessionId =
         live.session_id;
-
 
     try{
 
@@ -492,7 +460,6 @@ async function stopMyLive(){
         );
 
     }
-
     catch(error){
 
         console.error(
@@ -504,9 +471,7 @@ async function stopMyLive(){
 
     }
 
-
     clearLiveState();
-
 
     window.dispatchEvent(
         new Event(
@@ -514,11 +479,9 @@ async function stopMyLive(){
         )
     );
 
-
     updateLiveButton();
 
 }
-
 
 /* =========================================================
    LIVE BUTTON STATE
@@ -531,34 +494,29 @@ function updateLiveButton(){
             '#live-button'
         );
 
-
     if(!button)
         return;
-
 
     const live =
         getLiveState();
 
-
     if(live.session_id){
 
         button.innerHTML = `
-            STOP LIVE
+            ${t('stop_live')}
         `;
-
 
         button.classList.add(
             'stop-live'
         );
 
     }
-
     else{
 
         button.innerHTML = `
-            LIVE
+            <span class="live-dot"></span>
+            ${t('live')}
         `;
-
 
         button.classList.remove(
             'stop-live'
@@ -567,7 +525,6 @@ function updateLiveButton(){
     }
 
 }
-
 
 /* =========================================================
    LIVE EVENTS
@@ -578,7 +535,6 @@ function initLiveEvents(){
     console.log(
         'LIVE EVENTS INIT'
     );
-
 
     document
         .querySelectorAll(
@@ -601,11 +557,9 @@ function initLiveEvents(){
 
                         });
 
-
                     button.classList.add(
                         'active'
                     );
-
 
                     setActivity(
                         button.dataset.activity
@@ -614,7 +568,6 @@ function initLiveEvents(){
                 };
 
         });
-
 
     document
         .querySelectorAll(
@@ -637,11 +590,9 @@ function initLiveEvents(){
 
                         });
 
-
                     button.classList.add(
                         'active'
                     );
-
 
                     setDuration(
                         Number(
@@ -653,12 +604,10 @@ function initLiveEvents(){
 
         });
 
-
     const start =
         document.querySelector(
             '#start-live'
         );
-
 
     if(start){
 
@@ -670,19 +619,15 @@ function initLiveEvents(){
                     const live =
                         getLiveState();
 
-
                     const profile =
                         getProfile();
-
 
                     if(!profile)
                         return;
 
-
                     const userId =
                         profile.user_id ||
                         profile.id;
-
 
                     const session =
                         await createLiveSession({
@@ -694,11 +639,9 @@ function initLiveEvents(){
                                 live.duration || 60
                         });
 
-
                     setLiveSession(
                         session
                     );
-
 
                     document
                         .querySelector(
@@ -707,7 +650,6 @@ function initLiveEvents(){
                         ?.classList.remove(
                             'open'
                         );
-
 
                     window.dispatchEvent(
                         new CustomEvent(
@@ -719,9 +661,7 @@ function initLiveEvents(){
                         )
                     );
 
-
                     updateLiveButton();
-
 
                     navigator.geolocation
                         .getCurrentPosition(
@@ -736,7 +676,6 @@ function initLiveEvents(){
                                     );
 
                                 }
-
                                 catch(error){
 
                                     console.error(
@@ -750,7 +689,6 @@ function initLiveEvents(){
                         );
 
                 }
-
                 catch(error){
 
                     console.error(
@@ -765,7 +703,6 @@ function initLiveEvents(){
     }
 
 }
-
 
 /* =========================================================
    USER SELECTION
@@ -782,10 +719,8 @@ function initUserSelection(){
                 event.detail
             );
 
-
             selectedUser =
                 event.detail;
-
 
             showUserCard(
                 selectedUser
@@ -793,7 +728,6 @@ function initUserSelection(){
 
         }
     );
-
 
     document.addEventListener(
         'click',
@@ -821,7 +755,6 @@ function initUserSelection(){
 
 }
 
-
 /* =========================================================
    MY LIVE SELECTION
 ========================================================= */
@@ -835,14 +768,11 @@ function initMyLiveSelection(){
             const profile =
                 event.detail.profile;
 
-
             const live =
                 event.detail.live;
 
-
             if(!profile)
                 return;
-
 
             showUserCard({
                 ...profile,
@@ -861,7 +791,6 @@ function initMyLiveSelection(){
 
 }
 
-
 /* =========================================================
    PROFILE BUTTON
 ========================================================= */
@@ -873,10 +802,8 @@ function initProfileButton(){
             '#profile-button'
         );
 
-
     if(!button)
         return;
-
 
     button.onclick =
         ()=>{
@@ -891,7 +818,6 @@ function initProfileButton(){
 
 }
 
-
 /* =========================================================
    ADMIN PANEL
 ========================================================= */
@@ -901,16 +827,13 @@ function initAdminPanel(){
     const profile =
         getProfile();
 
-
     if(!profile)
         return;
-
 
     const telegramId =
         Number(
             profile.telegram_id
         );
-
 
     if(
         telegramId !==
@@ -919,25 +842,20 @@ function initAdminPanel(){
         return;
     }
 
-
     initAdminComponent();
-
 
     const settings =
         document.querySelector(
             '#settings-window'
         );
 
-
     const actions =
         settings?.querySelector(
             '.settings-actions'
         );
 
-
     if(!actions)
         return;
-
 
     if(
         document.querySelector(
@@ -947,29 +865,23 @@ function initAdminPanel(){
         return;
     }
 
-
     const button =
         document.createElement(
             'button'
         );
 
-
     button.id =
         'admin-open';
-
 
     button.className =
         'settings-action';
 
-
     button.innerHTML =
         '👑 Админка';
-
 
     actions.appendChild(
         button
     );
-
 
     button.onclick =
         ()=>{
@@ -978,7 +890,6 @@ function initAdminPanel(){
                 'open'
             );
 
-
             document
                 .querySelector(
                     '#admin-panel'
@@ -986,7 +897,6 @@ function initAdminPanel(){
                 ?.classList.add(
                     'open'
                 );
-
 
             loadFeedback();
 

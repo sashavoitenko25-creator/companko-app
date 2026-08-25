@@ -9,32 +9,30 @@ import {
     getProfile
 } from '../features/profile/profileStore';
 
+import {
+    t
+} from '../i18n';
 
 let initialized = false;
-
 
 /* ========================================
    КАРТИНКИ АКТИВНОСТЕЙ
 ======================================== */
 
 const ACTIVITY_IMAGES = {
-
     male: {
         beer: '/activities/alcohol-male.png',
         coffee: '/activities/coffee-male.png',
         walk: '/activities/walking-male.png',
         chat: '/activities/talking-male.png'
     },
-
     female: {
         beer: '/activities/alcohol-female.png',
         coffee: '/activities/coffee-female.png',
         walk: '/activities/walking-female.png',
         chat: '/activities/talking-female.png'
     }
-
 };
-
 
 /* ========================================
    ПОЛЬЗОВАТЕЛЯ
@@ -54,18 +52,13 @@ function getUserGender() {
         profile?.gender
     );
 
-
     if (profile?.gender === 'female') {
-
         return 'female';
-
     }
-
 
     return 'male';
 
 }
-
 
 /* ========================================
    LIVE MODAL
@@ -80,35 +73,28 @@ export function LiveModal() {
         }
 
         initialized = true;
-
         initLiveModal();
 
     }, 0);
 
-
     return `
-
 <div
     id="live-modal"
     class="live-modal">
 
     <div class="live-modal__box">
 
-        <h2>
-            Начать LIVE
+        <h2 id="live-modal-title">
+            ${t('start_live_title')}
         </h2>
 
-
-        <p>
-            Чем хотите заняться?
+        <p id="live-modal-what">
+            ${t('what_to_do')}
         </p>
-
 
         <div class="live-options">
 
-
             <!-- АЛКОГОЛЬ -->
-
             <button
                 class="live-option active"
                 data-activity="beer">
@@ -121,22 +107,17 @@ export function LiveModal() {
                 />
 
                 <div class="live-option-text">
-
-                    <strong>
-                        Выпить
+                    <strong id="live-text-beer">
+                        ${t('activity_beer')}
                     </strong>
-
-                    <span>
-                        (алкоголь)
+                    <span id="live-sub-beer">
+                        ${t('activity_beer_sub')}
                     </span>
-
                 </div>
 
             </button>
 
-
             <!-- КОФЕ -->
-
             <button
                 class="live-option"
                 data-activity="coffee">
@@ -149,22 +130,17 @@ export function LiveModal() {
                 />
 
                 <div class="live-option-text">
-
-                    <strong>
-                        Выпить
+                    <strong id="live-text-coffee">
+                        ${t('activity_coffee')}
                     </strong>
-
-                    <span>
-                        (кофе)
+                    <span id="live-sub-coffee">
+                        ${t('activity_coffee_sub')}
                     </span>
-
                 </div>
 
             </button>
 
-
             <!-- ГУЛЯТЬ -->
-
             <button
                 class="live-option"
                 data-activity="walk">
@@ -177,18 +153,14 @@ export function LiveModal() {
                 />
 
                 <div class="live-option-text">
-
-                    <strong>
-                        Гулять
+                    <strong id="live-text-walk">
+                        ${t('activity_walk')}
                     </strong>
-
                 </div>
 
             </button>
 
-
             <!-- ОБЩАТЬСЯ -->
-
             <button
                 class="live-option"
                 data-activity="chat">
@@ -201,64 +173,54 @@ export function LiveModal() {
                 />
 
                 <div class="live-option-text">
-
-                    <strong>
-                        Общаться
+                    <strong id="live-text-chat">
+                        ${t('activity_chat')}
                     </strong>
-
                 </div>
 
             </button>
 
-
         </div>
 
-
-        <p>
-            Сколько времени?
+        <p id="live-modal-how-long">
+            ${t('how_long')}
         </p>
-
 
         <div class="time-options">
 
             <button
-                data-time="15">
-                15 мин
+                data-time="15"
+                id="live-time-15">
+                ${t('min_15')}
             </button>
-
 
             <button
-                data-time="30">
-                30 мин
+                data-time="30"
+                id="live-time-30">
+                ${t('min_30')}
             </button>
-
 
             <button
                 class="active"
-                data-time="60">
-                60 мин
+                data-time="60"
+                id="live-time-60">
+                ${t('min_60')}
             </button>
 
         </div>
 
-
         <button
             id="start-live"
             class="start-live">
-
-            Начать LIVE
-
+            ${t('start_live_btn')}
         </button>
-
 
     </div>
 
 </div>
-
 `;
 
 }
-
 
 /* ========================================
    ИНИЦИАЛИЗАЦИЯ
@@ -270,33 +232,19 @@ function initLiveModal() {
         'LIVE MODAL INIT'
     );
 
-
     setActivity('beer');
-
     setDuration(60);
-
-
-    /*
-     * Получаем пол из текущего профиля
-     */
 
     const gender =
         getUserGender();
-
 
     console.log(
         'LIVE USER GENDER:',
         gender
     );
 
-
     const images =
         ACTIVITY_IMAGES[gender];
-
-
-    /*
-     * Меняем картинки
-     */
 
     const beerImage =
         document.querySelector(
@@ -318,38 +266,25 @@ function initLiveModal() {
             '#live-image-chat'
         );
 
-
     if (beerImage) {
-
         beerImage.src =
             images.beer;
-
     }
-
 
     if (coffeeImage) {
-
         coffeeImage.src =
             images.coffee;
-
     }
-
 
     if (walkImage) {
-
         walkImage.src =
             images.walk;
-
     }
-
 
     if (chatImage) {
-
         chatImage.src =
             images.chat;
-
     }
-
 
     /* ====================================
        ВЫБОР АКТИВНОСТИ
@@ -373,11 +308,9 @@ function initLiveModal() {
 
                     });
 
-
                 button.classList.add(
                     'active'
                 );
-
 
                 setActivity(
                     button.dataset.activity
@@ -386,7 +319,6 @@ function initLiveModal() {
             };
 
         });
-
 
     /* ====================================
        ВЫБОР ВРЕМЕНИ
@@ -412,11 +344,9 @@ function initLiveModal() {
 
                     });
 
-
                 button.classList.add(
                     'active'
                 );
-
 
                 setDuration(
                     Number(
@@ -428,7 +358,6 @@ function initLiveModal() {
 
         });
 
-
     /* ====================================
        ЗАКРЫТИЕ ПО ФОНУ
     ==================================== */
@@ -438,7 +367,6 @@ function initLiveModal() {
             '#live-modal'
         );
 
-
     if (modal) {
 
         modal.onclick = event => {
@@ -446,17 +374,49 @@ function initLiveModal() {
             if (
                 event.target === modal
             ) {
-
                 closeLiveModal();
-
             }
 
         };
 
     }
 
+    // Обновление текстов при смене языка
+    window.addEventListener(
+        'language:changed',
+        () => {
+            updateLiveModalTexts();
+        }
+    );
+
 }
 
+/* ========================================
+   ОБНОВЛЕНИЕ ТЕКСТОВ
+======================================== */
+
+function updateLiveModalTexts() {
+
+    const setText = (id, key) => {
+        const el = document.querySelector(id);
+        if (el) el.textContent = t(key);
+    };
+
+    setText('#live-modal-title', 'start_live_title');
+    setText('#live-modal-what', 'what_to_do');
+    setText('#live-text-beer', 'activity_beer');
+    setText('#live-sub-beer', 'activity_beer_sub');
+    setText('#live-text-coffee', 'activity_coffee');
+    setText('#live-sub-coffee', 'activity_coffee_sub');
+    setText('#live-text-walk', 'activity_walk');
+    setText('#live-text-chat', 'activity_chat');
+    setText('#live-modal-how-long', 'how_long');
+    setText('#live-time-15', 'min_15');
+    setText('#live-time-30', 'min_30');
+    setText('#live-time-60', 'min_60');
+    setText('#start-live', 'start_live_btn');
+
+}
 
 /* ========================================
    ОТКРЫТЬ
@@ -469,17 +429,13 @@ export function openLiveModal() {
             '#live-modal'
         );
 
-
     if (modal) {
-
         modal.classList.add(
             'open'
         );
-
     }
 
 }
-
 
 /* ========================================
    ЗАКРЫТЬ
@@ -492,13 +448,10 @@ export function closeLiveModal() {
             '#live-modal'
         );
 
-
     if (modal) {
-
         modal.classList.remove(
             'open'
         );
-
     }
 
 }

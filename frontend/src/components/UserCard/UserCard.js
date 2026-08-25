@@ -1,64 +1,49 @@
 import './UserCard.css';
 
+import {
+    t
+} from '../../i18n';
 
 
 export function UserCard(user){
 
+    const minutes =
+        user.duration || 60;
 
 
-    const minutes = user.duration || 60;
-
+    const distance =
+        user.distance || 0;
 
 
     return `
 
-
-
 <div class="user-card">
-
-
-
 
 
     <div class="user-card__top">
 
 
-
-
-
         <div class="user-card__avatar">
 
-
-
             <img
-
-            src="${
-                user.photo ||
-                user.photo_url ||
-                'https://i.pravatar.cc/150'
-            }"
-
-
+                src="${
+                    user.photo ||
+                    user.photo_url ||
+                    'https://i.pravatar.cc/150'
+                }"
             >
 
-
-
         </div>
-
-
-
 
 
         <div class="user-card__main">
 
 
-
             <h3>
-
 
                 ${
                     user.name ||
-                    'Гость'
+                    t('guest')
                 }
 
                 ${
@@ -69,138 +54,76 @@ export function UserCard(user){
                     ''
                 }
 
-
             </h3>
 
 
-
-
-
             <div class="user-card__activity">
-
-
 
                 ${
                     user.icon ||
                     '🔥'
                 }
 
-
                 ${
                     user.activity ||
                     'LIVE'
                 }
 
-
-
             </div>
-
-
 
 
         </div>
 
 
-
-
-
     </div>
-
-
-
-
-
-
-
 
 
     <div class="user-card__info">
 
 
-
-
-
         <div>
-
 
             📍
 
-            ${
-                user.distance ||
-                0
-            }
+            ${distance}
 
-            м
-
-
+            ${t('meters')}
 
         </div>
 
 
-
-
-
         <div>
-
 
             🔥 LIVE
 
-
         </div>
-
-
-
-
 
 
         <div>
 
-
-            ⏱ Активен ещё
-
+            ⏱ ${t('active_for')}
 
             ${minutes}
 
-
-            мин
-
-
+            ${t('minutes')}
 
         </div>
-
-
 
 
     </div>
 
 
-
-
-
-
-
     <button
-
-    class="user-card__route"
-
-    data-user-id="${user.id || user.user_id}"
-
+        class="user-card__route"
+        data-user-id="${user.id || user.user_id}"
     >
 
-
-        🧭 Построить маршрут
-
+        🧭 ${t('build_route')}
 
     </button>
 
 
-
-
-
-
 </div>
-
-
 
 `;
 
