@@ -212,16 +212,14 @@
 }
 
 /* ========================================
-   FILTER BUTTON — 38px, по центру под профилем
+   FILTER BUTTON — 38px, под профилем, ниже toast
 ======================================== */
 
 .filters-trigger{
     position:absolute;
     top:74px;
-    /* профиль: right 18px, width 48px → центр 42px от края;
-       кнопка 38px → right = 42 - 19 = 23px */
     right:23px;
-    z-index:6000;
+    z-index:5500;
     pointer-events:auto;
 }
 

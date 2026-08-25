@@ -102,8 +102,17 @@ export function initNotifications() {
     const btn = document.querySelector('#notif-btn');
     const panel = document.querySelector('#notif-panel');
     const closeBtn = document.querySelector('#notif-panel-close');
+    const toast = document.querySelector('#notif-toast');
 
     if (!btn || !panel) return;
+
+    // toast и панель — в body, чтобы не зависели от z-index header
+    if (toast && toast.parentElement !== document.body) {
+        document.body.appendChild(toast);
+    }
+    if (panel.parentElement !== document.body) {
+        document.body.appendChild(panel);
+    }
 
     btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -213,7 +222,6 @@ function togglePanel() {
     panel.classList.add('open');
     btn?.classList.add('open-state');
 
-    // локально + на сервер
     const unreadIds = getNotifications()
         .filter(n => !n.read)
         .map(n => n.id);
@@ -366,7 +374,6 @@ async function handleOpenNotification(item) {
             distance: 0
         };
 
-        // подтягиваем актуальный LIVE, чтобы таймер работал
         if (item.from_user_id) {
             try {
                 const session = await checkActiveLive(item.from_user_id);
@@ -431,6 +438,11 @@ function showToast(item) {
     const text = document.querySelector('#notif-toast-text');
 
     if (!toast || !title || !text) return;
+
+    // гарантированно поверх всего UI
+    if (toast.parentElement !== document.body) {
+        document.body.appendChild(toast);
+    }
 
     if (avatar) {
         avatar.src =
