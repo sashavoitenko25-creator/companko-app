@@ -10,6 +10,11 @@ import {
 } from '../../store/notificationStore';
 
 import {
+    markRouteNotificationRead,
+    deleteRouteNotification
+} from '../../services/supabase/routeNotificationService';
+
+import {
     getMap
 } from '../../services/map/mapService';
 
@@ -208,7 +213,17 @@ function togglePanel() {
     panel.classList.add('open');
     btn?.classList.add('open-state');
 
+    // локально + на сервер
+    const unreadIds = getNotifications()
+        .filter(n => !n.read)
+        .map(n => n.id);
+
     markAllRead();
+
+    unreadIds.forEach(id => {
+        markRouteNotificationRead(id).catch(() => {});
+    });
+
     renderList();
     updateBadge();
 }
@@ -302,7 +317,9 @@ function renderList() {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            removeNotification(btn.dataset.delete);
+            const id = btn.dataset.delete;
+            removeNotification(id);
+            deleteRouteNotification(id).catch(() => {});
         });
     });
 }
@@ -314,6 +331,7 @@ function renderList() {
 async function handleOpenNotification(item) {
     closePanel();
     markRead(item.id);
+    markRouteNotificationRead(item.id).catch(() => {});
 
     const map = getMap();
     const lat = Number(item.lat);

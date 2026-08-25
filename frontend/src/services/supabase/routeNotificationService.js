@@ -22,7 +22,8 @@ export async function sendRouteNotification(payload) {
         lng: payload.lng != null ? Number(payload.lng) : null,
         gender: payload.gender || null,
         activity: payload.activity || null,
-        relationship_status: payload.relationship_status || null
+        relationship_status: payload.relationship_status || null,
+        read: false
     };
 
     const {
@@ -40,7 +41,6 @@ export async function sendRouteNotification(payload) {
     }
 
     return data;
-
 }
 
 /**
@@ -68,11 +68,10 @@ export async function fetchMyRouteNotifications(myUserId) {
     }
 
     return data || [];
-
 }
 
 /**
- * Пометить прочитанным
+ * Пометить одно уведомление прочитанным
  */
 export async function markRouteNotificationRead(id) {
 
@@ -90,7 +89,28 @@ export async function markRouteNotificationRead(id) {
     if (error) {
         console.error('markRouteNotificationRead error:', error);
     }
+}
 
+/**
+ * Пометить все свои уведомления прочитанными
+ */
+export async function markAllRouteNotificationsRead(myUserId) {
+
+    if (!myUserId) return;
+
+    const {
+        error
+    } = await supabase
+        .from('route_notifications')
+        .update({
+            read: true
+        })
+        .eq('to_user_id', myUserId)
+        .eq('read', false);
+
+    if (error) {
+        console.error('markAllRouteNotificationsRead error:', error);
+    }
 }
 
 /**
@@ -110,13 +130,12 @@ export async function deleteRouteNotification(id) {
     if (error) {
         console.error('deleteRouteNotification error:', error);
     }
-
 }
 
 /**
  * Realtime: новые уведомления для меня
  * onInsert(row) вызывается при каждом INSERT
- * Возвращает channel — его можно отписать .unsubscribe()
+ * Возвращает channel — его можно отписать через supabase.removeChannel
  */
 export function subscribeRouteNotifications(myUserId, onInsert) {
 
@@ -145,7 +164,6 @@ export function subscribeRouteNotifications(myUserId, onInsert) {
         });
 
     return channel;
-
 }
 
 /**
@@ -172,5 +190,4 @@ export function mapRouteNotificationRow(row) {
             ? new Date(row.created_at).getTime()
             : Date.now()
     };
-
 }

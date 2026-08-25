@@ -58,7 +58,10 @@ export function getUnreadCount() {
  *   activity?,
  *   relationship_status?,
  *   expires_at?,
- *   duration?
+ *   duration?,
+ *   read?,          // учитываем из БД
+ *   created_at?,
+ *   silent?         // true = не показывать toast (загрузка с сервера)
  * }
  */
 export function addNotification(payload) {
@@ -67,6 +70,11 @@ export function addNotification(payload) {
     const id =
         payload.id ||
         `n_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    // уже есть по id — не дублируем
+    if (notifications.some(n => String(n.id) === String(id))) {
+        return null;
+    }
 
     // не дублируем одно и то же от того же человека за последние 30 сек
     const exists = notifications.some(n =>
@@ -93,7 +101,8 @@ export function addNotification(payload) {
         relationship_status: payload.relationship_status || null,
         expires_at: payload.expires_at || null,
         duration: payload.duration || null,
-        read: false,
+        // ВАЖНО: уважаем read из payload (БД)
+        read: payload.read === true,
         created_at: payload.created_at || Date.now()
     };
 
@@ -101,11 +110,14 @@ export function addNotification(payload) {
     save();
     emit();
 
-    window.dispatchEvent(
-        new CustomEvent('notification:new', {
-            detail: item
-        })
-    );
+    // toast только для реально новых (не silent)
+    if (!payload.silent) {
+        window.dispatchEvent(
+            new CustomEvent('notification:new', {
+                detail: item
+            })
+        );
+    }
 
     return item;
 }
@@ -132,6 +144,41 @@ export function removeNotification(id) {
 
 export function clearNotifications() {
     notifications = [];
+    save();
+    emit();
+}
+
+/** Синхронизация локального списка с актуальными строками из БД */
+export function syncFromServer(rows) {
+    if (!Array.isArray(rows)) return;
+
+    const byId = new Map(
+        rows.map(r => [String(r.id), r])
+    );
+
+    // оставляем только те, что ещё есть на сервере, и обновляем read
+    notifications = notifications
+        .filter(n => byId.has(String(n.id)))
+        .map(n => {
+            const server = byId.get(String(n.id));
+            return {
+                ...n,
+                read: !!server.read
+            };
+        });
+
+    // добавляем новые с сервера (без toast)
+    rows.forEach(row => {
+        if (!notifications.some(n => String(n.id) === String(row.id))) {
+            addNotification({
+                ...row,
+                silent: true
+            });
+        }
+    });
+
+    // если после filter/map что-то изменилось — уже save/emit внутри add
+    // но на всякий случай:
     save();
     emit();
 }

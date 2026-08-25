@@ -72,7 +72,9 @@ import {
 } from '../../services/supabase/routeNotificationService';
 import {
     addNotification,
-    getNotifications
+    getNotifications,
+    removeNotification,
+    markRead
 } from '../../store/notificationStore';
 import {
     t
@@ -88,7 +90,6 @@ let routeNotifChannel = null;
 ========================================================= */
 
 export function Home(){
-
     console.log(
         'HOME START'
     );
@@ -120,7 +121,6 @@ ${SelectedUser()}
 ${BottomBar()}
 </main>
 `;
-
 }
 
 /* =========================================================
@@ -141,27 +141,16 @@ async function initHomeEvents(){
     await restoreMyLive();
 
     initMyLiveController();
-
     initLiveEvents();
-
     initUserSelection();
-
     initMyLiveSelection();
-
     initLiveButton();
-
     initSettings();
-
     initFeedbackModal();
-
     initLanguageModal();
-
     initAdminPanel();
-
     updateLiveButton();
-
     initProfileButton();
-
     initAutoStopLiveOnExit();
 
     // уведомления о маршрутах
@@ -173,7 +162,6 @@ async function initHomeEvents(){
             updateLiveButton();
         }
     );
-
 }
 
 /* =========================================================
@@ -193,7 +181,7 @@ async function initRouteNotifications(){
     if(!myUserId)
         return;
 
-    // загрузить уже существующие
+    // загрузить уже существующие — БЕЗ toast, с учётом read
     try{
 
         const rows =
@@ -202,20 +190,41 @@ async function initRouteNotifications(){
             );
 
         const existingIds = new Set(
-            getNotifications().map(n => n.id)
+            getNotifications().map(n => String(n.id))
         );
+
+        // id, которых уже нет на сервере (удалили) — убрать локально
+        const serverIds = new Set(
+            rows.map(r => String(r.id))
+        );
+
+        getNotifications().forEach(n => {
+            if(!serverIds.has(String(n.id))){
+                removeNotification(n.id);
+            }
+        });
 
         rows.forEach(row => {
 
             const mapped =
                 mapRouteNotificationRow(row);
 
-            if(
-                mapped &&
-                !existingIds.has(mapped.id)
-            ){
-                addNotification(mapped);
+            if(!mapped)
+                return;
+
+            if(existingIds.has(String(mapped.id))){
+                // уже есть локально — только синхронизируем read
+                if(mapped.read){
+                    markRead(mapped.id);
+                }
+                return;
             }
+
+            // новое с сервера — без toast
+            addNotification({
+                ...mapped,
+                silent: true
+            });
 
         });
 
@@ -229,7 +238,7 @@ async function initRouteNotifications(){
 
     }
 
-    // realtime: новые
+    // realtime: только реально новые INSERT → с toast
     if(routeNotifChannel){
         try{
             supabase.removeChannel(
@@ -253,6 +262,7 @@ async function initRouteNotifications(){
                 if(!mapped)
                     return;
 
+                // silent НЕ ставим → будет toast
                 addNotification(mapped);
 
             }
@@ -540,7 +550,6 @@ async function stopMyLive(){
             'STOP LIVE ERROR',
             error
         );
-
         return;
 
     }
@@ -811,9 +820,11 @@ function initUserSelection(){
             ){
 
                 if(selectedUser){
+
                     showRoute(
                         selectedUser
                     );
+
                 }
 
             }
