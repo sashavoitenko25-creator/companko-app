@@ -17,10 +17,10 @@ const translations = {
 
         // Language modal
         language_title: '🌐 Язык',
+        language_uk: 'Украинский',
         language_ru: 'Русский',
-        language_en: 'English',
-        language_uk: 'Українська',
-        language_de: 'Deutsch',
+        language_en: 'Английский',
+        language_de: 'Немецкий',
 
         // Feedback
         feedback_problem: '🐞 Сообщить о проблеме',
@@ -172,8 +172,8 @@ const translations = {
         // Common
         close: 'Закрыть',
         back: '←',
-    },
 
+    },
 
     /* =====================================================
        ENGLISH
@@ -189,10 +189,10 @@ const translations = {
 
         // Language modal
         language_title: '🌐 Language',
-        language_ru: 'Русский',
+        language_uk: 'Ukrainian',
+        language_ru: 'Russian',
         language_en: 'English',
-        language_uk: 'Українська',
-        language_de: 'Deutsch',
+        language_de: 'German',
 
         // Feedback
         feedback_problem: '🐞 Report a problem',
@@ -344,8 +344,8 @@ const translations = {
         // Common
         close: 'Close',
         back: '←',
-    },
 
+    },
 
     /* =====================================================
        UKRAINIAN
@@ -361,10 +361,10 @@ const translations = {
 
         // Language modal
         language_title: '🌐 Мова',
-        language_ru: 'Русский',
-        language_en: 'English',
         language_uk: 'Українська',
-        language_de: 'Deutsch',
+        language_ru: 'Російська',
+        language_en: 'Англійська',
+        language_de: 'Німецька',
 
         // Feedback
         feedback_problem: '🐞 Повідомити про проблему',
@@ -516,8 +516,8 @@ const translations = {
         // Common
         close: 'Закрити',
         back: '←',
-    },
 
+    },
 
     /* =====================================================
        GERMAN
@@ -533,9 +533,9 @@ const translations = {
 
         // Language modal
         language_title: '🌐 Sprache',
-        language_ru: 'Русский',
-        language_en: 'English',
-        language_uk: 'Українська',
+        language_uk: 'Ukrainisch',
+        language_ru: 'Russisch',
+        language_en: 'Englisch',
         language_de: 'Deutsch',
 
         // Feedback
@@ -688,6 +688,7 @@ const translations = {
         // Common
         close: 'Schließen',
         back: '←',
+
     }
 
 };
@@ -776,6 +777,11 @@ export function getAvailableLanguages(){
     return [
 
         {
+            code: 'uk',
+            label: t('language_uk')
+        },
+
+        {
             code: 'ru',
             label: t('language_ru')
         },
@@ -783,11 +789,6 @@ export function getAvailableLanguages(){
         {
             code: 'en',
             label: t('language_en')
-        },
-
-        {
-            code: 'uk',
-            label: t('language_uk')
         },
 
         {
