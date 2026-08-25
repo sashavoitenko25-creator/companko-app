@@ -195,16 +195,33 @@ export function FilterPanel(){
         </div>
     </div>
 </div>
-<!-- КНОПКА ПОД ПРОФИЛЕМ -->
+<!-- КНОПКА ФИЛЬТРОВ (иконка) -->
 <div class="filters-trigger">
     <button
         type="button"
         class="filters-trigger__btn"
         id="filters-open-btn"
+        aria-label="${t('filters_btn')}"
     >
-        <span id="filters-open-label">
-            ${t('filters_btn')}
-        </span>
+        <svg
+            class="filters-trigger__icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+        >
+            <path
+                d="M4 6h16M7 12h10M10 18h4"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+            />
+        </svg>
+        <span
+            class="filters-trigger__dot"
+            id="filters-active-dot"
+            hidden
+        ></span>
     </button>
 </div>
 `;
@@ -261,7 +278,6 @@ export function openFilterPanel(){
     if(!panel)
         return;
 
-    // Закрываем настройки, если они открыты
     const settings =
         document.querySelector(
             '#settings-window'
@@ -530,7 +546,6 @@ function updateFilterPanelTexts(){
     const closeBtn = document.querySelector('#filter-panel-close');
     if (closeBtn) closeBtn.setAttribute('aria-label', t('filters_close'));
 
-    // Обновляем чипы активностей
     getActivities().forEach(item => {
         const btn = document.querySelector(
             `#filter-activities [data-activity="${item.id}"]`
@@ -538,7 +553,6 @@ function updateFilterPanelTexts(){
         if (btn) btn.textContent = item.label;
     });
 
-    // Обновляем чипы отношений
     getRelationships().forEach(item => {
         const btn = document.querySelector(
             `#filter-relationships [data-relationship="${item.id}"]`
@@ -546,7 +560,6 @@ function updateFilterPanelTexts(){
         if (btn) btn.textContent = item.label;
     });
 
-    // Обновляем чипы радиуса
     getRadiusOptions().forEach(item => {
         const key = item.value === null ? 'any' : String(item.value);
         const btn = document.querySelector(
@@ -705,16 +718,20 @@ function updateTriggerState(){
         active
     );
 
-    const label =
+    btn.setAttribute(
+        'aria-label',
+        active
+            ? t('filters_btn_active')
+            : t('filters_btn')
+    );
+
+    const dot =
         document.querySelector(
-            '#filters-open-label'
+            '#filters-active-dot'
         );
 
-    if(label){
-        label.textContent =
-            active
-                ? t('filters_btn_active')
-                : t('filters_btn');
+    if(dot){
+        dot.hidden = !active;
     }
 
 }

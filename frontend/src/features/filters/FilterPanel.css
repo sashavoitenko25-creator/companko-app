@@ -10,12 +10,10 @@
     pointer-events:none;
 }
 
-
 .filter-panel.open{
     display:block;
     pointer-events:auto;
 }
-
 
 .filter-panel__backdrop{
     position:absolute;
@@ -26,11 +24,9 @@
     transition:opacity .25s ease;
 }
 
-
 .filter-panel.open .filter-panel__backdrop{
     opacity:1;
 }
-
 
 .filter-panel__sheet{
     position:absolute;
@@ -52,11 +48,9 @@
     transition:transform .3s cubic-bezier(.2,.8,.2,1);
 }
 
-
 .filter-panel.open .filter-panel__sheet{
     transform:translateY(0);
 }
-
 
 .filter-panel__handle{
     width:42px;
@@ -66,7 +60,6 @@
     margin:0 auto 14px;
 }
 
-
 .filter-panel__header{
     display:flex;
     align-items:center;
@@ -74,13 +67,11 @@
     margin-bottom:18px;
 }
 
-
 .filter-panel__title{
     font-size:20px;
     font-weight:700;
     letter-spacing:.2px;
 }
-
 
 .filter-panel__close{
     width:36px;
@@ -97,17 +88,14 @@
     transition:.2s;
 }
 
-
 .filter-panel__close:active{
     transform:scale(.94);
     background:rgba(255,255,255,.14);
 }
 
-
 .filter-section{
     margin-bottom:20px;
 }
-
 
 .filter-section__label{
     font-size:13px;
@@ -118,13 +106,11 @@
     letter-spacing:.4px;
 }
 
-
 .filter-chips{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
 }
-
 
 .filter-chip{
     border:1px solid rgba(255,255,255,.1);
@@ -139,11 +125,9 @@
     user-select:none;
 }
 
-
 .filter-chip:active{
     transform:scale(.96);
 }
-
 
 .filter-chip.active{
     background:linear-gradient(
@@ -155,12 +139,10 @@
     box-shadow:0 6px 18px rgba(124,58,237,.35);
 }
 
-
 .filter-age-row{
     display:flex;
     gap:10px;
 }
-
 
 .filter-age-field{
     flex:1;
@@ -169,12 +151,10 @@
     gap:6px;
 }
 
-
 .filter-age-field span{
     font-size:12px;
     color:rgba(255,255,255,.55);
 }
-
 
 .filter-age-field input{
     width:100%;
@@ -189,12 +169,10 @@
     box-sizing:border-box;
 }
 
-
 .filter-age-field input:focus{
     border-color:rgba(168,85,247,.65);
     box-shadow:0 0 0 3px rgba(168,85,247,.18);
 }
-
 
 .filter-actions{
     display:flex;
@@ -202,7 +180,6 @@
     margin-top:8px;
     padding-top:8px;
 }
-
 
 .filter-btn{
     flex:1;
@@ -215,17 +192,14 @@
     transition:.2s;
 }
 
-
 .filter-btn:active{
     transform:scale(.97);
 }
-
 
 .filter-btn--ghost{
     background:rgba(255,255,255,.08);
     color:#fff;
 }
-
 
 .filter-btn--primary{
     background:linear-gradient(
@@ -237,9 +211,8 @@
     box-shadow:0 10px 28px rgba(124,58,237,.35);
 }
 
-
 /* ========================================
-   FILTER BUTTON UNDER PROFILE
+   FILTER BUTTON — круглая иконка
 ======================================== */
 
 .filters-trigger{
@@ -248,59 +221,83 @@
     right:14px;
     z-index:6000;
     pointer-events:auto;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-end;
-    gap:6px;
 }
-
 
 .filters-trigger__btn{
+    position:relative;
+    width:45px;
+    height:45px;
+    min-width:45px;
+    max-width:45px;
+    padding:0;
+    margin:0;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:50%;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28,30,43,.97),
+            rgba(14,16,26,.97)
+        );
+    color:rgba(255,255,255,.90);
     display:flex;
     align-items:center;
-    gap:6px;
-    height:34px;
-    padding:0 12px;
-    border:none;
-    border-radius:999px;
-    background:rgba(18,20,35,.88);
-    backdrop-filter:blur(16px);
-    color:#fff;
-    font-size:13px;
-    font-weight:700;
+    justify-content:center;
     cursor:pointer;
-    box-shadow:0 8px 22px rgba(0,0,0,.28);
-    transition:.2s;
-    border:1px solid rgba(255,255,255,.1);
+    box-sizing:border-box;
+    outline:none;
+    -webkit-tap-highlight-color:transparent;
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.40),
+        inset 0 1px 0 rgba(255,255,255,.06);
+    transition:
+        transform .18s ease,
+        background .18s ease,
+        border-color .18s ease,
+        box-shadow .18s ease;
 }
 
+.filters-trigger__btn:hover{
+    transform:translateY(-2px);
+}
 
 .filters-trigger__btn:active{
-    transform:scale(.96);
+    transform:scale(.92);
 }
 
+.filters-trigger__btn:focus{
+    outline:none;
+}
+
+.filters-trigger__icon{
+    width:21px;
+    height:21px;
+    display:block;
+    color:#ffffff;
+}
 
 .filters-trigger__btn.has-active{
-    background:linear-gradient(
-        135deg,
-        rgba(168,85,247,.95),
-        rgba(124,58,237,.95)
-    );
-    border-color:transparent;
-    box-shadow:0 8px 22px rgba(124,58,237,.4);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124,58,237,.38),
+            rgba(91,33,182,.30)
+        );
+    border-color:rgba(167,139,250,.75);
+    box-shadow:
+        0 8px 22px rgba(0,0,0,.40),
+        0 0 20px rgba(139,92,246,.38),
+        inset 0 1px 0 rgba(255,255,255,.10);
 }
-
 
 .filters-trigger__dot{
-    width:7px;
-    height:7px;
+    position:absolute;
+    top:6px;
+    right:6px;
+    width:8px;
+    height:8px;
     border-radius:50%;
-    background:#21D07A;
-    box-shadow:0 0 0 3px rgba(33,208,122,.2);
-}
-
-
-.filters-trigger__arrow{
-    font-size:10px;
-    opacity:.8;
+    background:#ef4444;
+    box-shadow:0 0 6px rgba(239,68,68,.7);
+    pointer-events:none;
 }
