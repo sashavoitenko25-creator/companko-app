@@ -1,14 +1,11 @@
 const STORAGE_KEY = 'app_lang';
 
-
 const translations = {
 
     /* =====================================================
        RUSSIAN
     ====================================================== */
-
     ru: {
-
         // Settings
         settings_title: '⚙ Настройки',
         change_language: '🌐 Сменить язык',
@@ -47,6 +44,7 @@ const translations = {
         notifications_route_text: 'Построил к вам маршрут',
         notifications_route_toast: 'К вам построили маршрут 📍',
         notifications_default_text: 'Новое уведомление',
+        notifications_live_ended: 'LIVE уже завершён',
 
         // UserCard
         guest: 'Гость',
@@ -181,15 +179,12 @@ const translations = {
         // Common
         close: 'Закрыть',
         back: '←',
-
     },
 
     /* =====================================================
        ENGLISH
     ====================================================== */
-
     en: {
-
         // Settings
         settings_title: '⚙ Settings',
         change_language: '🌐 Change language',
@@ -228,6 +223,7 @@ const translations = {
         notifications_route_text: 'Built a route to you',
         notifications_route_toast: 'Someone built a route to you 📍',
         notifications_default_text: 'New notification',
+        notifications_live_ended: 'LIVE has already ended',
 
         // UserCard
         guest: 'Guest',
@@ -362,15 +358,12 @@ const translations = {
         // Common
         close: 'Close',
         back: '←',
-
     },
 
     /* =====================================================
        UKRAINIAN
     ====================================================== */
-
     uk: {
-
         // Settings
         settings_title: '⚙ Налаштування',
         change_language: '🌐 Змінити мову',
@@ -409,6 +402,7 @@ const translations = {
         notifications_route_text: 'Побудував до вас маршрут',
         notifications_route_toast: 'До вас побудували маршрут 📍',
         notifications_default_text: 'Нове сповіщення',
+        notifications_live_ended: 'LIVE вже завершено',
 
         // UserCard
         guest: 'Гість',
@@ -543,15 +537,12 @@ const translations = {
         // Common
         close: 'Закрити',
         back: '←',
-
     },
 
     /* =====================================================
        GERMAN
     ====================================================== */
-
     de: {
-
         // Settings
         settings_title: '⚙ Einstellungen',
         change_language: '🌐 Sprache ändern',
@@ -590,6 +581,7 @@ const translations = {
         notifications_route_text: 'Hat eine Route zu dir gebaut',
         notifications_route_toast: 'Jemand hat eine Route zu dir gebaut 📍',
         notifications_default_text: 'Neue Benachrichtigung',
+        notifications_live_ended: 'LIVE ist bereits beendet',
 
         // UserCard
         guest: 'Gast',
@@ -724,11 +716,8 @@ const translations = {
         // Common
         close: 'Schließen',
         back: '←',
-
     }
-
 };
-
 
 /* =====================================================
    CURRENT LANGUAGE
@@ -738,7 +727,6 @@ let currentLang =
     localStorage.getItem(
         STORAGE_KEY
     ) || 'ru';
-
 
 /* =====================================================
    TRANSLATION
@@ -750,7 +738,6 @@ export function t(key){
         translations[currentLang] ||
         translations.ru;
 
-
     return (
         dict[key] ??
         translations.ru[key] ??
@@ -759,17 +746,13 @@ export function t(key){
 
 }
 
-
 /* =====================================================
    GET CURRENT LANGUAGE
 ===================================================== */
 
 export function getLang(){
-
     return currentLang;
-
 }
-
 
 /* =====================================================
    SET LANGUAGE
@@ -780,15 +763,12 @@ export function setLang(lang){
     if(!translations[lang])
         return;
 
-
     currentLang = lang;
-
 
     localStorage.setItem(
         STORAGE_KEY,
         lang
     );
-
 
     window.dispatchEvent(
         new CustomEvent(
@@ -803,7 +783,6 @@ export function setLang(lang){
 
 }
 
-
 /* =====================================================
    AVAILABLE LANGUAGES
 ===================================================== */
@@ -811,27 +790,22 @@ export function setLang(lang){
 export function getAvailableLanguages(){
 
     return [
-
         {
             code: 'uk',
             label: t('language_uk')
         },
-
         {
             code: 'ru',
             label: t('language_ru')
         },
-
         {
             code: 'en',
             label: t('language_en')
         },
-
         {
             code: 'de',
             label: t('language_de')
         }
-
     ];
 
 }

@@ -6,7 +6,8 @@ import {
     addNotification,
     removeNotification,
     markRead,
-    markAllRead
+    markAllRead,
+    removeNotificationsByUser
 } from '../../store/notificationStore';
 
 import {
@@ -341,6 +342,42 @@ async function handleOpenNotification(item) {
     markRead(item.id);
     markRouteNotificationRead(item.id).catch(() => {});
 
+    // 1) Проверяем, жив ли ещё LIVE
+    let session = null;
+
+    if (item.from_user_id) {
+        try {
+            session = await checkActiveLive(item.from_user_id);
+        } catch (error) {
+            console.warn('Notification live check error', error);
+        }
+    }
+
+    const expiresAt = session?.expires_at
+        ? new Date(session.expires_at).getTime()
+        : null;
+
+    const isExpiredByTime =
+        expiresAt != null && expiresAt <= Date.now();
+
+    const isLiveGone = !session || isExpiredByTime;
+
+    // 2) LIVE уже нет → ошибка + удалить все уведомления от этого человека
+    if (isLiveGone) {
+        showLiveEndedError(item);
+
+        const removed = removeNotificationsByUser(item.from_user_id);
+
+        removed.forEach(n => {
+            deleteRouteNotification(n.id).catch(() => {});
+        });
+
+        updateBadge();
+        renderList();
+        return;
+    }
+
+    // 3) LIVE активен → карта + карточка
     const map = getMap();
     const lat = Number(item.lat);
     const lng = Number(item.lng);
@@ -356,7 +393,7 @@ async function handleOpenNotification(item) {
         });
     }
 
-    setTimeout(async () => {
+    setTimeout(() => {
         const user = {
             user_id: item.from_user_id,
             id: item.from_user_id,
@@ -367,42 +404,64 @@ async function handleOpenNotification(item) {
             lat: item.lat,
             lng: item.lng,
             gender: item.gender,
-            activity: item.activity,
+            activity: session.activity || item.activity,
             relationship_status: item.relationship_status,
-            expires_at: item.expires_at || null,
-            duration: item.duration || null,
-            distance: 0
+            expires_at: session.expires_at || item.expires_at || null,
+            duration: session.duration || item.duration || null,
+            distance: 0,
+            isLive: true
         };
-
-        if (item.from_user_id) {
-            try {
-                const session = await checkActiveLive(item.from_user_id);
-
-                if (session) {
-                    user.activity =
-                        session.activity ||
-                        user.activity;
-
-                    user.expires_at =
-                        session.expires_at ||
-                        user.expires_at;
-
-                    user.duration =
-                        session.duration ||
-                        user.duration;
-
-                    user.isLive = true;
-                }
-            } catch (error) {
-                console.warn(
-                    'Notification live load error',
-                    error
-                );
-            }
-        }
 
         showUserCard(user);
     }, 2500);
+}
+
+function showLiveEndedError(item) {
+    const name = item?.name || t('guest');
+
+    const toast = document.querySelector('#notif-toast');
+    const avatar = document.querySelector('#notif-toast-avatar');
+    const title = document.querySelector('#notif-toast-title');
+    const text = document.querySelector('#notif-toast-text');
+
+    if (!toast || !title || !text) {
+        alert(t('notifications_live_ended') || 'LIVE уже завершён');
+        return;
+    }
+
+    if (avatar) {
+        avatar.src =
+            item?.photo_url ||
+            'https://i.pravatar.cc/100';
+    }
+
+    title.textContent = name;
+    text.textContent =
+        t('notifications_live_ended') ||
+        'LIVE уже завершён';
+
+    if (toast.parentElement !== document.body) {
+        document.body.appendChild(toast);
+    }
+
+    toast.hidden = false;
+    requestAnimationFrame(() => {
+        toast.classList.add('notif-toast--show');
+    });
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toast.classList.remove('notif-toast--show');
+        setTimeout(() => {
+            toast.hidden = true;
+        }, 280);
+    }, 3500);
+
+    toast.onclick = () => {
+        clearTimeout(toastTimer);
+        toast.classList.remove('notif-toast--show');
+        toast.hidden = true;
+    };
 }
 
 /* ========================================

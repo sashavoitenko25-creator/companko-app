@@ -59,9 +59,9 @@ export function getUnreadCount() {
  *   relationship_status?,
  *   expires_at?,
  *   duration?,
- *   read?,          // учитываем из БД
+ *   read?,
  *   created_at?,
- *   silent?         // true = не показывать toast (загрузка с сервера)
+ *   silent?
  * }
  */
 export function addNotification(payload) {
@@ -101,7 +101,6 @@ export function addNotification(payload) {
         relationship_status: payload.relationship_status || null,
         expires_at: payload.expires_at || null,
         duration: payload.duration || null,
-        // ВАЖНО: уважаем read из payload (БД)
         read: payload.read === true,
         created_at: payload.created_at || Date.now()
     };
@@ -110,7 +109,6 @@ export function addNotification(payload) {
     save();
     emit();
 
-    // toast только для реально новых (не silent)
     if (!payload.silent) {
         window.dispatchEvent(
             new CustomEvent('notification:new', {
@@ -142,6 +140,24 @@ export function removeNotification(id) {
     emit();
 }
 
+/** Удалить все уведомления от конкретного пользователя */
+export function removeNotificationsByUser(fromUserId) {
+    if (!fromUserId) return [];
+
+    const removed = notifications.filter(
+        n => String(n.from_user_id) === String(fromUserId)
+    );
+
+    notifications = notifications.filter(
+        n => String(n.from_user_id) !== String(fromUserId)
+    );
+
+    save();
+    emit();
+
+    return removed;
+}
+
 export function clearNotifications() {
     notifications = [];
     save();
@@ -156,7 +172,6 @@ export function syncFromServer(rows) {
         rows.map(r => [String(r.id), r])
     );
 
-    // оставляем только те, что ещё есть на сервере, и обновляем read
     notifications = notifications
         .filter(n => byId.has(String(n.id)))
         .map(n => {
@@ -167,7 +182,6 @@ export function syncFromServer(rows) {
             };
         });
 
-    // добавляем новые с сервера (без toast)
     rows.forEach(row => {
         if (!notifications.some(n => String(n.id) === String(row.id))) {
             addNotification({
@@ -177,8 +191,6 @@ export function syncFromServer(rows) {
         }
     });
 
-    // если после filter/map что-то изменилось — уже save/emit внутри add
-    // но на всякий случай:
     save();
     emit();
 }
