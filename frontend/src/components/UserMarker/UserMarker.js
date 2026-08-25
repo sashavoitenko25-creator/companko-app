@@ -2,7 +2,7 @@ import './UserMarker.css';
 
 import {
     t
-} from '../i18n';
+} from '../../i18n';
 
 
 /* ========================================
