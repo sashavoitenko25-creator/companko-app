@@ -473,6 +473,68 @@ function updateBadge() {
     }
 }
 
+/* ========================================
+   SOUND + VIBRATE
+======================================== */
+
+function playNotificationSound() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        const playBeep = (start, freq) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, start);
+
+            gain.gain.setValueAtTime(0.0001, start);
+            gain.gain.exponentialRampToValueAtTime(0.12, start + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.15);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + 0.16);
+        };
+
+        playBeep(now, 880);
+        playBeep(now + 0.18, 1175);
+
+        setTimeout(() => {
+            ctx.close().catch(() => {});
+        }, 500);
+    } catch (e) {
+        console.warn('notification sound error', e);
+    }
+}
+
+function vibrateLight() {
+    try {
+        const tg = window.Telegram?.WebApp;
+
+        if (tg?.HapticFeedback?.impactOccurred) {
+            tg.HapticFeedback.impactOccurred('light');
+            return;
+        }
+
+        if (navigator.vibrate) {
+            navigator.vibrate(40);
+        }
+    } catch (e) {
+        console.warn('notification vibrate error', e);
+    }
+}
+
+/* ========================================
+   TOAST
+======================================== */
+
 function showToast(item) {
     if (!item) return;
 
@@ -502,6 +564,10 @@ function showToast(item) {
         toast.classList.add('notif-toast--show');
     });
 
+    // звук + лёгкая вибрация
+    playNotificationSound();
+    vibrateLight();
+
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
         toast.classList.remove('notif-toast--show');
@@ -517,6 +583,10 @@ function showToast(item) {
         handleOpenNotification(item);
     };
 }
+
+/* ========================================
+   TEXTS
+======================================== */
 
 function updateTexts() {
     const title = document.querySelector('#notif-panel-title');
